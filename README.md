@@ -7,8 +7,8 @@
 
  **Hirola** is an opinionated web framework for that is focused on simplicity and predicatability.
 
-lib.rs
 #### Example
+lib.rs
 ```rust
 use hirola::prelude::*;
 use std::sync::Arc;
@@ -184,7 +184,7 @@ You need need to have `rust` and `cargo` installed.
 For the counter example, you need `node.js` and `npm` installed.
 
 Note:
-> The above example doesnt work yet..
+> The above example doesnt work yet.. The counter example in the 
 > `cargo web` doesnt work possibly because of wasm-bindgen
 
 

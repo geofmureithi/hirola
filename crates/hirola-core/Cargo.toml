@@ -6,7 +6,7 @@ edition = "2018"
 description = "An html library for building client side webapps"
 repository = "https://github.com/geofmureithi/hirola"
 documentation = "https://docs.rs/hirola"
-readme = "README.md"
+readme = "../../README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["wasm", "html", "dom", "web"]
 

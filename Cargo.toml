@@ -1,0 +1,16 @@
+[package]
+name = "hirola"
+version = "0.1.0"
+authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+hirola-core = { path = "crates/hirola-core" }
+hirola-macros = { path = "crates/hirola-macros" }
+
+[workspace]
+members = [
+    "crates/hirola-core",
+    "crates/hirola-macros",
+    "examples/counter",
+]

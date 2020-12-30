@@ -1,6 +1,6 @@
 [package]
 name = "hirola"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 description = "An html library for building client side webapps"
 repository = "https://github.com/geofmureithi/hirola"

@@ -1,6 +1,6 @@
 [package]
 name = "hirola-core"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 edition = "2018"
 
@@ -11,6 +11,6 @@ console_error_panic_hook = "0.1.5"
 dominator = "0.5.0"
 wasm-bindgen = "0.2.48"
 futures-signals = "0.3.0"
-typed-html = { git = "https://github.com/bodil/typed-html", rev = "4c13ecca" }
+typed-html = { git = "https://github.com/bodil/typed-html", rev = "4c13ecca", version = "0.2.2" }
 typed-html-macros = "0.2.2"
 web-sys = "*"

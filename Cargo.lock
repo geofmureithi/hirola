@@ -168,7 +168,7 @@ version = "0.1.1"
 dependencies = [
  "console_error_panic_hook 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "console_log 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "hirola 0.1.1",
+ "hirola 0.1.2",
  "log 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "typed-html 0.2.2 (git+https://github.com/bodil/typed-html?rev=4c13ecca)",
  "wasm-bindgen 0.2.69 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -364,15 +364,15 @@ dependencies = [
 
 [[package]]
 name = "hirola"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
- "hirola-core 0.1.1",
+ "hirola-core 0.1.2",
  "hirola-macros 0.1.1",
 ]
 
 [[package]]
 name = "hirola-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "console_error_panic_hook 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "dominator 0.5.14 (registry+https://github.com/rust-lang/crates.io-index)",

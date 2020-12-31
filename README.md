@@ -12,6 +12,7 @@ Here is a simple example:
 ```rust
 use hirola::prelude::*;
 use std::sync::Arc;
+use crate::components::Timer;
 
 #[derive(Default)]
 struct Count {
@@ -53,6 +54,8 @@ impl Component<Option<i32>, Count> for Counter {
                             class="outline-none text-center"
                             value={&state.counter}
                         />
+                        <Timer start={1} > 
+                        // or <template as={Timer} > ?
                         <button 
                             data-action="increment"
                             onclick={ |_event| &state.increment(); }

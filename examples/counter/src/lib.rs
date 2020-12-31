@@ -35,7 +35,7 @@ impl Component<Option<i32>, Count> for Counter {
                     </label>
                     <div class="flex flex-row h-10 w-full rounded-lg relative bg-transparent mt-1">
                         <button 
-                            //onclick={ |_event| &state.decrement() } 
+                            onclick={ |_event| &state.decrement() } 
                             data-action="decrement" 
                             class="bg-gray-300 text-gray-600 h-full w-20 rounded-l cursor-pointer outline-none">
                             <span class="m-auto text-2xl font-thin">"−"</span>

@@ -32,8 +32,6 @@ fn main() {
 
 ```
 
-```
-
 ### Goals
 
 - [x] Write code that is declarative and easy to follow.
@@ -56,4 +54,3 @@ fn main() {
 You need need to have `rust`, `cargo` and `trunk` installed.
 
 License: MIT
-```

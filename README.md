@@ -49,6 +49,12 @@ fn main() {
 
 > This API will certainly change.
 
+Go to `examples` and use trunk
+
+```
+$  trunk serve
+```
+
 #### Prerequisite:
 
 You need need to have `rust`, `cargo` and `trunk` installed.

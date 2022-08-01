@@ -35,6 +35,6 @@ fn counter(app: &HirolaApp) -> TemplateResult<DomNode> {
 }
 
 fn main() {
-    let mut app = HirolaApp::new();
+    let app = HirolaApp::new();
     app.mount("body", counter);
 }

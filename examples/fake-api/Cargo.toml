@@ -1,0 +1,26 @@
+[package]
+name = "fake-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1"
+hirola = { path = "../../"}
+wasm-bindgen = { version = "0.2.82", features = ["serde-serialize"]  }
+js-sys = "0.3.59"
+wasm-bindgen-futures = "0.4.32"
+serde = { version = "1.0.80", features = ["derive"] }
+serde_derive = "^1.0.59"
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'Headers',
+  'Request',
+  'RequestInit',
+  'RequestMode',
+  'Response',
+  'Window',
+]

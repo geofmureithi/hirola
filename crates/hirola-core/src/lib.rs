@@ -1,8 +1,6 @@
-//! # Maple API Documentation
+//! # Hirola API Documentation
 //!
-//! Maple is a VDOM-less web library with fine-grained reactivity.
-//!
-//! This is the API docs for maple. If you are looking for the usage docs, checkout the [README](https://github.com/lukechu10/maple).
+//! Hirola is based on [Marple](https://github.com/lukechu10/maple).
 //!
 //! ## Features
 //! - `dom` (_default_) - Enables rendering templates to DOM nodes. Only useful on `wasm32-unknown-unknown` target.

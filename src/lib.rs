@@ -1,3 +1,37 @@
+//! # Hirola API Documentation
+//! **Hirola** is an opinionated web framework for that is focused on simplicity and predictability.
+//! ## Example
+//! ```rust,no_run
+//! use hirola::prelude::*;
+//!
+//! fn counter(_: &HirolaApp) -> TemplateResult<DomNode> {
+//!    let state = Signal::new(99);
+//!     let decerement = state.reduce_callback(|count, _| *count - 1);
+//!     let incerement = state.reduce_callback(|count, _| *count + 1);
+//!
+//!     html! {
+//!         <div class="flex flex-row h-10">
+//!             <button on:click={decerement}>"-"</button>
+//!             <input value={state.get()} disabled/>
+//!             <button on:click={incerement}>"+"</button>
+//!         </div>
+//!     }
+//! }
+//!
+//! fn main() {
+//!     let app = HirolaApp::new();
+//!     app.mount("body", counter);
+//! }
+//! ```
+//!
+//!
+//! ## Features
+//! - `dom` (_default_) - Enables rendering templates to DOM nodes. Only useful on `wasm32-unknown-unknown` target.
+//! - `ssr` - Enables rendering templates to static strings (useful for Server Side Rendering / Pre-rendering).
+//! - `serde` - Enables serializing and deserializing `Signal`s and other wrapper types using `serde`.
+//!
+//! Hirola is based on [marple reactivity core](https://github.com/lukechu10/maple).
+
 extern crate hirola_core;
 
 use std::collections::HashMap;
@@ -10,11 +44,13 @@ use web_sys::window;
 
 type ExtensionMap = Map<dyn CloneAny>;
 
+/// Represents an instance of a mountable app
 #[derive(Clone)]
 pub struct HirolaApp {
     extensions: ExtensionMap,
 }
 
+/// Represents a view that can be mounted
 pub trait Mountable {
     fn mount(&self, app: &HirolaApp);
 }
@@ -29,11 +65,13 @@ where
 }
 
 impl HirolaApp {
+    /// Create a new app
     pub fn new() -> Self {
         let extensions = ExtensionMap::new();
         HirolaApp { extensions }
     }
 
+    /// Fetch global data
     pub fn data<T>(&self) -> Option<&T>
     where
         T: Clone + 'static,
@@ -41,11 +79,13 @@ impl HirolaApp {
         self.extensions.get::<T>()
     }
 
+    /// Render a view
     pub fn mount<M: Mountable>(self, _element: &str, view: M) {
         // let app = self.clone();
         view.mount(&self)
     }
 
+    /// Extend global data
     pub fn extend<T: 'static + Clone>(&mut self, extension: T) {
         self.extensions.insert(extension);
     }
@@ -58,6 +98,7 @@ impl HirolaApp {
     }
 }
 
+/// Route that is matched
 #[derive(Clone, Debug)]
 pub struct RouteMatch {
     //page: TemplateResult<DomNode>,
@@ -65,6 +106,7 @@ pub struct RouteMatch {
     pub params: HashMap<String, String>,
 }
 
+/// Represents a Single page router
 #[derive(Clone)]
 pub struct Router {
     current: Signal<RouteMatch>,
@@ -95,6 +137,7 @@ impl Router {
         self.current.clone()
     }
 
+    /// Add a new route
     pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> TemplateResult<DomNode>) {
         self.inner.insert(path.to_string(), page).unwrap();
     }

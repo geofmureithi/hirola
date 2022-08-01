@@ -11,7 +11,7 @@ Here is a simple example:
 ```rust
 use hirola::prelude::*;
 
-fn Home() -> TemplateResult<DomNode> {
+fn counter(_: &HirolaApp) -> TemplateResult<DomNode> {
     let state = Signal::new(99);
     let decerement = state.reduce_callback(|count, _| *count - 1);
     let incerement = state.reduce_callback(|count, _| *count + 1);
@@ -27,8 +27,7 @@ fn Home() -> TemplateResult<DomNode> {
 
 fn main() {
     let mut app = HirolaApp::new();
-    app.router("/", Home)
-    app.mount("body");
+    app.mount("body", counter);
 }
 
 ```
@@ -37,14 +36,14 @@ fn main() {
 
 - [x] Write code that is declarative and easy to follow.
 - [x] Follow Alpine-ish kind of Reactive and declarative style.
-- [ ] Extensible for other gui. Since the core principles dont care about UI.
 - [ ] Async Handling and server-side integration.
 
 ### Inspiration
 
-I was inspired by alot of We frameworks out there. You can see influences of React in the `Component`, `State` and `Props` traits.
-You can also see inspirations from `yew` and other similar frameworks to provide a seemless macro.
-I also want to capture the declarativeness and reactiveness seen in alpine.js. Expect to see more of that direction, eg. with transitions.
+- Sycamore/Maple
+- Alpine.js
+- React.js
+- Yew
 
 #### Demo examples
 

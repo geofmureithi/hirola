@@ -107,7 +107,7 @@ impl<T: 'static> SignalVec<T> {
     ///
     /// # Example
     /// ```
-    /// use maple_core::prelude::*;
+    /// use hirola_core::prelude::*;
     ///
     /// let my_vec = SignalVec::with_values(vec![1, 2, 3]);
     /// let squared = my_vec.map(|x| *x * *x);
@@ -170,7 +170,7 @@ impl<T: 'static + Clone> SignalVec<T> {
     ///
     /// # Example
     /// ```
-    /// use maple_core::prelude::*;
+    /// use hirola_core::prelude::*;
     ///
     /// let signal = SignalVec::with_values(vec![1, 2, 3]);
     /// assert_eq!(signal.to_vec(), vec![1, 2, 3]);

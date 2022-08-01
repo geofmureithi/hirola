@@ -6,7 +6,7 @@
 ///
 /// # Example
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let state = Signal::new(0);
 ///

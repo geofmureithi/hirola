@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/geofmureithi/hirola.svg?branch=master)](https://travis-ci.org/geofmureithi/hirola)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**Hirola** is an opinionated web framework for that is focused on simplicity and predicatability.
+**Hirola** is an opinionated web framework for that is focused on simplicity and predictability.
 
 Here is a simple example:
 
@@ -27,7 +27,8 @@ fn Home() -> TemplateResult<DomNode> {
 
 fn main() {
     let mut app = HirolaApp::new();
-    app.mount("body", Home);
+    app.router("/", Home)
+    app.mount("body");
 }
 
 ```

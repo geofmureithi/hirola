@@ -269,7 +269,7 @@ pub fn create_effect_initial<R: 'static>(
 ///
 /// # Example
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let state = Signal::new(0);
 ///
@@ -298,7 +298,7 @@ where
 ///
 /// # Example
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let state = Signal::new(0);
 ///
@@ -371,7 +371,7 @@ where
 /// # Example
 ///
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let state = Signal::new(1);
 ///
@@ -402,7 +402,7 @@ pub fn untrack<T>(f: impl FnOnce() -> T) -> T {
 ///
 /// # Example
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let cleanup_called = Signal::new(false);
 ///

@@ -1,29 +1,30 @@
 use hirola::prelude::*;
 use std::f64;
 use wasm_bindgen::JsCast;
+use web_sys::window;
 use web_sys::Event;
 use web_sys::HtmlInputElement;
 
-fn App() -> TemplateResult<DomNode> {
-    let reff = NodeRef::new();
-    if reff.try_get::<DomNode>().is_some() {
-        let link = reff.get::<DomNode>();
-        let canvas = link
-            .inner_element()
-            .dyn_into::<web_sys::HtmlCanvasElement>()
-            .unwrap();
-        canvas.set_width(640);
-        canvas.set_height(480);
-        // canvas.style().set_property("border", "solid").unwrap();
-    }
+fn draw_canvas(_: &HirolaApp) -> TemplateResult<DomNode> {
+    create_effect(move || {
+        let link = window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .get_element_by_id("smile");
+        //.unwrap();
+        // let canvas = link.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+        // canvas.set_width(640);
+        // canvas.set_height(480);
+    });
 
     html! {
-           <canvas ref={reff} width={480} id="smile"/>
+           <canvas width={200} id="smile"/>
     }
 }
 
 fn main() {
-    let mut app = HirolaApp::new();
+    let app = HirolaApp::new();
 
-    app.mount("body", App);
+    app.mount("body", draw_canvas);
 }

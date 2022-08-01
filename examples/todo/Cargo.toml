@@ -7,3 +7,13 @@ edition = "2021"
 
 [dependencies]
 hirola = { path = "../../"}
+wasm-bindgen = {version = "0.2"}
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'Document',
+  'Element',
+  'Window',
+  'HtmlInputElement'
+]

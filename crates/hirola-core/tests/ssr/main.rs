@@ -1,4 +1,4 @@
-use maple_core::prelude::*;
+use hirola_core::prelude::*;
 
 #[test]
 fn hello_world() {

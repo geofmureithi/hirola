@@ -1,20 +1,20 @@
 //! Reactive primitives.
 
 mod effect;
+mod motion;
 mod signal;
 mod signal_vec;
-mod motion;
 
 pub use effect::*;
+pub use motion::*;
 pub use signal::*;
 pub use signal_vec::*;
-pub use motion::*;
 
 /// Creates a new reactive root. Generally, you won't need this method as it is called automatically in [`render`](crate::render()).
 ///
 /// # Example
 /// ```
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let trigger = Signal::new(());
 /// let counter = Signal::new(0);

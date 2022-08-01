@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use maple_core::prelude::*;
+use hirola_core::prelude::*;
 
 pub fn bench(c: &mut Criterion) {
     c.bench_function("reactivity_signals", |b| {

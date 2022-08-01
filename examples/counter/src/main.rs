@@ -1,9 +1,6 @@
 use hirola::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::Event;
-use web_sys::HtmlInputElement;
 
-fn Home() -> TemplateResult<DomNode> {
+fn counter(app: &HirolaApp) -> TemplateResult<DomNode> {
     let state = Signal::new(99);
 
     let decerement = state.reduce_callback(|count, _| *count - 1);
@@ -16,7 +13,7 @@ fn Home() -> TemplateResult<DomNode> {
                 <div class="h-10 w-32">
                     <div class="flex flex-row h-10">
                         <button
-                            on:click={decerement}
+                            on:click=decerement
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             "-"
                         </button>
@@ -27,7 +24,7 @@ fn Home() -> TemplateResult<DomNode> {
                             />
                         </div>
                         <button
-                            on:click={incerement}
+                            on:click=incerement
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             "+"
                         </button>
@@ -39,6 +36,5 @@ fn Home() -> TemplateResult<DomNode> {
 
 fn main() {
     let mut app = HirolaApp::new();
-
-    app.mount("body", Home);
+    app.mount("body", counter);
 }

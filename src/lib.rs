@@ -1,64 +1,30 @@
 extern crate hirola_core;
 
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
-use anymap::{any::CloneAny, Map};
+use anymap::{CloneAny, Map};
 use hirola_core::prelude::*;
 
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
+use web_sys::window;
 
 type ExtensionMap = Map<dyn CloneAny>;
 
+#[derive(Clone)]
 pub struct HirolaApp {
     extensions: ExtensionMap,
 }
 
-pub trait Route<T> {
-    fn render(self, app: &HirolaApp) -> TemplateResult<DomNode>;
+pub trait Mountable {
+    fn mount(&self, app: &HirolaApp);
 }
 
-impl<F> Route<()> for F
+impl<F> Mountable for F
 where
-    F: FnOnce() -> TemplateResult<DomNode>,
+    F: Fn(&HirolaApp) -> TemplateResult<DomNode>,
 {
-    fn render(self, _app: &HirolaApp) -> TemplateResult<DomNode> {
-        self()
-    }
-}
-
-impl<T, K1: 'static> Route<(K1,)> for T
-where
-    T: FnOnce(K1) -> TemplateResult<DomNode>,
-    K1: Clone + FromRequest,
-{
-    fn render(self, app: &HirolaApp) -> TemplateResult<DomNode> {
-        let k1: K1 = FromRequest::from_request(&app);
-
-        self(k1)
-    }
-}
-
-impl<T, K1: 'static, K2: 'static> Route<(K1, K2)> for T
-where
-    T: FnOnce(K1, K2) -> TemplateResult<DomNode>,
-    K1: FromRequest + Clone,
-    K2: FromRequest + Clone,
-{
-    fn render(self, app: &HirolaApp) -> TemplateResult<DomNode> {
-        let k1: K1 = FromRequest::from_request(&app);
-        let k2: K2 = FromRequest::from_request(&app);
-        self(k1, k2)
-    }
-}
-
-pub trait FromRequest {
-    fn from_request(app: &HirolaApp) -> Self;
-}
-
-impl<T: 'static + Clone> FromRequest for Extension<T> {
-    fn from_request(app: &HirolaApp) -> Self {
-        let ext = app.extensions.get::<Extension<T>>().unwrap();
-        ext.clone()
+    fn mount(&self, app: &HirolaApp) {
+        render(|| self(app));
     }
 }
 
@@ -68,12 +34,20 @@ impl HirolaApp {
         HirolaApp { extensions }
     }
 
-    pub fn mount(self, _element: &str, page: impl FnOnce() -> TemplateResult<DomNode>) {
-        render(page)
+    pub fn data<T>(&self) -> Option<&T>
+    where
+        T: Clone + 'static,
+    {
+        self.extensions.get::<T>()
+    }
+
+    pub fn mount<M: Mountable>(self, _element: &str, view: M) {
+        // let app = self.clone();
+        view.mount(&self)
     }
 
     pub fn extend<T: 'static + Clone>(&mut self, extension: T) {
-        self.extensions.insert(Extension(extension));
+        self.extensions.insert(extension);
     }
 
     pub fn render_to_string(&self, dom: impl FnOnce() -> TemplateResult<DomNode>) -> String {
@@ -94,7 +68,13 @@ pub struct RouteMatch {
 #[derive(Clone)]
 pub struct Router {
     current: Signal<RouteMatch>,
-    inner: matchit::Router<fn(RouteMatch) -> TemplateResult<DomNode>>,
+    inner: matchit::Router<fn(&HirolaApp) -> TemplateResult<DomNode>>,
+}
+
+impl Mountable for Router {
+    fn mount(&self, app: &HirolaApp) {
+        self.render(app)
+    }
 }
 
 impl Router {
@@ -111,13 +91,15 @@ impl Router {
         }
     }
 
-    pub fn add(&mut self, path: &str, page: fn(RouteMatch) -> TemplateResult<DomNode>) {
+    pub fn params(&self) -> Signal<RouteMatch> {
+        self.current.clone()
+    }
+
+    pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> TemplateResult<DomNode>) {
         self.inner.insert(path.to_string(), page).unwrap();
     }
 
-    pub fn push(&self, path: String) {
-        //let inner = self.inner.at(&path).unwrap();
-        //let params = res.params.clone();
+    pub fn push(&self, path: &str) {
         let window = web_sys::window().unwrap();
         window
             .history()
@@ -125,32 +107,36 @@ impl Router {
             .push_state_with_url(&JsValue::default(), "", Some(&path))
             .unwrap();
 
-        // params.iter().fold(HashMap::new(), |mut map, c| {
-        //     map.insert(c.0.to_string(), c.1.to_string());
-        //     map
-        // }
-        // self.current.set(RouteMatch {
-        //     path: path.to_owned(),
-        //     params: HashMap::new(),
-        // });
+        let inner = self.inner.at(&path).unwrap();
+        let params = inner.params.clone();
+        let params = params.iter().fold(HashMap::new(), |mut map, c| {
+            map.insert(c.0.to_string(), c.1.to_string());
+            map
+        });
+        self.current.set(RouteMatch {
+            path: path.to_owned(),
+            params,
+        });
     }
 
     fn get_fragment() -> String {
         return web_sys::window().unwrap().location().pathname().unwrap();
     }
 
-    pub fn render(&self) -> TemplateResult<DomNode> {
-        let route = self.current.get();
-        let path = &route.path;
-        let value = self.inner.at(&path).unwrap();
-        let pagefn = value.value;
-        let path = (&route.path).clone();
-        let params = value.params;
-
+    pub fn render(&self, app: &HirolaApp) {
+        let path = (&self.current.get().path).clone();
+        // let params = value.params;
+        let inner = self.inner.at(&path).unwrap();
+        let params = inner.params.clone();
         let params = params.iter().fold(HashMap::new(), |mut map, c| {
             map.insert(c.0.to_string(), c.1.to_string());
             map
         });
+        self.current.set(RouteMatch { path, params });
+        // let params = params.iter().fold(HashMap::new(), |mut map, c| {
+        //     map.insert(c.0.to_string(), c.1.to_string());
+        //     map
+        // });
 
         let current = self.current.clone();
 
@@ -212,19 +198,28 @@ impl Router {
             .set_onpopstate(Some(handle_pop.as_ref().unchecked_ref()));
 
         handle_pop.forget();
+        let route = self.current.clone();
 
-        pagefn(RouteMatch { path, params })
-    }
-}
+        let mut app = app.clone();
+        app.extend(self.clone()); // Add Router to data
+        let router = self.inner.clone();
 
-#[derive(Debug, Clone, Copy)]
-pub struct Extension<T>(pub T);
+        create_effect(cloned!((route) => move || {
+            render(|| {
+                let document = window().unwrap().document().unwrap();
+                let element = &document.body().unwrap();
 
-impl<T> Deref for Extension<T> {
-    type Target = T;
+                while let Some(child) =  element.first_child()  {
+                    element.remove_child(&child).unwrap();
+                }
+                let path = &route.get().path;
+                let value = router.at(&path).unwrap();
+                let pagefn = value.value;
 
-    fn deref(&self) -> &Self::Target {
-        &self.0
+                pagefn(&app)
+            });
+
+        }));
     }
 }
 

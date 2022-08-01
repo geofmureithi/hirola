@@ -32,7 +32,7 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let count = Signal::new(vec![1, 2]);
 ///
@@ -237,7 +237,7 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use maple_core::prelude::*;
+/// use hirola_core::prelude::*;
 ///
 /// let count = Signal::new(vec![1, 2]);
 ///

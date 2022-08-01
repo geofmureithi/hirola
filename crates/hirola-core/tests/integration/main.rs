@@ -1,7 +1,7 @@
 pub mod keyed;
 pub mod non_keyed;
 
-use maple_core::prelude::*;
+use hirola_core::prelude::*;
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 

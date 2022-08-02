@@ -90,9 +90,12 @@ impl HirolaApp {
         self.extensions.insert(extension);
     }
 
-    pub fn render_to_string(&self, dom: impl FnOnce() -> TemplateResult<DomNode>) -> String {
+    pub fn render_to_string(
+        &self,
+        dom: impl FnOnce(&HirolaApp) -> TemplateResult<DomNode>,
+    ) -> String {
         let mut ret = None;
-        let _owner = create_root(|| ret = Some(format!("{:?}", dom().inner_element())));
+        let _owner = create_root(|| ret = Some(format!("{:?}", dom(&self).inner_element())));
 
         ret.unwrap()
     }
@@ -121,8 +124,10 @@ impl Mountable for Router {
 
 impl Router {
     pub fn new() -> Self {
-        let window = web_sys::window().unwrap();
-        let path = window.location().pathname().unwrap();
+        let mut path = String::from("/");
+        if let Some(window) = web_sys::window() {
+            path = window.location().pathname().unwrap_or("/".to_string());
+        }
 
         Self {
             current: Signal::new(RouteMatch {
@@ -176,10 +181,6 @@ impl Router {
             map
         });
         self.current.set(RouteMatch { path, params });
-        // let params = params.iter().fold(HashMap::new(), |mut map, c| {
-        //     map.insert(c.0.to_string(), c.1.to_string());
-        //     map
-        // });
 
         let current = self.current.clone();
 

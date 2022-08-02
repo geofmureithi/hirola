@@ -158,3 +158,17 @@ fn main() {
 
     app.mount("body", router);
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn app_renders() {
+        let mut router = Router::new();
+        router.add("/", |app| {
+            html! {
+                <p>"Homepage"</p>
+            }
+        });
+    }
+}

@@ -1,11 +1,7 @@
 use hirola::prelude::*;
-use std::f64;
-use wasm_bindgen::JsCast;
 use web_sys::window;
-use web_sys::Event;
-use web_sys::HtmlInputElement;
 
-fn draw_canvas(_: &HirolaApp) -> TemplateResult<DomNode> {
+fn draw_canvas(_: &HirolaApp) -> Dom {
     create_effect(move || {
         let link = window()
             .unwrap()

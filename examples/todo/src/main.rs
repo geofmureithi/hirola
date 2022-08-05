@@ -14,7 +14,7 @@ fn TodoCard(
     todo: StateHandle<Todo>,
     on_remove: Box<dyn Fn() -> ()>,
     on_click: Box<dyn Fn() -> ()>,
-) -> TemplateResult<DomNode> {
+) -> Dom {
     html! {
         <div class="flex mb-4 items-center">
             <p class="w-full text-grey-darkest">{todo.get().title.clone()}</p>
@@ -36,7 +36,7 @@ fn TodoCard(
     }
 }
 
-fn todo_view(app: &HirolaApp) -> TemplateResult<DomNode> {
+fn todo_view(app: &HirolaApp) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let route = router.params().get();
     let param = route.params.get("id").unwrap_or(&"1".to_string()).clone();
@@ -60,7 +60,7 @@ fn todo_view(app: &HirolaApp) -> TemplateResult<DomNode> {
     }
 }
 
-fn home(app: &HirolaApp) -> TemplateResult<DomNode> {
+fn home(app: &HirolaApp) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;

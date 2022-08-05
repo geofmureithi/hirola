@@ -4,7 +4,7 @@
 //! ```rust,no_run
 //! use hirola::prelude::*;
 //!
-//! fn counter(_: &HirolaApp) -> TemplateResult<DomNode> {
+//! fn counter(_: &HirolaApp) -> Dom {
 //!    let state = Signal::new(99);
 //!     let decerement = state.reduce_callback(|count, _| *count - 1);
 //!     let incerement = state.reduce_callback(|count, _| *count + 1);
@@ -34,7 +34,7 @@
 
 extern crate hirola_core;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, future::Future};
 
 use anymap::{CloneAny, Map};
 use hirola_core::prelude::*;
@@ -57,7 +57,7 @@ pub trait Mountable {
 
 impl<F> Mountable for F
 where
-    F: Fn(&HirolaApp) -> TemplateResult<DomNode>,
+    F: Fn(&HirolaApp) -> Dom,
 {
     fn mount(&self, app: &HirolaApp) {
         render(|| self(app));
@@ -90,10 +90,7 @@ impl HirolaApp {
         self.extensions.insert(extension);
     }
 
-    pub fn render_to_string(
-        &self,
-        dom: impl FnOnce(&HirolaApp) -> TemplateResult<DomNode>,
-    ) -> String {
+    pub fn render_to_string(&self, dom: impl FnOnce(&HirolaApp) -> Dom) -> String {
         let mut ret = None;
         let _owner = create_root(|| ret = Some(format!("{:?}", dom(&self).inner_element())));
 
@@ -143,7 +140,7 @@ impl Router {
     }
 
     /// Add a new route
-    pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> TemplateResult<DomNode>) {
+    pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> Dom) {
         self.inner.insert(path.to_string(), page).unwrap();
     }
 
@@ -266,6 +263,22 @@ impl Router {
         }));
     }
 }
+
+/// Helper for making async calls
+pub fn use_async<F, T: 'static>(future: F) -> Signal<Option<T>>
+where
+    F: Future<Output = T> + 'static,
+{
+    let handler = Signal::new(None);
+    let inner = handler.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        let res = future.await;
+        inner.set(Some(res));
+    });
+    handler
+}
+
+pub type Dom = TemplateResult<DomNode>;
 
 pub mod prelude {
     pub use super::*;

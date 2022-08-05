@@ -1,13 +1,14 @@
 mod model;
+use std::future::Future;
+
 use hirola::prelude::*;
+use model::Users;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, Response};
 
-fn fetch_users(app: &HirolaApp) -> TemplateResult<DomNode> {
-    let msg = Signal::new(String::from("Loading"));
-    let message = msg.clone();
-    wasm_bindgen_futures::spawn_local(async move {
+fn fetch_users(_app: &HirolaApp) -> Dom {
+    let fetcher = async move {
         let mut opts = RequestInit::new();
         opts.method("GET");
 
@@ -16,6 +17,7 @@ fn fetch_users(app: &HirolaApp) -> TemplateResult<DomNode> {
         let request = Request::new_with_str_and_init(&url, &opts).unwrap();
 
         let window = web_sys::window().unwrap();
+
         let resp_value = JsFuture::from(window.fetch_with_request(&request))
             .await
             .unwrap();
@@ -24,17 +26,36 @@ fn fetch_users(app: &HirolaApp) -> TemplateResult<DomNode> {
         assert!(resp_value.is_instance_of::<Response>());
         let resp: Response = resp_value.dyn_into().unwrap();
 
-        let text = resp.text().unwrap();
-        let text = JsFuture::from(text).await.unwrap();
+        let json = resp.json().unwrap();
+        let json = JsFuture::from(json).await.unwrap();
+        let users: Users = json.into_serde().unwrap();
+        users
+    };
 
-        message.set(text.as_string().unwrap());
-    });
+    let users = use_async(fetcher);
 
     html! {
             <div class="grid h-screen place-items-center">
-                <div class="h-10 w-32">
-                    {msg.get()}
-                </div>
+                {if users.get().is_none() {
+                    html!{
+                        <div class="h-10 w-32">"Loading..."</div>
+                    }
+                } else {
+                    let users = &*users.get();
+                    let users = users.clone().unwrap();
+
+                    html! {
+                        <div class="grid h-screen place-items-center">
+                                {for user in users {
+                                    html! {
+                                        <div>
+                                            {user.name.clone()}
+                                        </div>
+                                    }
+                                }}
+                        </div>
+                    }
+                }}
            </div>
     }
 }

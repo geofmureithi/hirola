@@ -11,7 +11,7 @@ Here is a simple example:
 ```rust
 use hirola::prelude::*;
 
-fn counter(_: &HirolaApp) -> TemplateResult<DomNode> {
+fn counter(_: &HirolaApp) -> Dom {
     let state = Signal::new(99);
     let decerement = state.reduce_callback(|count, _| *count - 1);
     let incerement = state.reduce_callback(|count, _| *count + 1);

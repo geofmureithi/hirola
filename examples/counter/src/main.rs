@@ -1,6 +1,6 @@
 use hirola::prelude::*;
 
-fn counter(app: &HirolaApp) -> TemplateResult<DomNode> {
+fn counter(app: &HirolaApp) -> Dom {
     let state = Signal::new(99);
 
     let decerement = state.reduce_callback(|count, _| *count - 1);

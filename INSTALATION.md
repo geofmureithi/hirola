@@ -8,7 +8,7 @@ use wasm_bindgen::JsCast;
 use web_sys::Event;
 use web_sys::HtmlInputElement;
 
-fn Home() -> TemplateResult<DomNode> {
+fn home() -> Dom {
     let state = Signal::new(99);
 
     let decerement = state.reduce_callback(|count, _| *count - 1);
@@ -44,8 +44,7 @@ fn Home() -> TemplateResult<DomNode> {
 
 fn main() {
     let mut app = HirolaApp::new();
-
-    app.mount("body", Home);
+    app.mount("body", home);
 }
 
 ```

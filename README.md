@@ -17,7 +17,7 @@ fn counter(_: &HirolaApp) -> Dom {
     let incerement = state.reduce_callback(|count, _| *count + 1);
 
     html! {
-        <div class="flex flex-row h-10">
+        <div>
             <button on:click={decerement}>"-"</button>
             <input value={state.get()} disabled/>
             <button on:click={incerement}>"+"</button>
@@ -32,11 +32,15 @@ fn main() {
 
 ```
 
-### Goals
+### Milestones
 
-- [x] Write code that is declarative and easy to follow.
-- [x] Follow Alpine-ish kind of Reactive and declarative style.
-- [ ] Async Handling and server-side integration.
+| Status | Goal                                                                      | Labels        |
+| :----: | :------------------------------------------------------------------------ | ------------- |
+|   ✔    | Write code that is declarative and easy to follow                         | `ready`       |
+|   ❌   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `help wanted` |
+|   🚀   | SSR First Approach                                                        | `help wanted` |
+|   🚀   | Hydration                                                                 | `help wanted` |
+|   🚀   | Serverside integrations                                                   | `help wanted` |
 
 ### Inspiration
 

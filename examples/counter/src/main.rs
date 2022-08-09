@@ -3,9 +3,11 @@ use hirola::prelude::*;
 fn counter(app: &HirolaApp) -> Dom {
     let state = Signal::new(99);
 
-    let decerement = state.reduce_callback(|count, _| *count - 1);
+    let decerement = state.mut_callback(|count, _e| *count - 1);
+    // Or
+    // let decerement = state.callback(|count, _e| count.set(*count.get() + 1));
 
-    let incerement = state.reduce_callback(|count, _| *count + 1);
+    let incerement = state.mut_callback(|count, _e| *count + 1);
 
     html! {
             <div class="grid h-screen place-items-center">

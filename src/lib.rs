@@ -6,8 +6,8 @@
 //!
 //! fn counter(_: &HirolaApp) -> Dom {
 //!    let state = Signal::new(99);
-//!     let decerement = state.reduce_callback(|count, _| *count - 1);
-//!     let incerement = state.reduce_callback(|count, _| *count + 1);
+//!     let decerement = state.event_callback(|count, _| *count - 1);
+//!     let incerement = state.event_callback(|count, _| *count + 1);
 //!
 //!     html! {
 //!         <div class="flex flex-row h-10">

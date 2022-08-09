@@ -58,7 +58,8 @@ members = [
     "examples/counter",
     "examples/todo",
     "examples/canvas",
-    "examples/fake-api"
+    "examples/fake-api",
+    "examples/chartjs"
 ]
 
 

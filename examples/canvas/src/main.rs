@@ -1,26 +1,113 @@
 use hirola::prelude::*;
-use web_sys::window;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use web_sys::MouseEvent;
 
-fn draw_canvas(_: &HirolaApp) -> Dom {
-    create_effect(move || {
-        let link = window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .get_element_by_id("smile");
-        //.unwrap();
-        // let canvas = link.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-        // canvas.set_width(640);
-        // canvas.set_height(480);
+#[derive(Clone)]
+struct SignTool {
+    is_mouse_clicked: Signal<bool>,
+    is_mouse_in_canvas: Signal<bool>,
+    prev_x: Signal<i32>,
+    cur_x: Signal<i32>,
+    prev_y: Signal<i32>,
+    cur_y: Signal<i32>,
+    canvas: NodeRef<DomNode>,
+}
+
+impl SignTool {
+    fn update_position(&self, event: Event) {
+        let e: MouseEvent = event.dyn_into().unwrap();
+        let canvas = self
+            .canvas
+            .get::<DomNode>()
+            .inner_element()
+            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .unwrap();
+        self.prev_x.set(*self.cur_x.get());
+        self.prev_y.set(*self.cur_y.get());
+        self.cur_x.set(e.client_x() - canvas.offset_left());
+        self.cur_y.set(e.client_y() - canvas.offset_top());
+    }
+    fn new(canvas: NodeRef<DomNode>) -> Self {
+        SignTool {
+            is_mouse_clicked: Signal::new(false),
+            is_mouse_in_canvas: Signal::new(false),
+            prev_x: Signal::new(0),
+            cur_x: Signal::new(0),
+            prev_y: Signal::new(0),
+            cur_y: Signal::new(0),
+            canvas,
+        }
+    }
+}
+
+impl State for SignTool {}
+
+fn signature_pad(_: &HirolaApp) -> Dom {
+    let canvas = NodeRef::new();
+    let tool = SignTool::new(canvas.clone());
+
+    let mouse_leave = tool.callback(|state, _| {
+        state.is_mouse_in_canvas.set(false);
+    });
+    let mouse_up = tool.callback(|state, _| {
+        state.is_mouse_clicked.set(false);
     });
 
+    let mouse_move = tool.callback(|tool, e| {
+        if *tool.is_mouse_clicked.get() && *tool.is_mouse_in_canvas.get() {
+            let canvas = tool
+                .canvas
+                .get::<DomNode>()
+                .inner_element()
+                .dyn_into::<web_sys::HtmlCanvasElement>()
+                .unwrap();
+
+            tool.update_position(e);
+
+            let context = canvas
+                .get_context("2d")
+                .unwrap()
+                .unwrap()
+                .dyn_into::<web_sys::CanvasRenderingContext2d>()
+                .unwrap();
+
+            context.begin_path();
+            context.move_to((*tool.prev_x.get()).into(), (*tool.prev_y.get()).into());
+            context.line_to((*tool.cur_x.get()).into(), (*tool.cur_y.get()).into());
+            context.set_stroke_style(&JsValue::from_str("black"));
+            context.set_line_width(2.0);
+            context.stroke();
+            context.close_path();
+        }
+    });
+
+    let mouse_down = tool.callback(move |tool, e| {
+        tool.is_mouse_clicked.set(true);
+        tool.update_position(e);
+    });
+
+    let mouse_enter = tool.callback(move |tool, e| {
+        tool.is_mouse_in_canvas.set(true);
+        tool.update_position(e);
+    });
     html! {
-           <canvas width={200} id="smile"/>
+        <canvas
+            ref={canvas}
+            width="500"
+            height="300"
+            style="position: absolute;border: 2px solid;"
+            on:mouseenter=mouse_enter
+            on:mouseout=mouse_leave
+            on:mousedown=mouse_down
+            on:mouseup=mouse_up
+            on:mousemove=mouse_move
+        />
     }
 }
 
 fn main() {
     let app = HirolaApp::new();
 
-    app.mount("body", draw_canvas);
+    app.mount("body", signature_pad);
 }

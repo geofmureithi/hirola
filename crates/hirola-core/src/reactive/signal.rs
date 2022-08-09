@@ -1,3 +1,5 @@
+use crate::callback::{State, StateReduce};
+
 use super::*;
 use std::cell::RefCell;
 use std::collections::HashSet;
@@ -170,8 +172,11 @@ impl<T: 'static> Signal<T> {
             }
         }
     }
+}
 
-    pub fn reduce_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
+impl<T> StateReduce<T> for Signal<T> {
+    /// Sets the return value
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
     where
         F: Fn(&T, E) -> T + 'static,
     {
@@ -182,6 +187,8 @@ impl<T: 'static> Signal<T> {
         Box::new(cb)
     }
 }
+
+impl<T> State for Signal<T> {}
 
 impl<T: 'static> Deref for Signal<T> {
     type Target = StateHandle<T>;

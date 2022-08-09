@@ -19,4 +19,5 @@ features = [
   'Element',
   'HtmlCanvasElement',
   'Window',
+  'MouseEvent'
 ]

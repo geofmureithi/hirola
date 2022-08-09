@@ -17,6 +17,7 @@ use generic_node::GenericNode;
 pub use hirola_macros::html;
 use prelude::SignalVec;
 
+pub mod callback;
 pub mod easing;
 pub mod flow;
 pub mod generic_node;
@@ -129,4 +130,7 @@ pub mod prelude {
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
     pub use crate::{TemplateList, TemplateResult};
+
+    pub use crate::callback::State;
+    pub use crate::callback::StateReduce;
 }

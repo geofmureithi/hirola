@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "hirola"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anymap",
  "hirola-core",
@@ -288,7 +288,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "chrono",
  "criterion",
@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-macros"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "hirola-core",
  "once_cell",

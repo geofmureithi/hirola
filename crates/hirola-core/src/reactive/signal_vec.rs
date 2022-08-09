@@ -157,19 +157,6 @@ impl<T: 'static> SignalVec<T> {
     }
 }
 
-// impl<T> StateReduce for SignalVec<T> {
-//     fn event_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
-//     where
-//         F: Fn(&Self, E) -> Self + 'static,
-//     {
-//         let state = self.clone();
-//         let cb = move |e: E| {
-//             state.set(f(&state.get(), e));
-//         };
-//         Box::new(cb)
-//     }
-// }
-
 impl<G: GenericNode> SignalVec<TemplateResult<G>> {
     /// Create a [`TemplateList`] from the `SignalVec`.
     pub fn template_list(&self) -> TemplateList<G> {

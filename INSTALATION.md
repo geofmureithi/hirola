@@ -11,9 +11,9 @@ use web_sys::HtmlInputElement;
 fn home() -> Dom {
     let state = Signal::new(99);
 
-    let decerement = state.event_callback(|count, _e| *count - 1);
+    let decerement = state.mut_callback(|count, _e| *count - 1);
 
-    let incerement = state.event_callback(|count, _e| *count + 1);
+    let incerement = state.mut_callback(|count, _e| *count + 1);
 
     html! {
             <div class="grid h-screen place-items-center">

@@ -1,84 +1,23 @@
 use hirola::prelude::*;
-use wasm_bindgen::JsCast;
-use wasm_bindgen::JsValue;
-use web_sys::MouseEvent;
+use tool::SignTool;
 
-#[derive(Clone)]
-struct SignTool {
-    is_mouse_clicked: Signal<bool>,
-    is_mouse_in_canvas: Signal<bool>,
-    prev_x: Signal<i32>,
-    cur_x: Signal<i32>,
-    prev_y: Signal<i32>,
-    cur_y: Signal<i32>,
-    canvas: NodeRef<DomNode>,
-}
+mod tool;
 
-impl SignTool {
-    fn update_position(&self, event: Event) {
-        let e: MouseEvent = event.dyn_into().unwrap();
-        let canvas = self
-            .canvas
-            .get::<DomNode>()
-            .inner_element()
-            .dyn_into::<web_sys::HtmlCanvasElement>()
-            .unwrap();
-        self.prev_x.set(*self.cur_x.get());
-        self.prev_y.set(*self.cur_y.get());
-        self.cur_x.set(e.client_x() - canvas.offset_left());
-        self.cur_y.set(e.client_y() - canvas.offset_top());
-    }
-    fn new(canvas: NodeRef<DomNode>) -> Self {
-        SignTool {
-            is_mouse_clicked: Signal::new(false),
-            is_mouse_in_canvas: Signal::new(false),
-            prev_x: Signal::new(0),
-            cur_x: Signal::new(0),
-            prev_y: Signal::new(0),
-            cur_y: Signal::new(0),
-            canvas,
-        }
-    }
-}
-
-impl State for SignTool {}
-
-fn signature_pad(_: &HirolaApp) -> Dom {
+fn signature_pad(_app: &HirolaApp) -> Dom {
     let canvas = NodeRef::new();
     let tool = SignTool::new(canvas.clone());
 
-    let mouse_leave = tool.callback(|state, _| {
-        state.is_mouse_in_canvas.set(false);
+    let mouse_leave = tool.callback(|tool, _| {
+        tool.is_mouse_in_canvas.set(false);
     });
-    let mouse_up = tool.callback(|state, _| {
-        state.is_mouse_clicked.set(false);
+    let mouse_up = tool.callback(|tool, _| {
+        tool.is_mouse_clicked.set(false);
     });
 
     let mouse_move = tool.callback(|tool, e| {
         if *tool.is_mouse_clicked.get() && *tool.is_mouse_in_canvas.get() {
-            let canvas = tool
-                .canvas
-                .get::<DomNode>()
-                .inner_element()
-                .dyn_into::<web_sys::HtmlCanvasElement>()
-                .unwrap();
-
             tool.update_position(e);
-
-            let context = canvas
-                .get_context("2d")
-                .unwrap()
-                .unwrap()
-                .dyn_into::<web_sys::CanvasRenderingContext2d>()
-                .unwrap();
-
-            context.begin_path();
-            context.move_to((*tool.prev_x.get()).into(), (*tool.prev_y.get()).into());
-            context.line_to((*tool.cur_x.get()).into(), (*tool.cur_y.get()).into());
-            context.set_stroke_style(&JsValue::from_str("black"));
-            context.set_line_width(2.0);
-            context.stroke();
-            context.close_path();
+            tool.draw();
         }
     });
 

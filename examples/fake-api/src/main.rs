@@ -24,7 +24,7 @@ async fn fetcher() -> Result<Users, JsValue> {
 }
 
 fn fetch_users(_app: &HirolaApp) -> Dom {
-    let users: AsyncResult<Users> = spawn(fetcher());
+    let users: AsyncResult<Users> = use_async(fetcher());
 
     html! {
             <div class="grid h-screen place-items-center">

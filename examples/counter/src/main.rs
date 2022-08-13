@@ -11,7 +11,6 @@ fn counter(app: &HirolaApp) -> Dom {
 
     html! {
             <div class="grid h-screen place-items-center">
-
                 <div class="h-10 w-32">
                     <div class="flex flex-row h-10">
                         <button

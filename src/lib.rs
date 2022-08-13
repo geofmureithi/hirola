@@ -267,7 +267,7 @@ impl Router {
 pub type AsyncResult<T> = Signal<Option<Result<T, JsValue>>>;
 
 /// Helper for making async calls
-pub fn spawn<F, T: 'static>(future: F) -> Signal<Option<T>>
+pub fn use_async<F, T: 'static>(future: F) -> Signal<Option<T>>
 where
     F: Future<Output = T> + 'static,
 {

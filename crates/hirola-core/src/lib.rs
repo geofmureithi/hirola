@@ -13,18 +13,25 @@
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
 
+use std::future::Future;
+
 use generic_node::GenericNode;
 pub use hirola_macros::html;
 use prelude::SignalVec;
+use reactive::Signal;
+use wasm_bindgen::JsValue;
 
+pub mod app;
 pub mod callback;
 pub mod easing;
 pub mod flow;
 pub mod generic_node;
 pub mod macros;
+pub mod mixins;
 pub mod noderef;
 pub mod reactive;
 pub mod render;
+pub mod router;
 pub mod utils;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -108,6 +115,22 @@ pub fn render_to_string(
     ret.unwrap()
 }
 
+pub type AsyncResult<T> = Signal<Option<Result<T, JsValue>>>;
+
+/// Helper for making async calls
+pub fn use_async<F, T: 'static>(future: F) -> Signal<Option<T>>
+where
+    F: Future<Output = T> + 'static,
+{
+    let handler = Signal::new(None);
+    let inner = handler.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        let res = future.await;
+        inner.set(Some(res));
+    });
+    handler
+}
+
 /// The maple prelude.
 pub mod prelude {
     pub use hirola_macros::html;
@@ -131,6 +154,14 @@ pub mod prelude {
     pub use crate::{render, render_to};
     pub use crate::{TemplateList, TemplateResult};
 
+    pub use crate::callback::Mixin;
     pub use crate::callback::State;
     pub use crate::callback::StateReduce;
+
+    pub use crate::mixins::bind::*;
+
+    pub use crate::app::*;
+    pub use crate::router::*;
+    pub use crate::use_async;
+    pub use crate::AsyncResult;
 }

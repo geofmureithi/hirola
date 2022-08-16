@@ -111,6 +111,54 @@ pub struct Signal<T: 'static> {
     handle: StateHandle<T>,
 }
 
+impl<T: 'static + Clone> Signal<Vec<T>> {
+    pub fn replace(&self, values: Vec<T>) {
+        self.set(values);
+    }
+
+    pub fn insert(&self, index: usize, value: T) {
+        let mut inner = (&*self.get_untracked()).clone();
+        inner.insert(index, value);
+        self.set(inner);
+    }
+
+    // pub fn update(&self, index: usize, value: T) {
+    //     // let mut inner = *self.get_untracked();
+    //     // inne;
+    //     // self.set(inner);
+    // }
+
+    pub fn remove(&self, index: usize) {
+        let mut inner = (&*self.get_untracked()).clone();
+        inner.remove(index);
+        self.set(inner);
+    }
+
+    pub fn swap(&self, index1: usize, index2: usize) {
+        let mut inner = (&*self.get_untracked()).clone();
+        inner.swap(index1, index2);
+        self.set(inner);
+    }
+
+    pub fn push(&self, value: T) {
+        let mut inner = (&*self.get()).clone();
+        inner.push(value);
+        self.set(inner);
+    }
+
+    pub fn pop(&self) {
+        let mut inner = (&*self.get_untracked()).clone();
+        inner.pop();
+        self.set(inner);
+    }
+
+    pub fn clear(&self) {
+        let mut inner = (&*self.get_untracked()).clone();
+        inner.clear();
+        self.set(inner);
+    }
+}
+
 impl<T: 'static> Signal<T> {
     /// Creates a new signal with the given value.
     ///

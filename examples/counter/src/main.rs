@@ -1,17 +1,30 @@
+use std::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+    str::FromStr,
+};
+
 use hirola::prelude::*;
 
-fn counter(app: &HirolaApp) -> Dom {
-    let state = Signal::new(99);
+use wasm_bindgen::JsCast;
+use web_sys::{Element, HtmlElement, HtmlInputElement};
 
-    let decerement = state.mut_callback(|count, _e| *count - 1);
-    // Or
-    // let decerement = state.callback(|count, _e| count.set(*count.get() + 1));
+fn counter(_app: &HirolaApp) -> Dom {
+    let count = Signal::new(99);
 
-    let incerement = state.mut_callback(|count, _e| *count + 1);
+    let decerement = count.mut_callback(|count, _e| *count - 1);
+
+    let incerement = count.mut_callback(|count, _e| *count + 1);
 
     html! {
             <div class="grid h-screen place-items-center">
-                <div class="h-10 w-32">
+                <button
+                    on:click=toggle
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    "Fade In"
+                </button>
+                <div
+                    class="h-10 w-32">
                     <div class="flex flex-row h-10">
                         <button
                             on:click=decerement
@@ -20,8 +33,7 @@ fn counter(app: &HirolaApp) -> Dom {
                         </button>
                         <div class="block">
                             <input
-                                value={state.get()}
-                                disabled
+                                mixins=vec![bind_input(&count)]
                             />
                         </div>
                         <button

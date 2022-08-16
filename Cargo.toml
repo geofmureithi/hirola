@@ -10,41 +10,33 @@ license = "MIT OR Apache-2.0"
 keywords = ["wasm", "html", "dom", "web"]
 edition = "2021"
 
+
+[features]
+default = ["tracing"]
+## Support Tracing 👀
+tracing = []
+## Add Form Mixins
+form = ["hirola-form"]
+
 [dependencies]
 hirola-core = { path = "crates/hirola-core", version = "0.1.6" }
 hirola-macros = { path = "crates/hirola-macros", version = "0.1.6" }
-matchit = "0.6"
-anymap = "1.0.0-beta.2"
+hirola-form = { path = "crates/hirola-form", version = "0.1.6", optional = true }
 wasm-bindgen = { version = "0.2.79" }
-wasm-bindgen-futures = { version = "0.4.29" }
-
 
 [dependencies.web-sys]
 features = [
     "console",
-    "Comment",
-    "Document",
-    "DocumentFragment",
-    "DomTokenList",
     "Element",
     "Event",
-    "EventSource",
     "HtmlElement",
     "HtmlInputElement",
     "HtmlCollection",
     "Node",
     "NodeList",
     "Text",
-    'Headers',
-    'Request',
-    'RequestInit',
-    'RequestMode',
-    'Response',
     'Window',
-    "Location",
     "History",
-    "CanvasRenderingContext2d",
-    "HtmlCanvasElement"
 ]
 version = "0.3.56"
 
@@ -55,25 +47,18 @@ wasm-bindgen-test = "0.3.0"
 members = [
     "crates/hirola-core",
     "crates/hirola-macros",
+    "crates/hirola-form",
     "examples/counter",
     "examples/todo",
     "examples/canvas",
     "examples/fake-api",
     "examples/chartjs",
-    "examples/x-for"
+    "examples/x-for",
+    "examples/mixin",
+    "examples/form"
 ]
 
 
 [package.metadata.docs.rs]
 all-features = true
 default-target = "wasm32-unknown-unknown"
-
-[profile.release]
-# Do not perform backtrace for panic on release builds.
-panic = 'abort'
-# Perform optimizations on all codegen units.
-codegen-units = 1
-# Optimize for size.
-opt-level = 'z' # or 'z' to optimize "aggressively" for size
-# Enable link time optimization.
-lto = true

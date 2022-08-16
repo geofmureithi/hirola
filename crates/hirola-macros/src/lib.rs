@@ -99,6 +99,18 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                                 ::std::boxed::Box::new(#value),
                             );
                         }
+                    } else if name.starts_with("mixin") {
+                        let name_space = name.replace("mixin:", "");
+                        quote! {
+                            ::hirola::prelude::create_effect({
+                                let element = ::std::clone::Clone::clone(&element);
+                                move || {
+                                    let element = ::std::clone::Clone::clone(&element);
+                                    hirola::prelude::Mixin::mixin(#value, #name_space, element);
+                                }
+                            });
+
+                        }
                     } else if &name == "ref" {
                         quote! {
                             ::hirola::prelude::NodeRef::set(

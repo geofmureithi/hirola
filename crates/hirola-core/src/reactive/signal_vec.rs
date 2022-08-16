@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::{TemplateList, TemplateResult};
+use crate::{prelude::State, TemplateList, TemplateResult};
 
 use super::*;
 use crate::generic_node::GenericNode;
@@ -156,6 +156,8 @@ impl<T: 'static> SignalVec<T> {
         })
     }
 }
+
+impl<T> State for SignalVec<T> {}
 
 impl<G: GenericNode> SignalVec<TemplateResult<G>> {
     /// Create a [`TemplateList`] from the `SignalVec`.

@@ -1,4 +1,4 @@
-//! Definition of `cloned!` macro. Proc-macros are defined in the separate `maple-core-macro` crate.
+//! Definition of `cloned!` macro. Proc-macros are defined in the separate `hirola-macros` crate.
 
 /// Utility macro for cloning all the arguments and expanding the expression.
 ///

@@ -5,13 +5,13 @@ use web_sys::MouseEvent;
 
 #[derive(Clone)]
 pub struct SignTool {
-    is_mouse_clicked: Signal<bool>,
-    is_mouse_in_canvas: Signal<bool>,
-    prev_x: Signal<i32>,
-    cur_x: Signal<i32>,
-    prev_y: Signal<i32>,
-    cur_y: Signal<i32>,
-    canvas: NodeRef<DomNode>,
+    pub(crate) is_mouse_clicked: Signal<bool>,
+    pub(crate) is_mouse_in_canvas: Signal<bool>,
+    pub(crate) prev_x: Signal<i32>,
+    pub(crate) cur_x: Signal<i32>,
+    pub(crate) prev_y: Signal<i32>,
+    pub(crate) cur_y: Signal<i32>,
+    pub(crate) canvas: NodeRef<DomNode>,
 }
 
 impl SignTool {
@@ -57,8 +57,8 @@ impl SignTool {
             .unwrap();
 
         context.begin_path();
-        context.move_to((*tool.prev_x.get()).into(), (*tool.prev_y.get()).into());
-        context.line_to((*tool.cur_x.get()).into(), (*tool.cur_y.get()).into());
+        context.move_to((*self.prev_x.get()).into(), (*self.prev_y.get()).into());
+        context.line_to((*self.cur_x.get()).into(), (*self.cur_y.get()).into());
         context.set_stroke_style(&JsValue::from_str("black"));
         context.set_line_width(2.0);
         context.stroke();

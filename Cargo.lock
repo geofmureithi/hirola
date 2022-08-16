@@ -311,7 +311,7 @@ dependencies = [
 
 [[package]]
 name = "hirola"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "document-features",
  "hirola-core",
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-core"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "anymap",
  "chrono",
@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-form"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "hirola-core",
  "serde",
@@ -354,7 +354,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-macros"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "hirola-core",
  "once_cell",

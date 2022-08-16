@@ -1,12 +1,12 @@
 [package]
 name = "hirola-form"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola-core = { path = "../hirola-core", version = "0.1.6" }
+hirola-core = { path = "../hirola-core", version = "0.1.7" }
 wasm-bindgen = {version = "0.2", features= ["serde-serialize"]}
 validator = "0.10"
 validator_derive = "0.10"

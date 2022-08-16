@@ -10,38 +10,40 @@ license = "MIT OR Apache-2.0"
 keywords = ["wasm", "html", "dom", "web"]
 edition = "2021"
 
-
-[features]
-default = ["tracing"]
-## Support Tracing 👀
-tracing = []
-## Add Form Mixins
-form = ["hirola-form"]
-
 [dependencies]
 hirola-core = { path = "crates/hirola-core", version = "0.1.6" }
 hirola-macros = { path = "crates/hirola-macros", version = "0.1.6" }
 hirola-form = { path = "crates/hirola-form", version = "0.1.6", optional = true }
-wasm-bindgen = { version = "0.2.79" }
 
-[dependencies.web-sys]
-features = [
-    "console",
-    "Element",
-    "Event",
-    "HtmlElement",
-    "HtmlInputElement",
-    "HtmlCollection",
-    "Node",
-    "NodeList",
-    "Text",
-    'Window',
-    "History",
-]
-version = "0.3.56"
+
+[features]
+default = ["hirola-core/default"]
+
+## Enables serialization of state
+serde = ["hirola-core/serde"]
+
+## Enables server side reendering
+ssr = ["hirola-core/ssr"]
+
+## Enables Isomorphic Routing
+router = ["hirola-core/router"]
+
+## Enables global state management
+global-state = ["hirola-core/global-state"]
+
+## Enables async utilities
+async = ["hirola-core/async"]
+
+docsrs = ["document-features"]
+
+## Enables form mixins and utilities
+form = ["hirola-form"]
+
+
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
+wasm-bindgen = { version = "0.2.79" }
 
 [workspace]
 members = [
@@ -58,7 +60,18 @@ members = [
     "examples/form"
 ]
 
+[dependencies.document-features]
+version = "0.2"
+optional = true
+
 
 [package.metadata.docs.rs]
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]
 all-features = true
 default-target = "wasm32-unknown-unknown"
+
+
+[profile.release]
+lto = true
+opt-level = 's'

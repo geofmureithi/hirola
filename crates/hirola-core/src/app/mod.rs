@@ -1,12 +1,18 @@
 use crate::prelude::*;
 
+#[cfg(feature = "global-state")]
+#[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
 use anymap::{CloneAny, Map};
 
+#[cfg(feature = "global-state")]
+#[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
 type ExtensionMap = Map<dyn CloneAny>;
 
 /// Represents an instance of a mountable app
 #[derive(Clone)]
 pub struct HirolaApp {
+    #[cfg(feature = "global-state")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
     extensions: ExtensionMap,
 }
 
@@ -29,11 +35,19 @@ where
 impl HirolaApp {
     /// Create a new app
     pub fn new() -> Self {
+        #[cfg(feature = "global-state")]
+        #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
         let extensions = ExtensionMap::new();
-        HirolaApp { extensions }
+        HirolaApp {
+            #[cfg(feature = "global-state")]
+            #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
+            extensions,
+        }
     }
 
     /// Fetch global data
+    #[cfg(feature = "global-state")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
     pub fn data<T>(&self) -> Option<&T>
     where
         T: Clone + 'static,
@@ -48,6 +62,8 @@ impl HirolaApp {
     }
 
     /// Extend global data
+    #[cfg(feature = "global-state")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
     pub fn extend<T: 'static + Clone>(&mut self, extension: T) {
         self.extensions.insert(extension);
     }

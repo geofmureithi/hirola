@@ -1,17 +1,14 @@
-#[macro_use]
-extern crate validator_derive;
-
-use std::collections::HashMap;
+pub mod bind;
 
 use hirola_core::{
     prelude::{DomNode, GenericNode, Mixin},
     reactive::Signal,
 };
 use serde::Serialize;
-use serde_json::Value;
+// use serde_json::Value;
 use validator::Validate;
 use wasm_bindgen::JsCast;
-use web_sys::{Element, Event, FormData, HtmlFormElement, HtmlInputElement};
+use web_sys::{Element, Event, FormData, HtmlFormElement};
 
 #[derive(Clone)]
 pub struct FormHandler<T> {
@@ -20,7 +17,16 @@ pub struct FormHandler<T> {
     value: T,
 }
 
-#[derive(Clone)]
+impl<T> FormHandler<T> {
+    pub fn new(value: T) -> Self {
+        Self {
+            inner: Signal::new(None),
+            inputs: Signal::new(vec![]),
+            value,
+        }
+    }
+}
+
 pub struct Connect<T> {
     form: FormHandler<T>,
 }
@@ -34,9 +40,9 @@ impl<T: Serialize + Clone> Mixin for Connect<T> {
             Box::new(move |e: Event| {
                 let element = e.target().unwrap().dyn_into::<HtmlFormElement>();
                 let data = FormData::new_with_form(&element.unwrap()).unwrap();
-                web_sys::window()
-                    .unwrap()
-                    .alert_with_message(&format!("{:?}", data.into_serde::<Value>()));
+                // web_sys::window()
+                //     .unwrap()
+                //     .alert_with_message(&format!("{:?}", data.into_serde::<Value>()));
             }),
         );
         let element = node.unchecked_into::<HtmlFormElement>();
@@ -57,12 +63,14 @@ impl<T> Mixin for Register<T> {
     }
 }
 
-impl<T: Clone + Validate> FormHandler<T> {
-    fn connect(&self) -> Connect<T> {
-        Connect { form: self.clone() }
+impl<T: Clone> Register<T> {
+    pub fn handle(&self) -> Self {
+        self.clone()
     }
+}
 
-    fn register(&self) -> Register<T> {
+impl<T: Clone + Validate> FormHandler<T> {
+    pub fn register(&self) -> Register<T> {
         Register { form: self.clone() }
     }
 

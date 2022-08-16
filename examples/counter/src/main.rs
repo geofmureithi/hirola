@@ -1,13 +1,4 @@
-use std::{
-    fmt::{Debug, Display},
-    marker::PhantomData,
-    str::FromStr,
-};
-
-use hirola::prelude::*;
-
-use wasm_bindgen::JsCast;
-use web_sys::{Element, HtmlElement, HtmlInputElement};
+use hirola::{form::bind::bind_input, prelude::*};
 
 fn counter(_app: &HirolaApp) -> Dom {
     let count = Signal::new(99);
@@ -18,11 +9,6 @@ fn counter(_app: &HirolaApp) -> Dom {
 
     html! {
             <div class="grid h-screen place-items-center">
-                <button
-                    on:click=toggle
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    "Fade In"
-                </button>
                 <div
                     class="h-10 w-32">
                     <div class="flex flex-row h-10">
@@ -33,7 +19,7 @@ fn counter(_app: &HirolaApp) -> Dom {
                         </button>
                         <div class="block">
                             <input
-                                mixins=vec![bind_input(&count)]
+                                mixin::bind=&bind_input(&count)
                             />
                         </div>
                         <button

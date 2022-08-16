@@ -241,6 +241,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "document-features"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d99bbe945402eb228b85cdfc7020cf7422574976861c642b28255d0a49606d79"
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -307,12 +313,12 @@ dependencies = [
 name = "hirola"
 version = "0.1.6"
 dependencies = [
+ "document-features",
  "hirola-core",
  "hirola-form",
  "hirola-macros",
  "wasm-bindgen",
  "wasm-bindgen-test",
- "web-sys",
 ]
 
 [[package]]

@@ -1,6 +1,7 @@
 use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_sys::Event;
 use web_sys::MouseEvent;
 
 #[derive(Clone)]

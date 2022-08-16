@@ -1,6 +1,7 @@
 use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::window;
+use web_sys::Event;
 use web_sys::HtmlInputElement;
 
 #[derive(Clone, PartialEq)]
@@ -52,7 +53,7 @@ fn todo_view(app: &HirolaApp) -> Dom {
         <div class="h-100 w-full flex items-center justify-center bg-teal-lightest font-sans">
             <div class="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
                 <h1 class="text-grey-darkest">{todo.get().title.clone()}</h1>
-                <a mixins=vec![&router.link()] href="/">"Back Home"</a>
+                <a mixin:route=&router.link() href="/">"Back Home"</a>
             </div>
         </div>
     }

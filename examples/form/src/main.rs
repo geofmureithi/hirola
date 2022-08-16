@@ -1,6 +1,12 @@
-use hirola::prelude::*;
+#[macro_use]
+extern crate validator_derive;
 
-#[derive(Validate, PartialEq, Clone)]
+use serde::Serialize;
+use validator::Validate;
+
+use hirola::{form::FormHandler, prelude::*};
+
+#[derive(Validate, PartialEq, Clone, Serialize)]
 struct Login {
     #[validate(length(min = 1, message = "Email is required"))]
     email: String,
@@ -9,21 +15,21 @@ struct Login {
 }
 
 fn form_demo(_app: &HirolaApp) -> Dom {
-    let form = FormHandler {
-        inner: Signal::new(None),
-        inputs: Signal::new(Vec::new()),
-        value: Login {
-            email: String::new(),
-            password: String::new(),
-        },
-    };
+    let form = FormHandler::new(Login {
+        email: String::new(),
+        password: String::new(),
+    });
 
-    let connect = form.connect();
+    let (connect, register) = form.controls();
+
+    let email_handle = register.handle();
+    let pass_handle = register.handle();
+    let remember_handle = register.handle();
 
     html! {
         <form
             class="h-screen flex flex-col items-center justify-center"
-            mixins=vec![connect.clone()]
+            mixin:form=&connect
             >
             <div class="mb-6">
                 <label for="email"
@@ -34,7 +40,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
                     required=""
-                    mixins=vec![register(&form.clone())]
+                    mixin::form=&email_handle
                     />
             </div>
             <div class="mb-6">
@@ -46,7 +52,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     id="password"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     required=""
-                    // mixins=vec![register(&form.clone())]
+                    mixin::form=&pass_handle
                 />
             </div>
             <div class="flex items-start mb-6">
@@ -56,7 +62,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     value=""
                     class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                     required=""
-                    // mixins=vec![register(&form.clone())]
+                    mixin::form=&remember_handle
                 />
                 </div>
                 <label
@@ -68,7 +74,6 @@ fn form_demo(_app: &HirolaApp) -> Dom {
             <button
                 type="submit"
                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                // mixins=vec![(&form.clone()).register()]
                 >
                     "Submit"
             </button>

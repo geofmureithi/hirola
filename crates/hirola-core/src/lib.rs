@@ -13,13 +13,8 @@
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
 
-use std::future::Future;
-
 use generic_node::GenericNode;
 pub use hirola_macros::html;
-use prelude::SignalVec;
-use reactive::Signal;
-use wasm_bindgen::JsValue;
 
 pub mod app;
 pub mod callback;
@@ -27,11 +22,14 @@ pub mod easing;
 pub mod flow;
 pub mod generic_node;
 pub mod macros;
-pub mod mixins;
 pub mod noderef;
 pub mod reactive;
 pub mod render;
+
+#[cfg(feature = "router")]
+#[cfg_attr(docsrs, doc(cfg(feature = "router")))]
 pub mod router;
+
 pub mod utils;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -52,18 +50,6 @@ impl<G: GenericNode> TemplateResult<G> {
 
     pub fn inner_element(&self) -> G {
         self.node.clone()
-    }
-}
-
-/// A [`SignalVec`](reactive::SignalVec) of [`TemplateResult`]s.
-#[derive(Clone)]
-pub struct TemplateList<T: GenericNode> {
-    pub templates: reactive::SignalVec<TemplateResult<T>>,
-}
-
-impl<T: GenericNode> From<SignalVec<TemplateResult<T>>> for TemplateList<T> {
-    fn from(templates: SignalVec<TemplateResult<T>>) -> Self {
-        Self { templates }
     }
 }
 
@@ -115,14 +101,19 @@ pub fn render_to_string(
     ret.unwrap()
 }
 
-pub type AsyncResult<T> = Signal<Option<Result<T, JsValue>>>;
+#[cfg(feature = "async")]
+#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+
+pub type AsyncResult<T> = prelude::Signal<Option<Result<T, wasm_bindgen::JsValue>>>;
 
 /// Helper for making async calls
-pub fn use_async<F, T: 'static>(future: F) -> Signal<Option<T>>
+#[cfg(feature = "async")]
+#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+pub fn use_async<F, T: 'static>(future: F) -> prelude::Signal<Option<T>>
 where
-    F: Future<Output = T> + 'static,
+    F: std::future::Future<Output = T> + 'static,
 {
-    let handler = Signal::new(None);
+    let handler = prelude::Signal::new(None);
     let inner = handler.clone();
     wasm_bindgen_futures::spawn_local(async move {
         let res = future.await;
@@ -145,23 +136,24 @@ pub mod prelude {
     pub use crate::noderef::NodeRef;
     pub use crate::reactive::{
         create_effect, create_effect_initial, create_memo, create_root, create_selector,
-        create_selector_with, on_cleanup, untrack, Signal, SignalVec, StateHandle,
+        create_selector_with, on_cleanup, untrack, Signal, StateHandle,
     };
     pub use crate::render::Render;
     #[cfg(feature = "ssr")]
     pub use crate::render_to_string;
+    pub use crate::TemplateResult;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
-    pub use crate::{TemplateList, TemplateResult};
 
     pub use crate::callback::Mixin;
     pub use crate::callback::State;
     pub use crate::callback::StateReduce;
 
-    pub use crate::mixins::bind::*;
-
     pub use crate::app::*;
+    #[cfg(feature = "router")]
     pub use crate::router::*;
+    #[cfg(feature = "async")]
     pub use crate::use_async;
+    #[cfg(feature = "async")]
     pub use crate::AsyncResult;
 }

@@ -3,12 +3,12 @@
 mod effect;
 mod motion;
 mod signal;
-mod signal_vec;
+// mod signal_vec;
 
 pub use effect::*;
 pub use motion::*;
 pub use signal::*;
-pub use signal_vec::*;
+// pub use signal_vec::*;
 
 /// Creates a new reactive root. Generally, you won't need this method as it is called automatically in [`render`](crate::render()).
 ///

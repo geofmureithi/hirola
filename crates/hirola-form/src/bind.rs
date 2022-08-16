@@ -7,7 +7,7 @@ use std::{
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement};
 
-use crate::{
+use hirola_core::{
     generic_node::{DomNode, GenericNode},
     prelude::{Mixin, Signal},
 };

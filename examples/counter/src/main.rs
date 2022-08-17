@@ -19,7 +19,7 @@ fn counter(_app: &HirolaApp) -> Dom {
                         </button>
                         <div class="block">
                             <input
-                                mixin::bind=&bind_input(&count)
+                                mixin:bind=&bind_input(&count)
                             />
                         </div>
                         <button

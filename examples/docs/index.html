@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hirola Documentation in Hirola</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css"
+    />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        setTimeout(
+          () =>
+            document.querySelectorAll("pre code").forEach((el) => {
+              hljs.highlightElement(el);
+            }),
+          250
+        );
+      });
+    </script>
+  </head>
+</html>

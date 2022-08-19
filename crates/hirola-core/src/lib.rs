@@ -26,10 +26,14 @@ pub mod noderef;
 pub mod reactive;
 pub mod render;
 
+#[macro_use]
+pub mod styled;
+
 #[cfg(feature = "router")]
 #[cfg_attr(docsrs, doc(cfg(feature = "router")))]
 pub mod router;
 
+pub mod mixins;
 pub mod utils;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -156,4 +160,10 @@ pub mod prelude {
     pub use crate::use_async;
     #[cfg(feature = "async")]
     pub use crate::AsyncResult;
+
+    pub use crate::styled::*;
+
+    pub use crate::style;
+
+    pub use crate::mixins;
 }

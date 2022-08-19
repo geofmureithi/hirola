@@ -1,18 +1,18 @@
 [package]
-name = "mixin"
+name = "docs"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../"}
+hirola = { path = "../../", features =["router", "global-state"]}
 wasm-bindgen = {version = "0.2"}
+
 
 [dependencies.web-sys]
 features = [
-  "DomTokenList",
-  "Navigator"
+  "Window",
 ]
 
 version = "0.3"

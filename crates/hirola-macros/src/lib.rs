@@ -77,11 +77,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
             match attribute.node_type {
                 NodeType::Block => {
                     quote! {
-                        ::hirola::internal::attr(
-                            ::std::convert::AsRef::as_ref(&element),
-                            "class",
-                            #value,
-                        );
+                        #value
                     }
                 }
                 NodeType::Attribute => {
@@ -102,13 +98,19 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     } else if name.starts_with("mixin") {
                         let name_space = name.replace("mixin:", "");
                         quote! {
-                            ::hirola::prelude::create_effect({
-                                let element = ::std::clone::Clone::clone(&element);
-                                move || {
-                                    let element = ::std::clone::Clone::clone(&element);
-                                    hirola::prelude::Mixin::mixin(#value, #name_space, element);
-                                }
-                            });
+                            let element = ::std::clone::Clone::clone(&element);
+
+                            {
+                                        let element = ::std::clone::Clone::clone(&element);
+                                        hirola::prelude::Mixin::mixin(#value, #name_space, element);
+                                    }
+                            // ::hirola::prelude::create_effect({
+                            //     let element = ::std::clone::Clone::clone(&element);
+                            //      || {
+                            //         let element = ::std::clone::Clone::clone(&element);
+                            //         hirola::prelude::Mixin::mixin(#value, #name_space, element);
+                            //     }
+                            // });
 
                         }
                     } else if &name == "ref" {

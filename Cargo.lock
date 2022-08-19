@@ -241,6 +241,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "docs"
+version = "0.1.0"
+dependencies = [
+ "hirola",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "document-features"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -332,6 +341,7 @@ dependencies = [
  "html-escape",
  "matchit",
  "ref-cast",
+ "regex",
  "serde",
  "wasm-bindgen",
  "wasm-bindgen-futures",

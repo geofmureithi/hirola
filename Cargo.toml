@@ -57,7 +57,8 @@ members = [
     "examples/chartjs",
     "examples/x-for",
     "examples/mixin",
-    "examples/form"
+    "examples/form",
+    "examples/docs"
 ]
 
 [dependencies.document-features]

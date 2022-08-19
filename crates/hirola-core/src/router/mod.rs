@@ -20,12 +20,6 @@ pub struct Router {
     inner: matchit::Router<fn(&HirolaApp) -> TemplateResult<DomNode>>,
 }
 
-impl Mountable for Router {
-    fn mount(&self, app: &HirolaApp) {
-        self.render(app)
-    }
-}
-
 impl Router {
     pub fn new() -> Self {
         let mut path = String::from("/");
@@ -100,7 +94,7 @@ impl Router {
         Box::new(cb)
     }
 
-    pub fn render(&self, app: &HirolaApp) {
+    pub fn render(&self, app: &HirolaApp) -> Dom {
         let path = (&self.current.get().path).clone();
         // let params = value.params;
         let inner = self.inner.at(&path).unwrap();
@@ -172,26 +166,10 @@ impl Router {
 
         handle_pop.forget();
         let route = self.current.clone();
-
-        let mut app = app.clone();
-        app.extend(self.clone()); // Add Router to data
         let router = self.inner.clone();
-
-        create_effect(cloned!((route) => move || {
-            render(|| {
-                let document = window().unwrap().document().unwrap();
-                let element = &document.body().unwrap();
-
-                while let Some(child) =  element.first_child()  {
-                    element.remove_child(&child).unwrap();
-                }
-                let path = &route.get().path;
-                let value = router.at(&path).unwrap();
-                let pagefn = value.value;
-
-                pagefn(&app)
-            });
-
-        }));
+        let path = &route.get().path;
+        let value = router.at(&path).unwrap();
+        let pagefn = value.value;
+        pagefn(&app)
     }
 }

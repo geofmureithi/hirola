@@ -17,7 +17,7 @@ pub struct RouteMatch {
 #[derive(Clone)]
 pub struct Router {
     current: Signal<RouteMatch>,
-    inner: matchit::Router<fn(&HirolaApp) -> TemplateResult<DomNode>>,
+    inner: matchit::Router<fn(&HirolaApp) -> Dom>,
 }
 
 impl Router {

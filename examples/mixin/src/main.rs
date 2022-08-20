@@ -18,6 +18,23 @@ fn opacity<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a> {
     Box::new(cb)
 }
 
+/// Mixin that controls tailwind opacity based on a bool signal
+fn text<'a, T: Display + ?Sized>(text: &'a T) -> Box<dyn Fn(DomNode) -> () + 'a> {
+    let cb = move |node: DomNode| {
+        let element = node.unchecked_into::<Element>();
+        element.set_text_content(Some(&format!("{text}")));
+    };
+    Box::new(cb)
+}
+
+fn x_html<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
+    let cb = move |node: DomNode| {
+        let element = node.unchecked_into::<Element>();
+        element.set_inner_html(&format!("{text}"));
+    };
+    Box::new(cb)
+}
+
 fn mixin_demo(_app: &HirolaApp) -> Dom {
     let raw = "<strong>calebporzio</strong>";
     let is_shown = Signal::new(true);
@@ -61,10 +78,11 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
             <div class="base">
                 <h1>{"Styled"}</h1>
                 <div
+                    mixin:opacity=&opacity(&is_shown)
                     class="h-64 w-64 block bg-blue-900 rounded-md"
                 />
                 <p mixin:text=&text(&is_shown.get()) />
-                <p mixin:html=&rhtml(raw) />
+                <p mixin:html=&x_html(raw) />
                 <button
                     class="bg-gray-200 mt-4 font-bold py-2 px-4 rounded"
                     on:click=toggle>

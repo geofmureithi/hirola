@@ -44,6 +44,7 @@ form = ["hirola-form"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
 wasm-bindgen = { version = "0.2.79" }
+hirola = { path = ".", default-features=false, features =["router", "global-state", "ssr"]}
 
 [workspace]
 members = [

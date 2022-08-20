@@ -132,6 +132,7 @@ version = "0.1.0"
 dependencies = [
  "hirola",
  "wasm-bindgen",
+ "wasm-bindgen-test",
  "web-sys",
 ]
 
@@ -246,6 +247,7 @@ version = "0.1.0"
 dependencies = [
  "hirola",
  "wasm-bindgen",
+ "wasm-bindgen-test",
  "web-sys",
 ]
 
@@ -323,6 +325,7 @@ name = "hirola"
 version = "0.1.7"
 dependencies = [
  "document-features",
+ "hirola",
  "hirola-core",
  "hirola-form",
  "hirola-macros",

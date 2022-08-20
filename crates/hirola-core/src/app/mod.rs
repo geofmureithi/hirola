@@ -18,17 +18,23 @@ pub struct HirolaApp {
 
 /// Represents a view that can be mounted
 pub trait Mountable {
-    fn mount(&self, app: &HirolaApp);
+    fn mount(&self, app: &HirolaApp) -> Dom;
 }
 
-pub type Dom = TemplateResult<DomNode>;
+pub type Dom = TemplateResult<DomType>;
+
+#[cfg(feature = "ssr")]
+pub type DomType = SsrNode;
+
+#[cfg(not(feature = "ssr"))]
+pub type DomType = DomNode;
 
 impl<F> Mountable for F
 where
     F: Fn(&HirolaApp) -> Dom,
 {
-    fn mount(&self, app: &HirolaApp) {
-        render(|| self(app));
+    fn mount(&self, app: &HirolaApp) -> Dom {
+        self(app)
     }
 }
 
@@ -56,9 +62,15 @@ impl HirolaApp {
     }
 
     /// Render a view
-    pub fn mount<M: Mountable>(self, _element: &str, view: M) {
-        // let app = self.clone();
-        view.mount(&self)
+
+    pub fn mount<M: Mountable>(self, element: &str, view: M) {
+        #[cfg(not(feature = "ssr"))]
+        {
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+
+            render_to(|| view.mount(&self), &document.body().unwrap());
+        }
     }
 
     /// Extend global data
@@ -68,10 +80,11 @@ impl HirolaApp {
         self.extensions.insert(extension);
     }
 
-    pub fn render_to_string(&self, dom: impl FnOnce(&HirolaApp) -> Dom) -> String {
-        let mut ret = None;
-        let _owner = create_root(|| ret = Some(format!("{:?}", dom(&self).inner_element())));
-
-        ret.unwrap()
+    #[cfg(feature = "ssr")]
+    pub fn render_to_string(
+        &self,
+        dom: impl FnOnce(&HirolaApp) -> TemplateResult<crate::generic_node::SsrNode>,
+    ) -> String {
+        render_to_string(|| dom(self))
     }
 }

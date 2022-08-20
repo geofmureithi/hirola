@@ -44,7 +44,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
         tokens.extend(quote! {
            // #[allow(unused_braces)]
             {
-                let element = ::hirola::prelude::DomNode::element(#name);
+                let element: ::hirola::prelude::DomType = ::hirola::prelude::GenericNode::element(#name);
                 #children_tokens
                 #(#attributes)*
                 element
@@ -89,7 +89,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     if name.starts_with("on") {
                         let name = name.replace("on:", "");
                         quote! {
-                            ::hirola::prelude::DomNode::event(
+                            ::hirola::prelude::GenericNode::event(
                                 &element,
                                 #name,
                                 ::std::boxed::Box::new(#value),
@@ -127,7 +127,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                             ::hirola::prelude::create_effect({
                                 let element = ::std::clone::Clone::clone(&element);
                                 move || {
-                                    ::hirola::prelude::DomNode::set_attribute(
+                                    ::hirola::prelude::GenericNode::set_attribute(
                                         &element,
                                         #attribute_name,
                                         &::std::format!("{}", #value),
@@ -175,7 +175,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 NodeType::Element => {
                     let node = node_to_tokens(child);
                     append_children.extend(quote! {
-                        ::hirola::prelude::DomNode::append_child(&element, &#node);
+                        ::hirola::prelude::GenericNode::append_child(&element, &#node);
                     });
                 }
                 NodeType::Text => {
@@ -183,7 +183,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         .value_as_string()
                         .expect("expecting a string on a text node");
                     append_children.extend(quote! {
-                        ::hirola::prelude::DomNode::append_child(
+                        ::hirola::prelude::GenericNode::append_child(
                             &element,
                             &::hirola::prelude::GenericNode::text_node(#s),
                         );
@@ -212,7 +212,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         }) => {
                             append_children.extend(quote! {
                                 for #pat in #expr {
-                                    ::hirola::prelude::DomNode::append_child(
+                                    ::hirola::prelude::GenericNode::append_child(
                                         &element,
                                         &#body.inner_element(),
                                     );
@@ -221,7 +221,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         }
                         _ => {
                             append_children.extend(quote! {
-                                ::hirola::prelude::DomNode::append_render(
+                                ::hirola::prelude::GenericNode::append_render(
                                     &element,
                                     ::std::boxed::Box::new(move || {
                                         ::std::boxed::Box::new(#expr)

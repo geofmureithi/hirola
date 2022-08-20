@@ -13,6 +13,11 @@ wasm-bindgen = {version = "0.2"}
 [dependencies.web-sys]
 features = [
   "Window",
+  "DomTokenList",
 ]
 
 version = "0.3"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.0"
+hirola = { path = "../../", default-features=false, features =["router", "global-state", "ssr"]}

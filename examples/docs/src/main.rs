@@ -1,20 +1,25 @@
+mod components;
+mod pages;
+
 use std::fmt::Display;
 
-use hirola::prelude::*;
+use components::logo::HirolaLogo;
 use hirola::prelude::mixins::text;
+use hirola::prelude::*;
+use pages::{
+    event_handling_page, getting_started_page, home, inner_mixins, iteration_page, mixins_page,
+    reactivity_page, templating_page,
+};
 
-fn SeoTitle<T: Display + ?Sized>(title: &'static T) -> Dom {
-  web_sys::window().unwrap().document().unwrap().set_title(&format!("{title}"));
-  Dom::empty()
-}
-
-
+use crate::components::seo_title::SeoTitle;
+use crate::components::side_bar::SideBar;
+use web_sys::Element;
 
 // macro_rules! make_example {
 
 //      ($jsx:expr)=>{
 
-//          {  
+//          {
 //           // {
 //           //   html! {
 //           //     <pre><code>{stringify!($jsx)}</code></pre>
@@ -31,179 +36,6 @@ fn SeoTitle<T: Display + ?Sized>(title: &'static T) -> Dom {
 //      }
 //  }
 
-fn SideBar(router: Router) -> Dom {
-    html! {
-        <ul class="space-y-2 text-gray-800">
-
-                <li class="-ml-6 border-l-4 border-gray-700 pl-5 font-semibold">
-                  <a href="/start-here" class="hover:text-gray-900">"Start Here"</a>
-                </li>
-                <li>
-                  <span class="font-medium">"Basics"</span>
-                  <ul class="pl-3">
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/installation" class="hover:text-gray-900">"Installation"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/reactivity" class="hover:text-gray-900">"Reactivity"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/templating" class="hover:text-gray-900">"Templating"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/events" class="hover:text-gray-900">"Event Handling"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/iteration" class="hover:text-gray-900">"Iteration"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/basics/mixins" class="hover:text-gray-900">"Mixins"</a>
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  <span class="font-medium">"Inbuilt Mixins"</span>
-                  <ul class="pl-3">
-                    <li class="">
-                      <a mixin::route=&router.link() href="/mixins/show" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"show" </a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/mixins/text" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"text" </a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/mixins/rhtml" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"rhtml"</a>
-                    </li>
-                    <li class="">
-                      <a mixin::route=&router.link() href="/mixins/model" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"model" </a>
-                    </li>
-
-                    <li mixin::route=&router.link() class="">
-                      <a href="/mixins/transition" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"transition" </a>
-                    </li>
-                    <li mixin::route=&router.link() class="">
-                      <a href="/mixins/ignore" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"ignore" </a>
-                    </li>
-                    <li mixin::route=&router.link() class="">
-                      <a href="/mixin/if" class="hover:text-gray-900">
-                        <span class="text-gray-300">"mixin:"</span>"if"</a>
-                    </li>
-
-                  </ul>
-                </li>
-                // <li>
-                //   <span class="font-medium">Magics</span>
-                //   <ul class="pl-3">
-                //     <li class="">
-                //       <a href="/magics/el" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>el </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/refs" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>refs </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/store" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>store </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/watch" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>watch </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/dispatch" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>dispatch </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/nextTick" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>nextTick </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/root" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>root </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/data" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>data </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/magics/id" class="hover:text-gray-900">
-                //         <span class="text-gray-300">$</span>id </a>
-                //     </li>
-                //   </ul>
-                // </li>
-                // <li>
-                //   <span class="font-medium">UI</span>
-                //   <ul class="pl-3"></ul>
-                // </li>
-                // <li>
-                //   <span class="font-medium">Globals</span>
-                //   <ul class="pl-3">
-                //     <li class="">
-                //       <a href="/globals/alpine-data" class="hover:text-gray-900">
-                //         <span class="text-gray-300">Alpine.</span>data() </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/globals/alpine-store" class="hover:text-gray-900">
-                //         <span class="text-gray-300">Alpine.</span>store() </a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/globals/alpine-bind" class="hover:text-gray-900">
-                //         <span class="text-gray-300">Alpine.</span>bind() </a>
-                //     </li>
-                //   </ul>
-                // </li>
-
-                // <li>
-                //   <span class="font-medium">Plugins</span>
-                //   <ul class="pl-3">
-                //     <li class="">
-                //       <a href="/plugins/mask" class="hover:text-gray-900">Mask</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/plugins/intersect" class="hover:text-gray-900">Intersect</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/plugins/persist" class="hover:text-gray-900">Persist</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/plugins/focus" class="hover:text-gray-900">Focus</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/plugins/collapse" class="hover:text-gray-900">Collapse</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/plugins/morph" class="hover:text-gray-900">Morph</a>
-                //     </li>
-                //   </ul>
-                // </li>
-
-                // <li>
-                //   <span class="font-medium">Advanced</span>
-                //   <ul class="pl-3">
-                //     <li class="">
-                //       <a href="/advanced/reactivity" class="hover:text-gray-900">Reactivity</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/advanced/extending" class="hover:text-gray-900">Extending</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/advanced/async" class="hover:text-gray-900">Async</a>
-                //     </li>
-                //     <li class="">
-                //       <a href="/advanced/csp" class="hover:text-gray-900">CSP</a>
-                //     </li>
-                //   </ul>
-                // </li>
-              </ul>
-    }
-}
-
 fn docs(app: &HirolaApp) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let app = app.clone();
@@ -214,7 +46,9 @@ fn docs(app: &HirolaApp) -> Dom {
         <div class="flex items-center justify-between pt-3">
           <div class="py-0 pl-6 text-2xl font-semibold text-gray-800 hover:text-gray-900 md:w-64">
             <a href="/" class="flex items-center">
-              <img src="/alpine_long.svg" class="w-[200px] md:w-[290px]" alt=""/>
+              <div class="w-[200px] md:w-[290px]">
+                <HirolaLogo />
+              </div>
             </a>
           </div>
           <div class="hidden items-center justify-end space-x-6 py-4 pr-6 text-gray-800 md:flex">
@@ -324,194 +158,17 @@ fn docs(app: &HirolaApp) -> Dom {
     }
 }
 
-const INDEX: &str = r#"<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Hirola Counter</title>
-  </head>
-</html>
-"#;
-
 fn main() {
     let mut app = HirolaApp::new();
     let mut router = Router::new();
-    router.add("/", |_| {
-        html!{
-            <div>
-                <h1>"Start here"</h1>
-                <p>"Create a blank HTML file somewhere on your computer with a name like: "<code>"i-love-alpine.html"</code></p>
-            </div>
-        }
-    });
-    router.add("/basics/installation", |_| {
-
-        html! {
-            <div>
-              <SeoTitle title={"Installation | Hirola"} />
-                <h1>"Pre"</h1>
-                <p>
-                  "Before getting started with"
-                  <code class="one-liner">"hirola"</code>
-                  " we are going to assume that you have the following tools installed:"
-                </p>
-                <ul class="ml-4">
-                  <li>"Rust"</li>
-                  <li>"Cargo"</li>
-                  <li>"Trunk"</li>
-                </ul>
-                <h1>"Getting Started"</h1>
-                <p>"We are going to create a simple counter program."</p>
-                <code class="block one-liner my-1 py-1">
-                  "cargo new counter"
-                </code>
-                <p>"With a new project, we need to create an index file which is the entry point and required by trunk"</p>
-                <code class="block one-liner my-1 py-1">
-                  "cd counter"
-                </code>
-                <p>"Create an "<b>"index.html"</b>" in the root of counter. Add the contents below"</p>
-              
-                  <pre class="text-sm my-2">
-                    <code class="language-html">
-                    {INDEX}
-                    </code>
-                  </pre>
-                  <p>"Lets add some code to "<b>"src/main.rs" </b></p>
-                  <pre class="text-sm my-2">
-                    <code>
-                    {include_str!("../../counter/src/main.rs")}
-                    </code>
-                  </pre>
-                  <p>"Now lets run our project"</p>
-                  <code class="block one-liner my-1 py-1">
-                    "trunk serve"
-                  </code>
-                  <p>"You should be able to get counter running."</p>
-                  <p class="text-xs"><span>"Try it out"</span></p>
-                  <div class="demo">
-                  {
-                      let count = Signal::new(0);
-                      html! {
-                          <div>
-                            <button on:click={count.mut_callback(|c, _| c + 1)}>"Increment"</button>
-                            <span class="ml-1">{count.get()}</span>
-                          </div>
-                        }
-                    }
-                  </div>
-            </div>
-        }
-    });
-    router.add("/basics/reactivity", |_| {
-      html! {
-          <div>
-              <SeoTitle title={"Reactivity | Hirola"} />
-              <h1>"Reactivity"</h1>
-              <p>
-              r#"Hirola offers reactivity via a primitive called signal and an effect called create_effect. Once a signal is updated, these changes are propagated to the dom."#
-              </p>
-              <blockquote>
-              <p>"Hirola uses a fork of maple(now sycamore) reactivity engine under the hood to provide these functions."
-                <a href="https://sycamore-rs.netlify.app/docs/basics/reactivity">"→ Read more about sycamore reactivity primitives"</a>
-              </p>
-            </blockquote>
-            <h2>"Reactive Signal"</h2>
-              <pre>
-                <code>
-                "use hirola_core::prelude::*;
-let state = Signal::new(0);
-assert_eq!(*state.get(), 0);
-                
-state.set(1);
-assert_eq!(*state.get(), 1);"
-                </code>
-              </pre>
-              
-            <p>"Signal is pretty similar to useState in react or Alpine.reactive"</p>
-            <h2>"Subscribing"</h2>
-            <p>"Subscribing is done via create_effect"</p>
-            <pre>
-              <code>
-"use hirola_core::prelude::*;
-let state = Signal::new(0);
-assert_eq!(*state.get(), 0);
-create_effect(move || {
-  let new_value = state.get();
-  // do something
-})
-/// later
-state.set(1);
-"
-</code>
-</pre>
-          </div>
-      }
-  });
-    router.add("/basics/templating", |_| {
-        html! {
-            <div>
-              <SeoTitle title={"Templating | Hirola"} />
-              <h1>"Templating"</h1>
-              <p>"Install blah blah "<code>"i-love-alpine.html"</code></p>
-            </div>
-        }
-    });
-    router.add("/basics/mixins", |_| {
-      html! {
-          <div>
-              <h1>"Mixins"</h1>
-              <p>"Mixins are ways of sharing and extending code in hirola."</p>
-          </div>
-      }
-    });
-    router.add("/basics/iteration", |_| {
-      html! {
-          <div>
-              <h1>"Iteration"</h1>
-              <p>"Install blah blah "<code>"i-love-alpine.html"</code></p>
-          </div>
-      }
-  });
-    router.add("/basics/events", |_| {
-      html! {
-          <div>
-              <h1>"Event Handling"</h1>
-              <p>"Hirola uses an "<code>"on:<event>"</code>" binding style"</p>
-              <h2>"Example"</h2>
-              <pre>
-              <code>
-r#"let clicked = Signal::new(false);
-html! {
-    <div>
-      <button on:click={clicked.mut_callback(|c, _| !c)}>"Click Me"</button>
-      <span>{format!("Clicked? {}", clicked.get())}</span>
-    </div>
-}"#
-            </code>
-            </pre>
-              <div class="demo">
-                  {
-                      let clicked = Signal::new(false);
-                      html! {
-                          <div>
-                            <button on:click={clicked.mut_callback(|c, _| !c)}>"Click Me"</button>
-                            <span class="ml-1">{format!("Clicked? {}", clicked.get())}</span>
-                          </div>
-                        }
-                    }
-                  </div>
-            
-          </div>
-      }
-  });
-  router.add("/mixins/:mixin", |_| {
-    html! {
-        <div>
-            <h1>"Mixin"</h1>
-            <p>"Install blah blah "<code>"i-love-alpine.html"</code></p>
-        </div>
-    }
-});
+    router.add("/", home);
+    router.add("/basics/getting-started", getting_started_page);
+    router.add("/basics/reactivity", reactivity_page);
+    router.add("/basics/templating", templating_page);
+    router.add("/basics/mixins", mixins_page);
+    router.add("/basics/iteration", iteration_page);
+    router.add("/basics/events", event_handling_page);
+    router.add("/mixins/:mixin", inner_mixins);
     app.extend(router);
     app.mount("body", docs);
 }

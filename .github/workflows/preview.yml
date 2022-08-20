@@ -30,24 +30,8 @@ jobs:
 
       - name: Build Documentation Artifacts
         run: ./trunk --config ./examples/docs/Trunk.toml build
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        id: vercel-action
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
-          github-token: ${{ secrets.GITHUB_TOKEN }} #Optional
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID}} #Required
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID}} #Required
-          github-comment: false
-          #vercel-args: '--prod' #Optional
-          working-directory: public
 
-      - name: Update Deployment Status
-        uses: bobheadxi/deployments@v0.4.3
-        if: always()
-        with:
-          step: finish
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-          env_url: ${{ steps.vercel-action.outputs.preview-url }}
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --confirm

@@ -11,10 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Setup "wasm32-unknown-unknown" target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Setup "wasm-bindgen-cli"
+        run: cargo install wasm-bindgen-cli
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Install Trunk
         run: wget -qO- https://github.com/thedodd/trunk/releases/download/v0.16.0/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+
       - name: Build Documentation Artifacts
         run: ./trunk --config ./examples/docs/Trunk.toml build
       - name: Pull Vercel Environment Information

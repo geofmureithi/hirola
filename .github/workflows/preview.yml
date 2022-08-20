@@ -17,6 +17,12 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Setup "wasm32-unknown-unknown" target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Setup "wasm-bindgen-cli"
+        run: cargo install wasm-bindgen-cli
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Install Trunk

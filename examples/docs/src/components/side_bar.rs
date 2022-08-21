@@ -22,9 +22,6 @@ pub fn SideBar(router: Router) -> Dom {
                       <a mixin:route=&router.link() href="/basics/events" class="hover:text-gray-900">"Event Handling"</a>
                     </li>
                     <li class="">
-                      <a mixin:route=&router.link() href="/basics/iteration" class="hover:text-gray-900">"Iteration"</a>
-                    </li>
-                    <li class="">
                       <a mixin:route=&router.link() href="/basics/mixins" class="hover:text-gray-900">"Mixins"</a>
                     </li>
                   </ul>
@@ -51,15 +48,15 @@ pub fn SideBar(router: Router) -> Dom {
 
                     <li class="">
                       <a mixin::route=&router.link() href="/mixins/transition" class="hover:text-gray-900">
-                        <span class="text-orange-500">"mixin:"</span>"transition" </a>
+                        <span class="text-orange-500">"mixin:"</span>"transition 🚧" </a>
                     </li>
                     <li class="">
                       <a mixin::route=&router.link() href="/mixins/ignore" class="hover:text-gray-900">
-                        <span class="text-orange-500">"mixin:"</span>"ignore" </a>
+                        <span class="text-orange-500">"mixin:"</span>"ignore 🚧" </a>
                     </li>
                     <li class="">
                       <a mixin::route=&router.link() href="/mixins/if" class="hover:text-gray-900">
-                        <span class="text-orange-500">"mixin:"</span>"if"</a>
+                        <span class="text-orange-500">"mixin:"</span>"if 🚧"</a>
                     </li>
 
                   </ul>
@@ -75,8 +72,8 @@ pub fn SideBar(router: Router) -> Dom {
                       <a mixin::route=&router.link() href="/plugins/form" class="hover:text-gray-900">"Form"</a>
                     </li>
                     <li class="">
-                      <a mixin::route=&router.link() href="/plugins/global-state" class="hover:text-gray-900">
-                        "Store"</a>
+                      <a mixin::route=&router.link() href="/plugins/state" class="hover:text-gray-900">
+                        "State"</a>
                     </li>
 
                   </ul>
@@ -85,7 +82,7 @@ pub fn SideBar(router: Router) -> Dom {
                   <span class="font-medium">"Advanced"</span>
                   <ul class="pl-3">
                     <li class="">
-                      <a mixin::route=&router.link() href="/advanced/testing" class="hover:text-gray-900">"Testing"</a>
+                      <a mixin::route=&router.link() href="/advanced/testing" class="hover:text-gray-900">"Testing 🚧"</a>
                     </li>
                     <li class="">
                       <a mixin::route=&router.link() href="/advanced/extending" class="hover:text-gray-900">"Extending"</a>
@@ -94,7 +91,7 @@ pub fn SideBar(router: Router) -> Dom {
                       <a mixin::route=&router.link() href="/advanced/async" class="hover:text-gray-900">"Async"</a>
                     </li>
                     <li class="">
-                      <a mixin::route=&router.link() href="/advanced/ssr" class="hover:text-gray-900">"SSR"</a>
+                      <a mixin::route=&router.link() href="/advanced/ssr" class="hover:text-gray-900">"SSR 🚧"</a>
                     </li>
                   </ul>
                 </li>

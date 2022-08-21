@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use hirola::prelude::*;
 
-pub fn SeoTitle<T: Display + ?Sized>(title: &'static T) -> Dom {
+pub fn SeoTitle<'a, T: Display + ?Sized>(title: &'a T) -> Dom {
     web_sys::window()
         .unwrap()
         .document()

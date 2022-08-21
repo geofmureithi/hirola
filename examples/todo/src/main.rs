@@ -158,7 +158,7 @@ fn main() {
     router.add("/", home);
     router.add("/todo/:id", todo_view);
 
-    app.mount("body", router);
+    app.mount("body", |app| router.render(app));
 }
 
 #[cfg(test)]

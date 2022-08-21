@@ -1,5 +1,3 @@
-pub mod model;
-
 use std::{marker::PhantomData, rc::Rc};
 
 use hirola_core::{

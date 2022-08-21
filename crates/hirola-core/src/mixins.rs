@@ -1,10 +1,15 @@
-use std::fmt::Display;
+use std::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+    str::FromStr,
+};
 
-use web_sys::{Element, HtmlElement};
+use wasm_bindgen::JsCast;
+use web_sys::{Element, Event, HtmlElement, HtmlInputElement};
 
 use crate::{
-    generic_node::DomNode,
-    prelude::{create_effect, Signal},
+    generic_node::{DomNode, GenericNode},
+    prelude::{create_effect, Mixin, Signal},
 };
 
 /// A mixin that allows adding raw html
@@ -55,4 +60,34 @@ pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode) -> ()> {
         });
     };
     Box::new(cb)
+}
+
+/// Model allows 2-way binding eg between a signal and an input
+pub struct Model<Node, T: 'static>(Signal<T>, PhantomData<Node>);
+
+impl<T: Display + FromStr> Mixin for Model<HtmlInputElement, T>
+where
+    <T as FromStr>::Err: Debug,
+{
+    fn mixin(&self, ns: &str, node: DomNode) {
+        assert_eq!(ns, "model");
+        let signal = self.0.clone();
+        let handler = Box::new(move |e: Event| {
+            let input = e
+                .current_target()
+                .unwrap()
+                .dyn_into::<HtmlInputElement>()
+                .unwrap();
+            let new_value = input.value().parse().unwrap();
+            signal.set(new_value);
+        });
+        node.event("keyup", handler);
+        let input = node.unchecked_into::<HtmlInputElement>();
+        input.set_value(&format!("{}", &self.0.get_untracked()));
+    }
+}
+
+/// Two way binding for input and signals
+pub fn model_input<T>(s: &Signal<T>) -> Model<HtmlInputElement, T> {
+    Model(s.clone(), PhantomData)
 }

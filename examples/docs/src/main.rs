@@ -7,8 +7,9 @@ use components::logo::HirolaLogo;
 use hirola::prelude::mixins::text;
 use hirola::prelude::*;
 use pages::{
-    event_handling_page, getting_started_page, home, inner_mixins, iteration_page, mixins_page,
-    reactivity_page, templating_page,
+    async_page, event_handling_page, extending_page, forms_page, getting_started_page, home,
+    inner_mixins, mixins_page, reactivity_page, router_page, ssr_page, state_page, templating_page,
+    testing_page,
 };
 
 use crate::components::seo_title::SeoTitle;
@@ -142,11 +143,19 @@ fn main() {
     router.add("/basics/reactivity", reactivity_page);
     router.add("/basics/templating", templating_page);
     router.add("/basics/mixins", mixins_page);
-    router.add("/basics/iteration", iteration_page);
     router.add("/basics/events", event_handling_page);
+
     router.add("/mixins/:mixin", inner_mixins);
-    router.add("/advanced/:advanced", inner_mixins);
-    router.add("/plugins/:plugin", inner_mixins);
+
+    router.add("/advanced/testing", testing_page);
+    router.add("/advanced/ssr", ssr_page);
+    router.add("/advanced/async", async_page);
+    router.add("/advanced/extending", extending_page);
+
+    router.add("/plugins/form", forms_page);
+    router.add("/plugins/router", router_page);
+    router.add("/plugins/state", state_page);
+
     app.extend(router);
     app.mount("body", docs);
 }

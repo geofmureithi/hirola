@@ -40,6 +40,12 @@ impl Router {
         self.current.clone()
     }
 
+    pub fn param(&self, name: &str) -> Option<String> {
+        let params = self.params().get();
+        let params = params.params.clone();
+        params.get(name).cloned()
+    }
+
     /// Add a new route
     pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> Dom) {
         self.inner.insert(path.to_string(), page).unwrap();

@@ -1,23 +1,31 @@
+mod async_handling;
 mod event_handling;
+mod extending;
+mod form;
 mod getting_started;
-mod iteration;
 mod mixins;
 mod reactivity;
+mod router;
+mod ssr;
+mod state;
 mod templating;
-
-pub use getting_started::getting_started_page;
+mod testing;
 
 use hirola::prelude::*;
-pub use iteration::iteration_page;
 
+pub use async_handling::async_page;
 pub use event_handling::event_handling_page;
-
+pub use extending::extending_page;
+pub use form::forms_page;
+pub use getting_started::getting_started_page;
 pub use mixins::inner_mixins;
 pub use mixins::mixins_page;
-
-pub use templating::templating_page;
-
 pub use reactivity::reactivity_page;
+pub use router::router_page;
+pub use ssr::ssr_page;
+pub use state::state_page;
+pub use templating::templating_page;
+pub use testing::testing_page;
 
 use crate::components::code_preview::CodePreview;
 

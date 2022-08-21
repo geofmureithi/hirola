@@ -69,7 +69,7 @@ html! {
         <button on:click={toggle}>"Toggle"</button>
     </div>
 }
-  
+
 "# 
       file_name="main.rs"
       />
@@ -104,11 +104,11 @@ pub fn inner_mixins(_app: &HirolaApp) -> Dom {
     let params = router.params().get();
     let params = params.params.clone();
     let mixin = params.get("mixin").cloned().unwrap_or(format!("404"));
-    let mixin = InbuiltMixin::from_str(&mixin).unwrap();
+    // let mixin = InbuiltMixin::from_str(&mixin).unwrap();
     html! {
         <div>
             <h1>"Mixin"</h1>
-            <p>"Install blah blah "<code mixin:text=&text(&format!("{:?}", mixin))></code></p>
+            <p><code>{format!("{:?}", mixin)}</code></p>
         </div>
     }
 }

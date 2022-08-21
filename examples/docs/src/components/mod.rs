@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 pub mod code_preview;
 pub mod example;
 pub mod logo;

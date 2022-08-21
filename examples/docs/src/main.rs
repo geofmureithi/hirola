@@ -56,8 +56,8 @@ fn docs(app: &HirolaApp) -> Dom {
               "GitHub"
             </a>
           </div>
-          <div class="flex items-center pr-6 md:hidden" x-data="{ show: false }">
-            <button class="text-gray-600 focus:outline-none" click="show = ! show">
+          <div class="flex items-center pr-6 md:hidden">
+            <button class="text-gray-600 focus:outline-none" >
               <span class="sr-only">"Show navigation"</span>
               <svg class="h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                 <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
@@ -65,7 +65,7 @@ fn docs(app: &HirolaApp) -> Dom {
             </button>
             <div class="fixed top-0 bottom-0 right-0 z-[199] w-1/2 overflow-y-auto bg-gray-100 p-6 shadow-xl md:top-[4rem]" x-show="show">
               <div class="flex justify-end">
-                <button class="text-gray-600 focus:outline-none" click="show = ! show">
+                <button class="text-gray-600 focus:outline-none">
                   <span class="sr-only">"Close navigation"</span>
                   <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -77,6 +77,9 @@ fn docs(app: &HirolaApp) -> Dom {
           </div>
         </div>
       </header>
+      <style>
+        "[hover-scrollbar] { overflow-x: 'visible'; overflow-y: hidden; } [hover-scrollbar]:hover { overflow-y: auto }"
+      </style>
       <aside class="fixed left-0 bottom-0 hidden w-48 px-8 pb-6 pt-8 md:top-[4rem] md:block lg:w-64" hover-scrollbar>
         <SideBar router={(&router).clone()} />
       </aside>
@@ -142,6 +145,8 @@ fn main() {
     router.add("/basics/iteration", iteration_page);
     router.add("/basics/events", event_handling_page);
     router.add("/mixins/:mixin", inner_mixins);
+    router.add("/advanced/:advanced", inner_mixins);
+    router.add("/plugins/:plugin", inner_mixins);
     app.extend(router);
     app.mount("body", docs);
 }

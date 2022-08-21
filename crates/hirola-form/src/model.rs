@@ -12,14 +12,15 @@ use hirola_core::{
     prelude::{Mixin, Signal},
 };
 
-pub struct Bind<Node, T: 'static>(Signal<T>, PhantomData<Node>);
+/// Model allows 2-way binding eg between a signal and an input
+pub struct Model<Node, T: 'static>(Signal<T>, PhantomData<Node>);
 
-impl<T: Display + FromStr> Mixin for Bind<HtmlInputElement, T>
+impl<T: Display + FromStr> Mixin for Model<HtmlInputElement, T>
 where
     <T as FromStr>::Err: Debug,
 {
     fn mixin(&self, ns: &str, node: DomNode) {
-        assert_eq!(ns, "bind");
+        assert_eq!(ns, "model");
         let signal = self.0.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -36,6 +37,7 @@ where
     }
 }
 
-pub fn bind_input<T>(s: &Signal<T>) -> Bind<HtmlInputElement, T> {
-    Bind(s.clone(), PhantomData)
+/// Two way binding for input and signals
+pub fn model_input<T>(s: &Signal<T>) -> Model<HtmlInputElement, T> {
+    Model(s.clone(), PhantomData)
 }

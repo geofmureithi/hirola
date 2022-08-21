@@ -10,12 +10,10 @@ extern "C" {
 }
 
 /// mixin to highlight code
-fn highlight_code<'a>(example_name: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
+fn highlight_code<'a>(_example_name: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
-        unsafe {
-            highlightElement(element);
-        };
+        highlightElement(element);
     };
     Box::new(cb)
 }

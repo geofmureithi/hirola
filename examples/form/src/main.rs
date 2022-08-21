@@ -1,35 +1,57 @@
 #[macro_use]
 extern crate validator_derive;
 
-use serde::Serialize;
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use hirola::{form::FormHandler, prelude::*};
+use hirola::{
+    form::{Bind, FormHandler},
+    prelude::{mixins::text, *},
+};
+use web_sys::{Event, HtmlInputElement};
 
-#[derive(Validate, PartialEq, Clone, Serialize)]
+#[derive(Validate, PartialEq, Clone, Serialize, Deserialize, Debug)]
 struct Login {
     #[validate(length(min = 1, message = "Email is required"))]
     email: String,
     #[validate(length(min = 1, message = "Password is required"))]
     password: String,
+
+    inner: InnerData,
+}
+
+#[derive(PartialEq, Clone, Serialize, Deserialize, Debug)]
+struct InnerData {
+    test: i32,
+}
+
+fn InnerComponent(bind: Bind<InnerData, Login>) -> Dom {
+    let b = bind.clone();
+    let increment = move |e: Event| {
+        let value = bind.get_value().test;
+        bind.set_value(InnerData { test: value + 1 })
+    };
+    html! {
+        <div>
+            <span on:click=increment>"Controlled increment"</span>
+            <span>{b.get_value().test}</span>
+        </div>
+    }
 }
 
 fn form_demo(_app: &HirolaApp) -> Dom {
     let form = FormHandler::new(Login {
-        email: String::new(),
+        email: String::from_str("example@gmail.com").unwrap(),
         password: String::new(),
+        inner: InnerData { test: 100 },
     });
-
-    let (connect, register) = form.controls();
-
-    let email_handle = register.handle();
-    let pass_handle = register.handle();
-    let remember_handle = register.handle();
 
     html! {
         <form
             class="h-screen flex flex-col items-center justify-center"
-            mixin:form=&connect
+            ref=&form.node_ref()
             >
             <div class="mb-6">
                 <label for="email"
@@ -37,11 +59,13 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                 <input
                     type="email"
                     id="email"
+                    name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    required=""
-                    mixin::form=&email_handle
+                    //required=""
+                    mixin:form={&form.register::<HtmlInputElement>()}
                     />
+                <span class="text-red-700 text-sm" mixin:text=&text(&form.error_for("email"))></span>
             </div>
             <div class="mb-6">
                 <label
@@ -50,19 +74,23 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                 <input
                     type="password"
                     id="password"
+                    name="password"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    required=""
-                    mixin::form=&pass_handle
+                    //required=""
+                    mixin:form={&form.register::<HtmlInputElement>()}
                 />
             </div>
             <div class="flex items-start mb-6">
+                <InnerComponent bind={form.bind::<InnerData>("inner")} />
             <div class="flex items-center h-5">
-                <input id="remember"
+                <input
+                    id="remember"
+                    name="remember"
                     type="checkbox"
                     value=""
                     class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                     required=""
-                    mixin::form=&remember_handle
+                    // mixin:form={&form.register::<HtmlInputElement>()}
                 />
                 </div>
                 <label

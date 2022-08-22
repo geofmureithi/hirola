@@ -2,9 +2,9 @@
 name = "hirola"
 version = "0.2.0-alpha.1"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
-description = "A html library for building client side webapps"
+description = "Hirola is an un-opinionated web framework that is focused on simplicity and predictability"
 repository = "https://github.com/geofmureithi/hirola"
-documentation = "https://docs.rs/hirola"
+documentation = "https://hirola-docs.vercel.app"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["wasm", "html", "dom", "web"]

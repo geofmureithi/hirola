@@ -33,7 +33,7 @@ pub fn home(_: &HirolaApp) -> Dom {
     html! {
         <div>
             <h1>"What is Hirola?"</h1>
-            <p><strong>"Hirola"</strong>" is an opinionated Rust web framework that is focused on simplicity and predictability."</p>
+            <p><strong>"Hirola"</strong>" is an un-opinionated Rust web framework that is focused on simplicity and predictability."</p>
             <h2>"Goals"</h2>
             <ul>
               <li>"Keep it simple. Most Rust web frameworks have a huge learning curve and verbose syntaxes. We yearn to minimize these."</li>

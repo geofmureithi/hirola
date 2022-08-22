@@ -6,7 +6,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 //! # Hirola API Documentation
-//! **Hirola** is an opinionated and extensible web framework for that is focused on simplicity and predictability.
+//! **Hirola** is an un-opinionated and extensible web framework for that is focused on simplicity and predictability.
 //!
 //! ## Example
 //! ```rust,no_run

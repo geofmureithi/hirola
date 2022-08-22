@@ -4,7 +4,7 @@
 [![Browser Tests](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml/badge.svg)](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**Hirola** is an un-opinionated web framework for that is focused on simplicity and predictability.
+**Hirola** is an un-opinionated webf ramework that is focused on simplicity and predictability.
 
 ## Goals
 

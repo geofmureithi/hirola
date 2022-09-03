@@ -17,7 +17,7 @@ r#"fn main(){
     assert_eq!("<div><button>Increment</button><span>0</span></div>", &res);
 }
 "#
-          file_name="main.rs"
+          file="main.rs"
         />
       </div>
     }

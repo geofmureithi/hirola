@@ -64,7 +64,7 @@ fn main() {
   let app = HirolaApp::new();
   app.mount("body", counter);
 }"#
-      file_name="main.rs"/>
+      file="main.rs"/>
 
               <div class="demo">
                 {

@@ -90,7 +90,7 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
         let parent = self.clone();
 
         let node = create_effect_initial(cloned!((parent) => move || {
-            let node = RefCell::new(child().render());
+            let node = RefCell::new(child().render().node);
 
             let effect = cloned!((node) => move || {
                 let new_node = child().update_node(&parent, &node.borrow());

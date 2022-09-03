@@ -1,5 +1,6 @@
 use hirola::prelude::*;
 
+#[component]
 pub fn SideBar(router: Router) -> Dom {
     html! {
         <ul class="space-y-2 text-gray-800">

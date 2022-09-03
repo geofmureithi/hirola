@@ -27,6 +27,7 @@ struct InnerData {
     test: i32,
 }
 
+#[component]
 fn InnerComponent(bind: Bind<InnerData, Login>) -> Dom {
     let b = bind.clone();
     let increment = move |e: Event| {
@@ -36,7 +37,7 @@ fn InnerComponent(bind: Bind<InnerData, Login>) -> Dom {
     html! {
         <div>
             <span on:click=increment>"Controlled increment"</span>
-            <span>{b.get_value().test}</span>
+            <span>{b.clone().get_value().test}</span>
         </div>
     }
 }

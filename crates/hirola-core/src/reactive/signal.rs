@@ -11,6 +11,7 @@ use std::rc::Rc;
 ///
 /// Returned by functions that provide a handle to access state.
 /// Use [`Signal::handle`] or [`Signal::into_handle`] to retrieve a handle from a [`Signal`].
+
 pub struct StateHandle<T: 'static>(Rc<RefCell<SignalInner<T>>>);
 
 impl<T: 'static> StateHandle<T> {

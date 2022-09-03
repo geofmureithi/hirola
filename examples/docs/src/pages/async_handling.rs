@@ -39,7 +39,7 @@ fn fetch_users(_app: &HirolaApp) -> Dom {
             }  else {
     ......
 "#
-          file_name="main.rs"
+          file="main.rs"
         />
       </div>
     }

@@ -24,7 +24,7 @@ assert_eq!(*state.get(), 0);
               
 state.set(1);
 assert_eq!(*state.get(), 1);"
-                    file_name="main.rs" />
+                    file="main.rs" />
 
 
                   <p>"Signal is pretty similar to useState in react or Alpine.reactive"</p>
@@ -42,7 +42,7 @@ let new_value = state.get();
 /// later
 state.set(1);
 "
-    file_name="main.rs" />
+    file="main.rs" />
 
                 </div>
             }

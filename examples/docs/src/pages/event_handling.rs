@@ -24,7 +24,7 @@ pub fn event_handling_page(_app: &HirolaApp) -> Dom {
       "Click Me"
   </button>
 }"#
-    file_name="src/main.rs" />
+    file="src/main.rs" />
 
               <div class="demo">
                   {

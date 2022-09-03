@@ -42,7 +42,6 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
 
     html! {
         <div
-
             class="h-screen flex flex-col items-center justify-center transition-all ease-in-out delay-1000">
             <style>{
                 style! {
@@ -76,12 +75,7 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
                 }
             }</style>
             <div class="base">
-                <h1>{"Styled"}</h1>
-                <div
-                    mixin:opacity=&opacity(&is_shown)
-                    class="h-64 w-64 block bg-blue-900 rounded-md"
-                />
-                <p mixin:text=&text(&is_shown.get()) />
+                <h1>"Styled"</h1>
                 <p mixin:html=&x_html(raw) />
                 <button
                     class="bg-gray-200 mt-4 font-bold py-2 px-4 rounded"

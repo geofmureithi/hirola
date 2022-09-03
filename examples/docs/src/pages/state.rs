@@ -24,7 +24,7 @@ app.mount("body", |app| {
     }
 });
 "#
-            file_name="src/main.rs"
+            file="src/main.rs"
             />
         </div>
     }

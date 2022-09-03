@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::prelude::*;
 
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{window, Element, Event, HtmlLinkElement};
+use web_sys::{Element, Event, HtmlLinkElement};
 
 /// Route that is matched
 #[derive(Clone, Debug)]
@@ -18,6 +18,14 @@ pub struct RouteMatch {
 pub struct Router {
     current: Signal<RouteMatch>,
     inner: matchit::Router<fn(&HirolaApp) -> Dom>,
+}
+
+impl std::fmt::Debug for Router {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("Router")
+            .field("current", &self.current)
+            .finish()
+    }
 }
 
 impl Router {

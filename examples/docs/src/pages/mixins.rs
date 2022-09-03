@@ -1,7 +1,7 @@
 use std::fmt::format;
 use std::str::FromStr;
 
-use hirola::prelude::mixins::{model_input, rhtml, show, text};
+use hirola::prelude::mixins::{model::input, rhtml, show, text};
 use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Event, HtmlInputElement};
@@ -73,7 +73,7 @@ html! {
 }
 
 "# 
-      file_name="main.rs"
+      file="main.rs"
       />
       <div class="demo">
                 {
@@ -127,7 +127,7 @@ r#"let shown = Signal::new(true);
     </div>
   }
 "#
-                          file_name="main.rs"
+                          file="main.rs"
                         />
                         <div class="demo transition-all">
                         {
@@ -166,7 +166,7 @@ html! {
     </div>
 }
 "#
-                          file_name="main.rs"
+                          file="main.rs"
                         />
                         <div class="demo transition-all">
                         {
@@ -205,7 +205,7 @@ html! {
   </div>
 }
 "#
-                          file_name="main.rs"
+                          file="main.rs"
                         />
                         <div class="demo">
                         {
@@ -236,7 +236,7 @@ html! {
     </div>
 }
 "#
-                          file_name="main.rs"
+                          file="main.rs"
                         />
                         <div class="demo transition-all">
                         {
@@ -244,7 +244,7 @@ html! {
                             html! {
                                 <div>
                                   <span class="block" mixin:text=&text(&message) />
-                                  <input mixin:model=&model_input(&message)/>
+                                  <input mixin:model=&input(&message)/>
                                 </div>
                             }
                         }

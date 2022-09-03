@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.63"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a26fa4d7e3f2eebadf743988fc8aec9fa9a9e82611acafd77c1462ed6262440a"
+
+[[package]]
 name = "anymap"
 version = "1.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -337,6 +343,7 @@ dependencies = [
 name = "hirola-core"
 version = "0.2.0-alpha.1"
 dependencies = [
+ "anyhow",
  "anymap",
  "chrono",
  "criterion",
@@ -346,6 +353,7 @@ dependencies = [
  "ref-cast",
  "regex",
  "serde",
+ "thiserror",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
@@ -372,6 +380,7 @@ version = "0.2.0-alpha.1"
 dependencies = [
  "hirola-core",
  "once_cell",
+ "proc-macro-error",
  "proc-macro-hack",
  "proc-macro2",
  "quote",
@@ -584,6 +593,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0918736323d1baff32ee0eade54984f6f201ad7e97d5cfb5d6ab4a358529615"
 dependencies = [
  "plotters-backend",
+]
+
+[[package]]
+name = "proc-macro-error"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
+dependencies = [
+ "proc-macro-error-attr",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "version_check",
+]
+
+[[package]]
+name = "proc-macro-error-attr"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "version_check",
 ]
 
 [[package]]
@@ -959,6 +992,12 @@ dependencies = [
  "syn",
  "validator",
 ]
+
+[[package]]
+name = "version_check"
+version = "0.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "walkdir"

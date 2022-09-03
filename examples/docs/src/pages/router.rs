@@ -20,7 +20,7 @@ router.add("/todo/:id", todo_view);
 
 app.mount("body", |app| router.render(app));
 "#
-            file_name="src/main.rs"
+            file="src/main.rs"
             />
         </div>
     }

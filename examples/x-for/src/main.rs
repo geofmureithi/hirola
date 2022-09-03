@@ -1,11 +1,49 @@
-use hirola::prelude::*;
+use std::fmt::Display;
 
+use hirola::prelude::{mixins::model::input, *};
+use web_sys::Event;
+
+#[component]
 fn Color(text: Signal<String>) -> Dom {
     html! {
-        <input
+        <div
             class="block"
-            mixins=vec![bind_input(&text)]
+            mixin:model=&input(&text)
         />
+    }
+}
+
+#[component]
+fn UserFn<T: Display>(name: T) {
+    let text = format!("Hello, {}", name);
+    html! {
+        <div>{text.clone()}</div>
+    }
+}
+
+struct User {
+    name: String,
+}
+
+impl hirola::prelude::Render<DomType> for User {
+    fn render(&self) -> Dom {
+        let text = format!("Hello, {}", self.name);
+        html! {
+            <div>{text.clone()}</div>
+        }
+    }
+}
+
+#[component]
+fn Page<Children: Render<DomType>>(title: String, children: Children) {
+    let children = children.render();
+    html! {
+        <>
+            <div>
+                {children.clone()}
+            </div>
+            <p>"Test"</p>
+        </>
     }
 }
 
@@ -21,35 +59,12 @@ fn colors(_app: &HirolaApp) -> Dom {
     });
 
     html! {
-        <div>
-            <Indexed
-                props={
-                    IndexedProps {
-                        iterable: colors.clone().handle(),
-                        template: |item| {
-                            html! {
-                                <Color text=item />
-                            }
-                        }
-                    }
-                }
-            />
-            <Keyed
-                props={
-                    KeyedProps {
-                        iterable: colors.clone().handle(),
-                        template: |item| {
-                            html! {
-                                <p>{item.get()}</p>
-                            }
-                        },
-                        key: |item| item.get().clone()
-                    }
-                }
-            />
-            <button on:click=add_new>"Add New"</button>
-        </div>
-
+        <>
+            <Page title="Test Page".to_string()>
+                <User name=String::from("Geoff2") />
+                <UserFn name=String::from("Mureithi2") />
+            </Page>
+        </>
     }
 }
 

@@ -83,7 +83,6 @@
 //! ```
 
 //! Hirola is derived from a fork of [marple reactivity core](https://github.com/lukechu10/maple).
-
 /// The defaults from core
 pub mod prelude {
     pub use super::*;

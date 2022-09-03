@@ -15,6 +15,8 @@ keywords = ["wasm", "html", "dom", "web"]
 
 [dependencies]
 chrono = { version = "0.4", features = ["wasmbind"] }
+anyhow = "1.0"
+thiserror = "1.0"
 html-escape = { version = "0.2.7", optional = true }
 hirola-macros = { path = "../hirola-macros", version = "0.2.0-alpha.1" }
 ref-cast = "1.0"
@@ -24,6 +26,8 @@ regex = "1"
 matchit = { version = "0.6", optional = true }
 anymap = { version = "1.0.0-beta.2", optional = true }
 wasm-bindgen-futures = { version = "0.4.29", optional = true  }
+
+
 
 [dependencies.web-sys]
 features = [

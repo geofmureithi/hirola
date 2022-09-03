@@ -34,6 +34,7 @@ pub mod styled;
 pub mod router;
 
 pub mod mixins;
+
 pub mod utils;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -128,7 +129,7 @@ where
 
 /// The maple prelude.
 pub mod prelude {
-    pub use hirola_macros::html;
+    pub use hirola_macros::{component, html};
 
     pub use crate::cloned;
     pub use crate::flow::{Indexed, IndexedProps, Keyed, KeyedProps};

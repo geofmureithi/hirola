@@ -6,16 +6,26 @@ pub trait StateReduce<T> {
         F: Fn(&T, E) -> T + 'static;
 }
 
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum MixinError {
+    #[error("Invalid namespace (expected {expected:?}, got {found:?})")]
+    InvalidNamespace { expected: String, found: String },
+    #[error("Could not bind mixin to Node: {0:?}")]
+    NodeError(DomNode),
+}
+
 pub trait Mixin {
-    fn mixin(&self, namespace: &str, node: DomNode);
+    fn mixin(&self, namespace: &str, node: DomNode) -> Result<(), MixinError>;
 }
 
 impl<T> Mixin for T
 where
     T: Fn(DomNode) -> (),
 {
-    fn mixin(&self, _ns: &str, node: DomNode) {
-        (&self)(node)
+    fn mixin(&self, _ns: &str, node: DomNode) -> Result<(), MixinError> {
+        Ok((&self)(node))
     }
 }
 

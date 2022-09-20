@@ -25,6 +25,15 @@ pub fn rhtml<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     Box::new(cb)
 }
 
+/// A mixin that allows adding nonsignal text
+pub fn rtext<'a, D: Display>(text: &'a D) -> Box<dyn Fn(DomNode) -> () + 'a> {
+    let cb = move |node: DomNode| {
+        let element = node.unchecked_into::<Element>();
+        element.set_text_content(Some(&format!("{text}")));
+    };
+    Box::new(cb)
+}
+
 /// Mixin that adds text to a dom node
 pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode) -> ()> {
     let signal = text.clone();

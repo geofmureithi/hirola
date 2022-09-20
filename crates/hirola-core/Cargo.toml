@@ -1,6 +1,6 @@
 [package]
 name = "hirola-core"
-version = "0.2.0-alpha.1"
+version = "0.2.0-beta.1"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 edition = "2021"
 description = "An html library for building client side webapps"
@@ -18,7 +18,7 @@ chrono = { version = "0.4", features = ["wasmbind"] }
 anyhow = "1.0"
 thiserror = "1.0"
 html-escape = { version = "0.2.7", optional = true }
-hirola-macros = { path = "../hirola-macros", version = "0.2.0-alpha.1" }
+hirola-macros = { path = "../hirola-macros", version = "0.2.0-beta.1" }
 ref-cast = "1.0"
 serde = { version = "1.0", optional = true }
 wasm-bindgen = { version = "0.2", optional = true }

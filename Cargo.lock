@@ -328,7 +328,7 @@ dependencies = [
 
 [[package]]
 name = "hirola"
-version = "0.2.0-alpha.1"
+version = "0.2.0-beta.1"
 dependencies = [
  "document-features",
  "hirola",
@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-core"
-version = "0.2.0-alpha.1"
+version = "0.2.0-beta.1"
 dependencies = [
  "anyhow",
  "anymap",
@@ -362,7 +362,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-form"
-version = "0.2.0-alpha.1"
+version = "0.2.0-beta.1"
 dependencies = [
  "hirola-core",
  "json_dotpath",
@@ -376,7 +376,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-macros"
-version = "0.2.0-alpha.1"
+version = "0.2.0-beta.1"
 dependencies = [
  "hirola-core",
  "once_cell",

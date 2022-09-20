@@ -53,7 +53,7 @@ pub fn getting_started_page(_app: &HirolaApp) -> Dom {
                   let count = Signal::new(0);
                   html! {
                       <div>
-                        <button on:click={count.mut_callback(|c, _| c + 1)}>"Increment"</button>
+                        <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
                         <span class="ml-1">{count.get()}</span>
                       </div>
                     }

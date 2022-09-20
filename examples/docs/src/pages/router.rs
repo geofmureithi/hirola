@@ -12,13 +12,17 @@ pub fn router_page(_app: &HirolaApp) -> Dom {
             <h2>"Getting started"</h2>
             <CodePreview
              code=
-r#"let mut app = HirolaApp::new();
+r#"let window = web_sys::window().unwrap();
+let document = window.document().unwrap();
+let body = document.body().unwrap();
+
+let mut app = HirolaApp::new();
 
 let mut router = Router::new();
 router.add("/", home);
 router.add("/todo/:id", todo_view);
 
-app.mount("body", |app| router.render(app));
+app.mount(&body, |app| router.render(app));
 "#
             file="src/main.rs"
             />

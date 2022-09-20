@@ -1,36 +1,10 @@
-use std::fmt::Display;
-
 use hirola::prelude::*;
 use web_sys::Element;
-
-/// Mixin that controls tailwind opacity based on a bool signal
-fn opacity<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let cb = move |node: DomNode| {
-        let element = node.unchecked_into::<Element>();
-        if *signal.get() {
-            element.class_list().add_1("opacity-100").unwrap();
-            element.class_list().remove_1("opacity-0").unwrap();
-        } else {
-            element.class_list().add_1("opacity-0").unwrap();
-            element.class_list().remove_1("opacity-100").unwrap();
-        }
-    };
-    Box::new(cb)
-}
-
-/// Mixin that controls tailwind opacity based on a bool signal
-fn text<'a, T: Display + ?Sized>(text: &'a T) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let cb = move |node: DomNode| {
-        let element = node.unchecked_into::<Element>();
-        element.set_text_content(Some(&format!("{text}")));
-    };
-    Box::new(cb)
-}
 
 fn x_html<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
-        element.set_inner_html(&format!("{text}"));
+        element.set_inner_html(&format!("{text}")); // Remember to escape this.
     };
     Box::new(cb)
 }
@@ -90,6 +64,10 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", mixin_demo);
+    app.mount(&body, mixin_demo);
 }

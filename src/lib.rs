@@ -14,21 +14,28 @@
 //!
 //! fn counter(_: &HirolaApp) -> Dom {
 //!     let state = Signal::new(99);
-//!     let decerement = state.mut_callback(|count, _| *count - 1);
-//!     let incerement = state.mut_callback(|count, _| *count + 1);
-//!
 //!     html! {
 //!         <div class="flex flex-row h-10">
-//!             <button on:click=decerement>"-"</button>
+//!             <button
+//!                 on:click=state.mut_callback(|count, _| *count - 1)>
+//!                     "-"
+//!             </button>
 //!             <input value=state.get() disabled/>
-//!             <button on:click=incerement>"+"</button>
+//!             <button
+//!                 on:click=state.mut_callback(|count, _| *count + 1)>
+//!                     "+"
+//!             </button>
 //!         </div>
 //!     }
 //! }
 //!
 //! fn main() {
+//!     let window = web_sys::window().unwrap();
+//!     let document = window.document().unwrap();
+//!     let body = document.body().unwrap();
+//!
 //!     let app = HirolaApp::new();
-//!     app.mount("body", counter);
+//!     app.mount(&body, counter);
 //! }
 //! ```
 //!

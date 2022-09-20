@@ -19,25 +19,22 @@ struct Login {
     #[validate(length(min = 1, message = "Password is required"))]
     password: String,
 
-    inner: InnerData,
-}
-
-#[derive(PartialEq, Clone, Serialize, Deserialize, Debug)]
-struct InnerData {
-    test: i32,
+    inner: u32,
 }
 
 #[component]
-fn InnerComponent(bind: Bind<InnerData, Login>) -> Dom {
-    let b = bind.clone();
-    let increment = move |e: Event| {
-        let value = bind.get_value().test;
-        bind.set_value(InnerData { test: value + 1 })
-    };
+fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
+    let increment = bind.callback(move |bind, _e: Event| {
+        let value = bind.get_value();
+        bind.set_value(value + 1)
+    });
+
+    let bind = bind.clone();
+
     html! {
         <div>
             <span on:click=increment>"Controlled increment"</span>
-            <span>{b.clone().get_value().test}</span>
+            <span>{bind.get_value()}</span>
         </div>
     }
 }
@@ -46,13 +43,13 @@ fn form_demo(_app: &HirolaApp) -> Dom {
     let form = FormHandler::new(Login {
         email: String::from_str("example@gmail.com").unwrap(),
         password: String::new(),
-        inner: InnerData { test: 100 },
+        inner: 100,
     });
 
     html! {
         <form
             class="h-screen flex flex-col items-center justify-center"
-            ref=&form.node_ref()
+            //ref={&form.node_ref()}
             >
             <div class="mb-6">
                 <label for="email"
@@ -82,7 +79,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                 />
             </div>
             <div class="flex items-start mb-6">
-                <InnerComponent bind={form.bind::<InnerData>("inner")} />
+                <InnerComponent bind={form.bind::<u32>("inner")} />
             <div class="flex items-center h-5">
                 <input
                     id="remember"
@@ -111,6 +108,10 @@ fn form_demo(_app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", form_demo);
+    app.mount(&body, form_demo);
 }

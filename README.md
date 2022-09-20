@@ -55,8 +55,12 @@ fn counter(app: &HirolaApp) -> Dom {
     }
 }
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", counter);
+    app.mount(&body, counter);
 }
 ```
 

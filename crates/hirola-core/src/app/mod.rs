@@ -62,15 +62,9 @@ impl HirolaApp {
     }
 
     /// Render a view
-
-    pub fn mount<M: Mountable>(self, element: &str, view: M) {
-        #[cfg(not(feature = "ssr"))]
-        {
-            let window = web_sys::window().unwrap();
-            let document = window.document().unwrap();
-
-            render_to(|| view.mount(&self), &document.body().unwrap());
-        }
+    #[cfg(not(feature = "ssr"))]
+    pub fn mount<M: Mountable>(self, element: &web_sys::Node, view: M) {
+        render_to(|| view.mount(&self), element);
     }
 
     /// Extend global data

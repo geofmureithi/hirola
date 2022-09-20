@@ -1,4 +1,3 @@
-use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use hirola::prelude::*;
 

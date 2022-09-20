@@ -50,8 +50,9 @@ fn node_to_tokens(node: Node) -> TokenStream {
             let children_tokens = children_to_tokens(node.children);
 
             tokens.extend(quote! {
-            //  #[allow(unused_braces)]
+            
             {
+                
                 let element: ::hirola::prelude::DomType = ::hirola::prelude::GenericNode::element(#name);
                 #children_tokens
                 #(#attributes)*
@@ -133,6 +134,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                             let element = ::std::clone::Clone::clone(&element);
                             {
                                 let element = ::std::clone::Clone::clone(&element);
+                                #[allow(unused_braces)]
                                 let res = hirola::prelude::Mixin::mixin(#value, #name_space, element);
                                 if let Err(err) = res {
                                     let current_line = std::line!();
@@ -214,6 +216,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                     append_children.extend(quote! {
                         ::hirola::prelude::GenericNode::append_child(
                             &element,
+                            #[allow(unused_braces)]
                             &::hirola::prelude::GenericNode::text_node(#s),
                         );
                     });
@@ -251,8 +254,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         _ => {
                             append_children.extend(quote! {
                                 ::hirola::prelude::GenericNode::append_render(
-                                    &element,
+                                    &element,                                    
                                     ::std::boxed::Box::new(move || {
+                                        #[allow(unused_braces)]
                                         ::std::boxed::Box::new(#expr)
                                     }),
                                 );

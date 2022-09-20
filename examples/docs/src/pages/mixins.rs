@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::str::FromStr;
 
 use hirola::prelude::mixins::{model::input, rhtml, show, text};
@@ -89,7 +88,7 @@ html! {
                             mixin:opacity=&opacity(&is_shown)
                           />
 
-                          <button on:click={toggle}>"Toggle"</button>
+                          <button on:click=toggle>"Toggle"</button>
                         </div>
                       }
                   }
@@ -171,7 +170,7 @@ html! {
                         <div class="demo transition-all">
                         {
                             let message = Signal::new(format!("Hello Hirola"));
-                            let handle_change = message.mut_callback(|cur, e: Event| {
+                            let handle_change = message.mut_callback(|_cur, e: Event| {
                               let input = e
                                   .current_target()
                                   .unwrap()

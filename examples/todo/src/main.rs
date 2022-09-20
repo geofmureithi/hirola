@@ -1,8 +1,6 @@
 use hirola::prelude::*;
-use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::window;
-use web_sys::Event;
 use web_sys::HtmlInputElement;
 
 #[derive(Clone, PartialEq)]
@@ -20,7 +18,7 @@ fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<To
 
     let title = todo.title.clone();
     let tl = title.clone();
-    let on_remove = todos.callback(move |todos, e| {
+    let on_remove = todos.callback(move |todos, _e| {
         let index = todos
             .get()
             .iter()
@@ -76,7 +74,7 @@ fn home(app: &HirolaApp) -> Dom {
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;
 
-    let add_new = state.callback(|todos, e| {
+    let add_new = state.callback(|todos, _e| {
         let input = window()
             .unwrap()
             .document()
@@ -101,7 +99,11 @@ fn home(app: &HirolaApp) -> Dom {
                             id="add"
                             class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker"
                             placeholder="Add Todo"/>
-                        <button class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal" on:click={add_new}>"Add"</button>
+                        <button
+                            class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal"
+                            on:click=add_new>
+                            "Add"
+                        </button>
                     </div>
                 </div>
                 <div>
@@ -110,8 +112,8 @@ fn home(app: &HirolaApp) -> Dom {
                         KeyedProps {
                             iterable: state.handle(),
                             template: move | todo | {
-                                let id = todo.get().id.clone();
-                                let title = todo.get().title.clone();
+                                // let id = todo.get().id.clone();
+                                // let title = todo.get().title.clone();
 
                                 html! {
                                     <>
@@ -149,6 +151,10 @@ fn index(app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let todos = vec![
         Signal::new(Todo {
             id: String::from("1"),
@@ -172,7 +178,7 @@ fn main() {
     app.extend(TodoStore { todos });
     app.extend(router);
 
-    app.mount("body", index);
+    app.mount(&body, index);
 }
 
 #[cfg(test)]

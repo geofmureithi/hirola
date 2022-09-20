@@ -3,7 +3,7 @@ use std::{marker::PhantomData, rc::Rc};
 use hirola_core::{
     callback::MixinError,
     cloned,
-    prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef},
+    prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef, State},
     reactive::{create_effect, Signal, StateHandle},
 };
 use json_dotpath::DotPaths;
@@ -143,6 +143,8 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned> Bind<B, F
         json.dot_get(&self.0).unwrap().unwrap()
     }
 }
+
+impl<B: Clone, F: Clone> State for Bind<B, F> {}
 
 impl<T: Clone + Validate + Serialize + DeserializeOwned> FormHandler<T> {
     /// Create a form binding with a non-form element/component

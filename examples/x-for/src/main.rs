@@ -35,14 +35,15 @@ impl hirola::prelude::Render<DomType> for User {
 }
 
 #[component]
-fn Page<Children: Render<DomType>>(title: String, children: Children) {
+fn Page<'a, Children: Render<DomType>>(title: &'a String, children: Children) {
+    let text = format!("Hello, {}", title);
     let children = children.render();
     html! {
         <>
             <div>
                 {children.clone()}
             </div>
-            <p>"Test"</p>
+            <p>{text.clone()}</p>
         </>
     }
 }
@@ -60,15 +61,20 @@ fn colors(_app: &HirolaApp) -> Dom {
 
     html! {
         <>
-            <Page title="Test Page".to_string()>
+            <Page title=&"Test Page".to_string()>
                 <User name=String::from("Geoff2") />
                 <UserFn name=String::from("Mureithi2") />
+                <button on:click=add_new>"Add New"</button>
             </Page>
         </>
     }
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", colors);
+    app.mount(&body, colors);
 }

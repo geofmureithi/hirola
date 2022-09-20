@@ -12,12 +12,16 @@ pub fn state_page(_app: &HirolaApp) -> Dom {
             <h2>"Getting started"</h2>
             <CodePreview
              code=
-r#"let mut app = HirolaApp::new();
+r#"let window = web_sys::window().unwrap();
+let document = window.document().unwrap();
+let body = document.body().unwrap();
+
+let mut app = HirolaApp::new();
 
 let todos = Signal::new(todos);
 app.extend(TodoStore { todos });
 
-app.mount("body", |app| {
+app.mount(&body, |app| {
     let todos: &TodoStore = app.data().unwrap();
     html! {
         ...

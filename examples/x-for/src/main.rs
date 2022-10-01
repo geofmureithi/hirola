@@ -35,7 +35,7 @@ impl hirola::prelude::Render<DomType> for User {
 }
 
 #[component]
-fn Page<'a, Children: Render<DomType>>(title: &'a String, children: Children) {
+fn Page<'a, Children: Render<DomType>>(title: &'a str, children: Children) {
     let text = format!("Hello, {}", title);
     let children = children.render();
     html! {
@@ -61,7 +61,7 @@ fn colors(_app: &HirolaApp) -> Dom {
 
     html! {
         <>
-            <Page title=&"Test Page".to_string()>
+            <Page title=&"Test Page">
                 <User name=String::from("Geoff2") />
                 <UserFn name=String::from("Mureithi2") />
                 <button on:click=add_new>"Add New"</button>

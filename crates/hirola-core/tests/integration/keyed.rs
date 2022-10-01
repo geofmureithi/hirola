@@ -4,16 +4,19 @@ use super::*;
 fn append() {
     let count = Signal::new(vec![1, 2]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-                key: |item| *item,
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                    key: |item| *item,
+                }}
+            />
+        </ul>
+
     });
 
     render_to(|| node, &test_div());
@@ -37,16 +40,18 @@ fn append() {
 fn swap_rows() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-                key: |item| *item,
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                    key: |item| *item,
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -73,16 +78,18 @@ fn swap_rows() {
 fn delete_row() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-                key: |item| *item,
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                    key: |item| *item,
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -102,16 +109,18 @@ fn delete_row() {
 fn clear() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-                key: |item| *item,
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                    key: |item| *item,
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -127,16 +136,18 @@ fn clear() {
 fn insert_front() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-                key: |item| *item,
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                    key: |item| *item,
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -156,16 +167,18 @@ fn insert_front() {
 fn nested_reactivity() {
     let count = Signal::new(vec![1, 2, 3].into_iter().map(Signal::new).collect());
 
-    let node = cloned!((count) => template! {
-        ul {
-            Keyed(KeyedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item.get()) }
-                },
-                key: |item| *item.get(),
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Keyed
+                props={KeyedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item.get() }</li>
+                    },
+                    key: |item| *item.get(),
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());

@@ -2,6 +2,7 @@
 
 [![Latest Version](https://img.shields.io/crates/v/hirola.svg)](https://crates.io/crates/hirola)
 [![Browser Tests](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml/badge.svg)](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml)
+[![Unit Tests](https://github.com/geofmureithi/hirola/actions/workflows/unit.yml/badge.svg)](https://github.com/geofmureithi/hirola/actions/workflows/unit.yml)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 **Hirola** is an un-opinionated webf ramework that is focused on simplicity and predictability.
@@ -35,6 +36,7 @@ Create an `index.html` in the root of counter. Add the contents below
   <head>
     <meta charset="UTF-8" />
     <title>Hirola Counter</title>
+    <body></body>
   </head>
 </html>
 ```
@@ -46,11 +48,12 @@ use hirola::prelude::*;
 
 fn counter(app: &HirolaApp) -> Dom {
     let count = Signal::new(0);
+    let increment = count.mut_callback(|c, _| c + 1)
     html! {
-        <div>
-            <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
+        <>
+            <button on:click=increment>"Increment"</button>
             <span>{count.get()}</span>
-        </div>
+        </>
 
     }
 }
@@ -84,18 +87,18 @@ Here are some extensions for hirola:
 
 ### Milestones
 
-| Status | Goal                                                                      | Labels       |
-| :----: | :------------------------------------------------------------------------ | ------------ |
-|   ✔    | Write code that is declarative and easy to follow                         | `ready`      |
-|   ✔    | Allow extensibility via mixins                                            | `ready`      |
-|   🚀   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `inprogress` |
-|   🚀   | SSR First Approach                                                        | `inprogress` |
-|   🚀   | Hydration                                                                 | `todo`       |
-|   🚀   | Serverside integrations                                                   | `todo`       |
+| Status | Goal                                                                      | Labels  |
+| :----: | :------------------------------------------------------------------------ | ------- |
+|   ✔    | Write code that is declarative and easy to follow                         | `ready` |
+|   ✔    | Allow extensibility via mixins                                            | `ready` |
+|   🚀   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `ready` |
+|   🚀   | SSR                                                                       | `ready` |
+|   🚀   | Hydration                                                                 | `todo`  |
+|   🚀   | Serverside integrations                                                   | `todo`  |
 
 ### Inspiration
 
-- Sycamore/Maple
+- Sycamore
 - Alpine.js
 - React.js
 - Yew

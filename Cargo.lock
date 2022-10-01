@@ -347,6 +347,7 @@ dependencies = [
  "anymap",
  "chrono",
  "criterion",
+ "hirola",
  "hirola-macros",
  "html-escape",
  "matchit",

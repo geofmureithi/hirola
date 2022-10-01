@@ -146,20 +146,7 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned> Bind<B, F
 
 impl<B: Clone, F: Clone> State for Bind<B, F> {}
 
-impl<T: Clone + Validate + Serialize + DeserializeOwned> FormHandler<T> {
-    /// Create a form binding with a non-form element/component
-    pub fn bind<B: Serialize>(&self, name: &'static str) -> Bind<B, T> {
-        Bind(name, self.clone(), PhantomData)
-    }
-
-    /// Register a form element
-    pub fn register<E>(&self) -> Register<T, E> {
-        Register {
-            form: self.clone(),
-            element_type: PhantomData,
-        }
-    }
-
+impl<T: Validate> FormHandler<T> {
     /// Perform validation
     pub fn validate(&self) -> Result<(), ValidationErrors> {
         self.value.get().validate()
@@ -186,6 +173,21 @@ impl<T: Clone + Validate + Serialize + DeserializeOwned> FormHandler<T> {
             }
         }));
         signal
+    }
+}
+
+impl<T: Clone + Serialize + DeserializeOwned> FormHandler<T> {
+    /// Create a form binding with a non-form element/component
+    pub fn bind<B: Serialize>(&self, name: &'static str) -> Bind<B, T> {
+        Bind(name, self.clone(), PhantomData)
+    }
+
+    /// Register a form element
+    pub fn register<E>(&self) -> Register<T, E> {
+        Register {
+            form: self.clone(),
+            element_type: PhantomData,
+        }
     }
 
     /// Get the reference for the form

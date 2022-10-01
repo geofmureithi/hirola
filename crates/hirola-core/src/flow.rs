@@ -34,21 +34,22 @@ where
 /// For non keyed iteration, see [`Indexed`].
 ///
 /// # Example
-/// ```no_run
-/// use hirola_core::prelude::*;
+/// ```ignore
+/// use hirola::prelude::*;
 ///
 /// let count = Signal::new(vec![1, 2]);
 ///
-/// let node = template! {
-///     Keyed(KeyedProps {
-///         iterable: count.handle(),
-///         template: |item| template! {
-///             li { (item) }
-///         },
-///         key: |item| *item,
-///     })
+/// let _node: TemplateResult<DomNode> = html! {
+///     <Keyed
+///         props={KeyedProps {
+///             iterable: count.handle(),
+///             template: |item| html! {
+///                <li>{ item }</li>
+///             },
+///             key: |item| *item,
+///         }}
+///     />
 /// };
-/// # let _ : TemplateResult<DomNode> = node;
 /// ```
 //#[component]
 
@@ -259,20 +260,22 @@ where
 /// For keyed iteration, see [`Keyed`].
 ///
 /// # Example
-/// ```no_run
-/// use hirola_core::prelude::*;
+/// ```ignore
+/// use hirola::prelude::*;
 ///
 /// let count = Signal::new(vec![1, 2]);
 ///
-/// let node = template! {
-///     Indexed(IndexedProps {
-///         iterable: count.handle(),
-///         template: |item| template! {
-///             li { (item) }
-///         },
-///     })
+/// let node = html! {
+///      <Indexed
+///         props={IndexedProps {
+///             iterable: count.handle(),
+///             template: move |item| html! {
+///                <li>{ item }</li>
+///             }
+///         }}
+///     />
 /// };
-/// # let _ : TemplateResult<DomNode> = node;
+/// # let _ : Dom = node;
 /// ```
 // #[component]
 

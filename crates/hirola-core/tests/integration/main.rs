@@ -1,7 +1,7 @@
 pub mod keyed;
 pub mod non_keyed;
 
-use hirola_core::prelude::*;
+use hirola::prelude::*;
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -41,8 +41,8 @@ fn test_div() -> Node {
 
 #[wasm_bindgen_test]
 fn hello_world() {
-    let node = template! {
-        p { "Hello World!" }
+    let node = html! {
+        <p>"Hello World!"</p>
     };
 
     render_to(|| node, &test_div());
@@ -61,8 +61,8 @@ fn hello_world() {
 fn hello_world_noderef() {
     let p_ref = NodeRef::new();
 
-    let node = template! {
-        p(ref=p_ref) { "Hello World!" }
+    let node = html! {
+        <p ref=p_ref> "Hello World!"</p>
     };
 
     render_to(|| node, &test_div());
@@ -78,9 +78,9 @@ fn hello_world_noderef() {
 
 #[wasm_bindgen_test]
 fn interpolation() {
-    let text = "Hello Maple!";
-    let node = template! {
-        p { (text) }
+    let text = "Hello Hirola!";
+    let node = html! {
+        <p>{text}</p>
     };
 
     render_to(|| node, &test_div());
@@ -92,7 +92,7 @@ fn interpolation() {
             .unwrap()
             .text_content()
             .unwrap(),
-        "Hello Maple!"
+        "Hello Hirola!"
     );
 }
 
@@ -100,8 +100,8 @@ fn interpolation() {
 fn reactive_text() {
     let count = Signal::new(0);
 
-    let node = cloned!((count) => template! {
-        p { (count.get()) }
+    let node = cloned!((count) => html! {
+        <p> { count.get() }</p>
     });
 
     render_to(|| node, &test_div());
@@ -118,8 +118,8 @@ fn reactive_text() {
 fn reactive_attribute() {
     let count = Signal::new(0);
 
-    let node = cloned!((count) => template! {
-        span(attribute=count.get())
+    let node = cloned!((count) => html! {
+        <span attribute=count.get()/>
     });
 
     render_to(|| node, &test_div());
@@ -136,10 +136,10 @@ fn reactive_attribute() {
 fn noderefs() {
     let noderef = NodeRef::new();
 
-    let node = template! {
-        div {
-            input(ref=noderef)
-        }
+    let node = html! {
+        <div>
+            <input ref=noderef />
+        </div>
     };
 
     render_to(|| node, &test_div());

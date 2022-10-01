@@ -54,6 +54,7 @@ version = "0.3"
 [dev-dependencies]
 criterion = {version = "0.3", features = ["html_reports"]}
 wasm-bindgen-test = "0.3"
+hirola = { path ="../../" }
 
 [features]
 default = ["dom", "wasm-bindgen", "web-sys"]

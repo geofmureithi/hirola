@@ -37,8 +37,12 @@
 //!    }
 //! }
 //! fn main() {
-//!    let app = HirolaApp::new();
-//!    app.mount("body", mixin_demo);
+//!     let window = web_sys::window().unwrap();
+//!     let document = window.document().unwrap();
+//!     let body = document.body().unwrap();
+//!     let app = HirolaApp::new();
+//!
+//!     app.mount(&body, mixin_demo);
 //! }
 //! ```
 use std::{

@@ -55,6 +55,7 @@ version = "0.3"
 criterion = {version = "0.3", features = ["html_reports"]}
 wasm-bindgen-test = "0.3"
 hirola = { path ="../../" }
+web-sys = { version = "0.3", features =["DomTokenList", "Element", "Window"]}
 
 [features]
 default = ["dom", "wasm-bindgen", "web-sys"]

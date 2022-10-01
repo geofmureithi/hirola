@@ -50,11 +50,10 @@ fn counter(app: &HirolaApp) -> Dom {
     let count = Signal::new(0);
     let increment = count.mut_callback(|c, _| c + 1)
     html! {
-        <>
+        <div>
             <button on:click=increment>"Increment"</button>
             <span>{count.get()}</span>
-        </>
-
+        </div>
     }
 }
 fn main() {

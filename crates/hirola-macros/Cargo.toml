@@ -1,6 +1,6 @@
 [package]
 name = "hirola-macros"
-version = "0.2.0-beta.1"
+version = "0.2.0"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 edition = "2021"
 description = "Hirola is an un-opinionated web framework that is focused on simplicity and predictability"

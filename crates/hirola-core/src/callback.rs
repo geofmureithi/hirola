@@ -1,7 +1,7 @@
 use crate::prelude::DomNode;
 
 pub trait StateReduce<T> {
-    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&T, E) -> T + 'static;
 }
@@ -22,18 +22,19 @@ pub trait Mixin {
 
 impl<T> Mixin for T
 where
-    T: Fn(DomNode) -> (),
+    T: Fn(DomNode),
 {
     fn mixin(&self, _ns: &str, node: DomNode) -> Result<(), MixinError> {
-        Ok((&self)(node))
+        (&self)(node);
+        Ok(())
     }
 }
 
 pub trait State: Clone {
     // Get a callback that allows interacting with state
-    fn callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
+    fn callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
-        F: Fn(&Self, E) -> () + 'static,
+        F: Fn(&Self, E) + 'static,
         Self: 'static,
     {
         let state = self.clone();

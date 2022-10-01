@@ -225,7 +225,7 @@ impl<T: 'static> Signal<T> {
 
 impl<T> StateReduce<T> for Signal<T> {
     /// Sets the return value
-    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&T, E) -> T + 'static,
     {

@@ -41,11 +41,11 @@ fn node_to_tokens(node: Node) -> TokenStream {
     let name = node.name_as_string();
 
     if let Some(name) = name {
-        if &name[0..1].to_lowercase() == &name[0..1] {
+        if name[0..1].to_lowercase() == name[0..1] {
             let attributes = node
                 .attributes
                 .iter()
-                .map(|attribute| attribute_to_tokens(attribute));
+                .map(attribute_to_tokens);
 
             let children_tokens = children_to_tokens(node.children);
 
@@ -76,7 +76,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
                     None => quote! {},
                 })
                 .collect::<Vec<TokenStream>>();
-            if node.children.len() > 0 {
+            if !node.children.is_empty() {
                 let children_tokens = children_to_tokens(node.children);
                 attributes.extend(vec![quote! {
                     children: { 
@@ -87,7 +87,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
                 }]);
             }
 
-            let quoted = if attributes.len() == 0 {
+            let quoted = if attributes.is_empty() {
                 quote!({&#fnname })
             } else {
                 quote!({ &#fnname {#(#attributes),*} })

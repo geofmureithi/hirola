@@ -1,6 +1,6 @@
 [package]
 name = "hirola-form"
-version = "0.2.0-beta.1"
+version = "0.2.0"
 edition = "2021"
 description = "Form mixins and utilities for hirola"
 repository = "https://github.com/geofmureithi/hirola"
@@ -12,7 +12,7 @@ keywords = ["wasm", "html", "form", "web"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola-core = { path = "../hirola-core", version = "0.2.0-beta.1", features=["serde"] }
+hirola-core = { path = "../hirola-core", version = "0.2.0", features=["serde"] }
 wasm-bindgen = {version = "0.2", features= ["serde-serialize"]}
 validator = "0.10"
 validator_derive = "0.10"

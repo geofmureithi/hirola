@@ -67,13 +67,13 @@ use crate::{
 pub fn rhtml<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
-        element.set_inner_html(&format!("{text}"));
+        element.set_inner_html(text);
     };
     Box::new(cb)
 }
 
 /// A mixin that allows adding nonsignal text
-pub fn rtext<'a, D: Display>(text: &'a D) -> Box<dyn Fn(DomNode) -> () + 'a> {
+pub fn rtext<'a, D: Display>(text: &'a D) -> Box<dyn Fn(DomNode) + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
         element.set_text_content(Some(&format!("{text}")));
@@ -82,7 +82,7 @@ pub fn rtext<'a, D: Display>(text: &'a D) -> Box<dyn Fn(DomNode) -> () + 'a> {
 }
 
 /// Mixin that adds text to a dom node
-pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode) -> ()> {
+pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode)> {
     let signal = text.clone();
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
@@ -96,7 +96,7 @@ pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode) -> ()> {
 }
 
 /// Mixin that adds text to a dom node
-pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode) -> ()> {
+pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode)> {
     let signal = shown.clone();
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<HtmlElement>();
@@ -158,6 +158,7 @@ where
 /// Two way binding for input and signals
 pub mod model {
     use super::*;
+    /// Bind a [HtmlInputElement] to a [Signal<T>]
     pub fn input<T>(s: &Signal<T>) -> Model<HtmlInputElement, T> {
         Model(s.clone(), PhantomData)
     }

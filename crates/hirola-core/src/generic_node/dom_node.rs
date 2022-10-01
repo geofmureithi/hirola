@@ -22,6 +22,9 @@ impl DomNode {
     pub fn unchecked_into<T: JsCast>(self) -> T {
         self.node.unchecked_into()
     }
+    // pub fn dyn_into<T: JsCast>(self) -> Result<T, Node> {
+    //     self.node.dyn_into()
+    // }
 }
 
 impl AsRef<JsValue> for DomNode {

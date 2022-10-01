@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate validator_derive;
 
-use std::str::FromStr;
-
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -19,39 +17,42 @@ struct Login {
     #[validate(length(min = 1, message = "Password is required"))]
     password: String,
 
-    inner: InnerData,
+    count: u32,
+
+    remember: String,
 }
 
-#[derive(PartialEq, Clone, Serialize, Deserialize, Debug)]
-struct InnerData {
-    test: i32,
-}
+#[component]
+fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
+    let increment = bind.callback(move |bind, _e: Event| {
+        let value = bind.get_value();
+        bind.set_value(value + 1)
+    });
 
-fn InnerComponent(bind: Bind<InnerData, Login>) -> Dom {
-    let b = bind.clone();
-    let increment = move |e: Event| {
-        let value = bind.get_value().test;
-        bind.set_value(InnerData { test: value + 1 })
-    };
+    let bind = bind.clone();
+
     html! {
-        <div>
-            <span on:click=increment>"Controlled increment"</span>
-            <span>{b.get_value().test}</span>
-        </div>
+        <>
+            <span>"Counter"</span>
+            <button type="button" on:click=increment>"+"</button>
+            <span>{bind.get_value()}</span>
+        </>
     }
 }
 
 fn form_demo(_app: &HirolaApp) -> Dom {
     let form = FormHandler::new(Login {
-        email: String::from_str("example@gmail.com").unwrap(),
+        email: "example@gmail.com".to_string(),
         password: String::new(),
-        inner: InnerData { test: 100 },
+        count: 100,
+        remember: "true".to_string(),
     });
 
     html! {
         <form
             class="h-screen flex flex-col items-center justify-center"
-            ref=&form.node_ref()
+            method="post"
+            ref={form.node_ref()}
             >
             <div class="mb-6">
                 <label for="email"
@@ -62,7 +63,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    //required=""
+                    //required
                     mixin:form={&form.register::<HtmlInputElement>()}
                     />
                 <span class="text-red-700 text-sm" mixin:text=&text(&form.error_for("email"))></span>
@@ -80,18 +81,19 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     mixin:form={&form.register::<HtmlInputElement>()}
                 />
             </div>
+            <InnerComponent bind={form.bind::<u32>("count")} />
             <div class="flex items-start mb-6">
-                <InnerComponent bind={form.bind::<InnerData>("inner")} />
-            <div class="flex items-center h-5">
-                <input
-                    id="remember"
-                    name="remember"
-                    type="checkbox"
-                    value=""
-                    class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                    required=""
-                    // mixin:form={&form.register::<HtmlInputElement>()}
-                />
+
+                <div class="flex items-center h-5">
+                    <input
+                        id="remember"
+                        name="remember"
+                        type="checkbox"
+                        value=""
+                        class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
+                        required=""
+                        // mixin:form={&form.register::<HtmlInputElement>()}
+                    />
                 </div>
                 <label
                     for="remember"
@@ -110,6 +112,10 @@ fn form_demo(_app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", form_demo);
+    app.mount(&body, form_demo);
 }

@@ -1,9 +1,9 @@
-use hirola_core::prelude::*;
+use hirola::prelude::*;
 
 #[test]
 fn hello_world() {
-    let node = template! {
-        p { "Hello World!" }
+    let node = html! {
+        <p>"Hello World!"</p>
     };
 
     assert_eq!(render_to_string(|| node), "<p>Hello World!</p>");
@@ -13,8 +13,8 @@ fn hello_world() {
 fn reactive_text() {
     let count = Signal::new(0);
 
-    let node = cloned!((count) => template! {
-        p { (count.get()) }
+    let node = cloned!((count) => html! {
+        <p>{ (count.get()) }</p>
     });
 
     assert_eq!(render_to_string(cloned!((node) => || node)), "<p>0</p>");

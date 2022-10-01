@@ -53,6 +53,10 @@ fn fetch_users(_app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let app = HirolaApp::new();
-    app.mount("body", fetch_users);
+    app.mount(&body, fetch_users);
 }

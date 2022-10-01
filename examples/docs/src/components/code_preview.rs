@@ -18,8 +18,11 @@ fn highlight_code<'a>(_example_name: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a>
     Box::new(cb)
 }
 
-pub fn CodePreview(code: &'static str, file_name: &'static str) -> Dom {
+#[component]
+pub fn CodePreview<'a>(code: &'a str, file: &'a str) -> Dom {
+    let file = file.to_string();
+    let code = code.to_string();
     html! {
-        <pre class="text-sm my-2 p-2" mixin:code=&highlight_code(file_name)><code>{code}</code></pre>
+        <pre class="text-sm my-2 p-2" mixin:code=&highlight_code(&file)><code>{code.clone()}</code></pre>
     }
 }

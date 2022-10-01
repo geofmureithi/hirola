@@ -15,7 +15,7 @@ pub fn testing_page(_app: &HirolaApp) -> Dom {
             </blockquote>
             <h2>"Example"</h2>
             <p>"A testing example can be seen in the counter example"</p>
-            <CodePreview code={include_str!("../../../counter/src/main.rs")} file_name="src/main.rs" />
+            <CodePreview code={include_str!("../../../counter/src/main.rs")} file="src/main.rs" />
             <p>"Tests can be run with wasmpack"</p>
             <code class="block one-liner my-1 py-1">"wasm-pack test --node"</code>
             <p>"Testing is still a work in progress"</p>

@@ -23,7 +23,7 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
   }
 }}
 "
-    file_name="src/main.rs"
+    file="src/main.rs"
     />
               <div class="demo">
               {for i in 0..5 {
@@ -55,7 +55,7 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
   }
 />
 "
-                file_name="src/main.rs"
+                file="src/main.rs"
                 />
             <h3>"Indexed"</h3>
             <CodePreview
@@ -75,7 +75,7 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
   }
 />
 "
-           file_name="src/main.rs"
+           file="src/main.rs"
            />
            <h2>"Components"</h2>
            <p>"One can write components as functions starting with uppercase"</p>
@@ -85,7 +85,7 @@ html! {
   <Todo router={router} />
 }
 "
-        file_name="src/main.rs"
+        file="src/main.rs"
            />
             </div>
         }

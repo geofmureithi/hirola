@@ -11,6 +11,7 @@ use std::rc::Rc;
 ///
 /// Returned by functions that provide a handle to access state.
 /// Use [`Signal::handle`] or [`Signal::into_handle`] to retrieve a handle from a [`Signal`].
+
 pub struct StateHandle<T: 'static>(Rc<RefCell<SignalInner<T>>>);
 
 impl<T: 'static> StateHandle<T> {
@@ -224,7 +225,7 @@ impl<T: 'static> Signal<T> {
 
 impl<T> StateReduce<T> for Signal<T> {
     /// Sets the return value
-    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E) -> ()>
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&T, E) -> T + 'static,
     {

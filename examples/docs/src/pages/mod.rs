@@ -33,7 +33,7 @@ pub fn home(_: &HirolaApp) -> Dom {
     html! {
         <div>
             <h1>"What is Hirola?"</h1>
-            <p><strong>"Hirola"</strong>" is an opinionated Rust web framework that is focused on simplicity and predictability."</p>
+            <p><strong>"Hirola"</strong>" is an un-opinionated Rust web framework that is focused on simplicity and predictability."</p>
             <h2>"Goals"</h2>
             <ul>
               <li>"Keep it simple. Most Rust web frameworks have a huge learning curve and verbose syntaxes. We yearn to minimize these."</li>
@@ -61,10 +61,14 @@ fn counter(_: &HirolaApp) -> Dom {
 }
 
 fn main() {
+  let window = web_sys::window().unwrap();
+  let document = window.document().unwrap();
+  let body = document.body().unwrap();
+
   let app = HirolaApp::new();
-  app.mount("body", counter);
+  app.mount(&body, counter);
 }"#
-      file_name="main.rs"/>
+      file="main.rs"/>
 
               <div class="demo">
                 {

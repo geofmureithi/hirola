@@ -47,14 +47,14 @@ pub trait Styled: Sized {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 enum Rule {
     Selecter(String, Vec<(String, String)>),
     Keyframes(String, Style),
     Media(String, Style),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Style {
     rules: Vec<Rule>,
 }
@@ -414,7 +414,7 @@ mod tests {
             "}\n",
         );
 
-        assert_eq!(format!("{:?}", style), style_str);
+        assert_eq!(format!("{}", style), style_str);
     }
 
     #[test]
@@ -478,7 +478,7 @@ mod tests {
             "}\n",
         );
 
-        assert_eq!(format!("{:?}", style), style_str);
+        assert_eq!(format!("{}", style), style_str);
     }
 
     #[test]

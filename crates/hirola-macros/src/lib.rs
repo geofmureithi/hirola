@@ -1,6 +1,9 @@
+mod component;
+
 use proc_macro2::TokenStream;
+use proc_macro_error::proc_macro_error;
 use quote::quote;
-use syn::{Expr, ExprBlock, ExprForLoop, Ident, Stmt};
+use syn::{parse_macro_input, Expr, ExprBlock, ExprForLoop, Ident, Stmt};
 use syn_rsx::{Node, NodeType, ParserConfig};
 
 fn to_token_stream(input: proc_macro::TokenStream) -> TokenStream {
@@ -20,10 +23,14 @@ fn to_token_stream(input: proc_macro::TokenStream) -> TokenStream {
 fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
     let mut tokens = TokenStream::new();
     let children_tokens = children_to_tokens(nodes);
-    tokens.extend(quote! {{
-        #children_tokens
-        // sauron_core::prelude::html::fragment(children)
-    }});
+    tokens.extend(quote! {
+            {
+                let element: ::hirola::prelude::DomType = ::hirola::prelude::GenericNode::fragment();
+                #children_tokens
+                element
+            }
+
+    });
     tokens
 }
 
@@ -31,43 +38,69 @@ fn node_to_tokens(node: Node) -> TokenStream {
     let mut tokens = TokenStream::new();
 
     // NodeType::Element nodes can't have no name
-    let name = node.name_as_string().expect("node should have a name");
+    let name = node.name_as_string();
 
-    if &name[0..1].to_lowercase() == &name[0..1] {
-        let attributes = node
-            .attributes
-            .iter()
-            .map(|attribute| attribute_to_tokens(attribute));
+    if let Some(name) = name {
+        if name[0..1].to_lowercase() == name[0..1] {
+            let attributes = node
+                .attributes
+                .iter()
+                .map(attribute_to_tokens);
 
-        let children_tokens = children_to_tokens(node.children);
+            let children_tokens = children_to_tokens(node.children);
 
-        tokens.extend(quote! {
-           // #[allow(unused_braces)]
+            tokens.extend(quote! {
+            
             {
+                
                 let element: ::hirola::prelude::DomType = ::hirola::prelude::GenericNode::element(#name);
                 #children_tokens
                 #(#attributes)*
                 element
              }
         });
-    } else {
-        let fnname: Ident = syn::parse_str(&name).unwrap();
-        let attributes = node
-            .attributes
-            .iter()
-            .map(|attribute| match &attribute.value {
-                Some(expr) => quote! {
-                   {#expr},
-                },
-                None => quote! { {true} },
-            });
-        tokens.extend(quote! {
+        } else {
+            let fnname: Ident = syn::parse_str(&name).unwrap();
+
+            let mut attributes = node
+                .attributes
+                .iter()
+                .map(|attribute| match &attribute.value {
+                    Some(expr) => {
+                        let ident: proc_macro2::TokenStream =
+                            attribute.name_as_string().unwrap().parse().unwrap();
+                        quote! {
+                            #ident: #expr
+                        }
+                    }
+                    None => quote! {},
+                })
+                .collect::<Vec<TokenStream>>();
+            if !node.children.is_empty() {
+                let children_tokens = children_to_tokens(node.children);
+                attributes.extend(vec![quote! {
+                    children: { 
+                        let element: ::hirola::prelude::DomType = ::hirola::prelude::GenericNode::fragment();
+                        #children_tokens
+                        ::hirola::prelude::TemplateResult::new(element)
+                     }
+                }]);
+            }
+
+            let quoted = if attributes.is_empty() {
+                quote!({&#fnname })
+            } else {
+                quote!({ &#fnname {#(#attributes),*} })
+            };
+            tokens.extend(quote! {
             {
-                ::hirola::prelude::untrack(|| ::hirola::prelude::TemplateResult::inner_element(&#fnname(#(#attributes)*)))
+                ::hirola::prelude::untrack(|| ::hirola::prelude::TemplateResult::inner_element( &#quoted.render()))
              }
         });
+        }
+    } else {
+        tokens.extend(fragment_to_tokens(node.children));
     }
-
     tokens
 }
 
@@ -86,7 +119,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                         .name_as_string()
                         .expect("attribute should have name");
 
-                    if name.starts_with("on") {
+                    if name.starts_with("on:") {
                         let name = name.replace("on:", "");
                         quote! {
                             ::hirola::prelude::GenericNode::event(
@@ -95,22 +128,20 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                                 ::std::boxed::Box::new(#value),
                             );
                         }
-                    } else if name.starts_with("mixin") {
+                    } else if name.starts_with("mixin:") {
                         let name_space = name.replace("mixin:", "");
                         quote! {
                             let element = ::std::clone::Clone::clone(&element);
-
                             {
-                                        let element = ::std::clone::Clone::clone(&element);
-                                        hirola::prelude::Mixin::mixin(#value, #name_space, element);
-                                    }
-                            // ::hirola::prelude::create_effect({
-                            //     let element = ::std::clone::Clone::clone(&element);
-                            //      || {
-                            //         let element = ::std::clone::Clone::clone(&element);
-                            //         hirola::prelude::Mixin::mixin(#value, #name_space, element);
-                            //     }
-                            // });
+                                let element = ::std::clone::Clone::clone(&element);
+                                #[allow(unused_braces)]
+                                let res = hirola::prelude::Mixin::mixin(#value, #name_space, element);
+                                if let Err(err) = res {
+                                    let current_line = std::line!();
+                                    let this_file = std::file!();
+                                    web_sys::console::error_1(&format!("{}, LINE: {}, FILE: {}", err, current_line, this_file).into());
+                                }
+                            }
 
                         }
                     } else if &name == "ref" {
@@ -185,6 +216,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                     append_children.extend(quote! {
                         ::hirola::prelude::GenericNode::append_child(
                             &element,
+                            #[allow(unused_braces)]
                             &::hirola::prelude::GenericNode::text_node(#s),
                         );
                     });
@@ -222,8 +254,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         _ => {
                             append_children.extend(quote! {
                                 ::hirola::prelude::GenericNode::append_render(
-                                    &element,
+                                    &element,                                    
                                     ::std::boxed::Box::new(move || {
+                                        #[allow(unused_braces)]
                                         ::std::boxed::Box::new(#expr)
                                     }),
                                 );
@@ -295,4 +328,14 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         ::hirola::prelude::TemplateResult::new(::std::convert::Into::<_>::into(#output))
     };
     quoted.into()
+}
+
+#[proc_macro_attribute]
+#[proc_macro_error]
+pub fn component(
+    _attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let f = parse_macro_input!(item as syn::ItemFn);
+    component::create_function_component(f)
 }

@@ -1,3 +1,5 @@
+name: Integration Tests
+
 on: [push, pull_request]
 
 jobs:
@@ -10,4 +12,6 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - run: wasm-pack test --headless --chrome
+        working-directory: crates/hirola-core
       - run: wasm-pack test --headless --firefox
+        working-directory: crates/hirola-core

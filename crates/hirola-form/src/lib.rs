@@ -1,8 +1,9 @@
 use std::{marker::PhantomData, rc::Rc};
 
 use hirola_core::{
+    callback::MixinError,
     cloned,
-    prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef},
+    prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef, State},
     reactive::{create_effect, Signal, StateHandle},
 };
 use json_dotpath::DotPaths;
@@ -12,7 +13,7 @@ use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement, HtmlSelectElement};
 
 /// Form plugin for hirola
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FormHandler<T: 'static> {
     node_ref: NodeRef<DomType>,
     value: Signal<T>,
@@ -66,8 +67,13 @@ pub struct Register<T: 'static, E> {
 }
 
 impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputElement> {
-    fn mixin(&self, ns: &str, node: DomNode) {
-        assert_eq!(ns, "form");
+    fn mixin(&self, ns: &str, node: DomNode) -> Result<(), MixinError> {
+        if ns != "form" {
+            return Err(MixinError::InvalidNamespace {
+                expected: "form".to_string(),
+                found: ns.to_string(),
+            });
+        }
 
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
@@ -84,17 +90,24 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputEle
         node.event("change", handler);
         let input = {
             let node = node.clone();
-            node.dyn_into::<HtmlInputElement>().unwrap()
+            node.dyn_into::<HtmlInputElement>()
+                .map_err(MixinError::NodeError)?
         };
         let name = input.name();
         let value: String = self.form.get_value_by_field(&name).unwrap().unwrap();
-        node.set_attribute("value", &value)
+        node.set_attribute("value", &value);
+        Ok(())
     }
 }
 
 impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectElement> {
-    fn mixin(&self, ns: &str, node: DomNode) {
-        assert_eq!(ns, "form");
+    fn mixin(&self, ns: &str, node: DomNode) -> Result<(), MixinError> {
+        if ns != "form" {
+            return Err(MixinError::InvalidNamespace {
+                expected: "form".to_string(),
+                found: ns.to_string(),
+            });
+        }
 
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
@@ -109,11 +122,12 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectEl
             form.update_field(&name, new_value);
         });
         node.event("change", handler);
+        Ok(())
     }
 }
 
 /// Allows connecting non-standard elements(eg components) to forms
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Bind<B: 'static, F: 'static>(&'static str, FormHandler<F>, PhantomData<B>);
 
 impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned> Bind<B, F> {
@@ -130,20 +144,9 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned> Bind<B, F
     }
 }
 
-impl<T: Clone + Validate + Serialize + DeserializeOwned> FormHandler<T> {
-    /// Create a form binding with a non-form element/component
-    pub fn bind<B: Serialize>(&self, name: &'static str) -> Bind<B, T> {
-        Bind(name, self.clone(), PhantomData)
-    }
+impl<B: Clone, F: Clone> State for Bind<B, F> {}
 
-    /// Register a form element
-    pub fn register<E>(&self) -> Register<T, E> {
-        Register {
-            form: self.clone(),
-            element_type: PhantomData,
-        }
-    }
-
+impl<T: Validate> FormHandler<T> {
     /// Perform validation
     pub fn validate(&self) -> Result<(), ValidationErrors> {
         self.value.get().validate()
@@ -170,6 +173,21 @@ impl<T: Clone + Validate + Serialize + DeserializeOwned> FormHandler<T> {
             }
         }));
         signal
+    }
+}
+
+impl<T: Clone + Serialize + DeserializeOwned> FormHandler<T> {
+    /// Create a form binding with a non-form element/component
+    pub fn bind<B: Serialize>(&self, name: &'static str) -> Bind<B, T> {
+        Bind(name, self.clone(), PhantomData)
+    }
+
+    /// Register a form element
+    pub fn register<E>(&self) -> Register<T, E> {
+        Register {
+            form: self.clone(),
+            element_type: PhantomData,
+        }
     }
 
     /// Get the reference for the form

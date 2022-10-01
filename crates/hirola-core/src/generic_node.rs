@@ -29,7 +29,7 @@ pub type EventListener = dyn Fn(Event);
 /// that they are simply functions that generate [`GenericNode`]s inside a new reactive context. This means that there
 /// is no overhead whatsoever when using components.
 ///
-/// Maple ships with 2 rendering backends out of the box:
+/// Hirola ships with 2 rendering backends out of the box:
 /// * [`DomNode`] - Rendering in the browser (to real DOM nodes).
 /// * [`SsrNode`] - Render to a static string (often on the server side for Server Side Rendering, aka. SSR).
 ///
@@ -90,7 +90,7 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
         let parent = self.clone();
 
         let node = create_effect_initial(cloned!((parent) => move || {
-            let node = RefCell::new(child().render());
+            let node = RefCell::new(child().render().node);
 
             let effect = cloned!((node) => move || {
                 let new_node = child().update_node(&parent, &node.borrow());

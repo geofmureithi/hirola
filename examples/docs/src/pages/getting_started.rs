@@ -41,7 +41,7 @@ pub fn getting_started_page(_app: &HirolaApp) -> Dom {
 
               <CodePreview code={INDEX} file="index.html" />
               <p>"Lets add some code to "<b>"src/main.rs" </b></p>
-              <CodePreview code={include_str!("../../../counter/src/main.rs")} file_name="src/main.rs" />
+              <CodePreview code={include_str!("../../../counter/src/main.rs")} file="src/main.rs" />
               <p>"Now lets run our project"</p>
               <code class="block one-liner my-1 py-1">
                 "trunk serve"
@@ -53,7 +53,7 @@ pub fn getting_started_page(_app: &HirolaApp) -> Dom {
                   let count = Signal::new(0);
                   html! {
                       <div>
-                        <button on:click={count.mut_callback(|c, _| c + 1)}>"Increment"</button>
+                        <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
                         <span class="ml-1">{count.get()}</span>
                       </div>
                     }

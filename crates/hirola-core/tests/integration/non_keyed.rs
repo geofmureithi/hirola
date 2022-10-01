@@ -4,15 +4,17 @@ use super::*;
 fn append() {
     let count = Signal::new(vec![1, 2]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -36,15 +38,17 @@ fn append() {
 fn swap_rows() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -71,15 +75,17 @@ fn swap_rows() {
 fn delete_row() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -99,15 +105,17 @@ fn delete_row() {
 fn clear() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -123,15 +131,17 @@ fn clear() {
 fn insert_front() {
     let count = Signal::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());
@@ -151,15 +161,17 @@ fn insert_front() {
 fn nested_reactivity() {
     let count = Signal::new(vec![1, 2, 3].into_iter().map(Signal::new).collect());
 
-    let node = cloned!((count) => template! {
-        ul {
-            Indexed(IndexedProps {
-                iterable: count.handle(),
-                template: |item| template! {
-                    li { (item.get()) }
-                },
-            })
-        }
+    let node = cloned!((count) => html! {
+        <ul>
+            <Indexed
+                props={IndexedProps {
+                    iterable: count.handle(),
+                    template: |item| html! {
+                        <li>{ item.get() }</li>
+                    },
+                }}
+            />
+        </ul>
     });
 
     render_to(|| node, &test_div());

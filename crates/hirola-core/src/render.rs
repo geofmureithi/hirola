@@ -9,7 +9,7 @@ use crate::TemplateResult;
 /// Trait for describing how something should be rendered into DOM nodes.
 pub trait Render<G: GenericNode> {
     /// Called during the initial render when creating the DOM nodes. Should return a [`GenericNode`].
-    fn render(&self) -> G;
+    fn render(&self) -> TemplateResult<G>;
 
     /// Called when the node should be updated with new state.
     /// The default implementation of this will replace the child node completely with the result of calling `render` again.
@@ -18,15 +18,15 @@ pub trait Render<G: GenericNode> {
     ///
     /// Returns the new node. If the node is reused instead of replaced, the returned node is simply the node passed in.
     fn update_node(&self, parent: &G, node: &G) -> G {
-        let new_node = self.render();
+        let new_node = self.render().node;
         parent.replace_child(&new_node, &node);
         new_node
     }
 }
 
 impl<T: fmt::Display + ?Sized, G: GenericNode> Render<G> for T {
-    fn render(&self) -> G {
-        G::text_node(&format!("{}", self))
+    fn render(&self) -> TemplateResult<G> {
+        TemplateResult::new(G::text_node(&format!("{}", self)))
     }
 
     fn update_node(&self, _parent: &G, node: &G) -> G {
@@ -39,7 +39,7 @@ impl<T: fmt::Display + ?Sized, G: GenericNode> Render<G> for T {
 }
 
 impl<G: GenericNode> Render<G> for TemplateResult<G> {
-    fn render(&self) -> G {
-        self.node.clone()
+    fn render(&self) -> TemplateResult<G> {
+        self.clone()
     }
 }

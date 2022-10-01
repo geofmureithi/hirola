@@ -43,8 +43,12 @@ fn home() -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let mut app = HirolaApp::new();
-    app.mount("body", home);
+    app.mount(&body, home);
 }
 
 ```

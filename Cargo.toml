@@ -1,19 +1,19 @@
 [package]
 name = "hirola"
-version = "0.1.7"
+version = "0.2.0"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
-description = "A html library for building client side webapps"
+description = "Hirola is an un-opinionated web framework that is focused on simplicity and predictability"
 repository = "https://github.com/geofmureithi/hirola"
-documentation = "https://docs.rs/hirola"
+documentation = "https://hirola-docs.vercel.app"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["wasm", "html", "dom", "web"]
 edition = "2021"
 
 [dependencies]
-hirola-core = { path = "crates/hirola-core", version = "0.1.7" }
-hirola-macros = { path = "crates/hirola-macros", version = "0.1.7" }
-hirola-form = { path = "crates/hirola-form", version = "0.1.7", optional = true }
+hirola-core = { path = "crates/hirola-core", version = "0.2.0" }
+hirola-macros = { path = "crates/hirola-macros", version = "0.2.0" }
+hirola-form = { path = "crates/hirola-form", version = "0.2.0", optional = true }
 
 
 [features]

@@ -1,7 +1,6 @@
 use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::window;
-use web_sys::Event;
 use web_sys::HtmlInputElement;
 
 #[derive(Clone, PartialEq)]
@@ -11,21 +10,32 @@ struct Todo {
     complete: bool,
 }
 
-fn TodoCard(
-    todo: StateHandle<Todo>,
-    on_remove: Box<dyn Fn(Event) -> ()>,
-    on_click: Box<dyn Fn() -> ()>,
-) -> Dom {
+#[component]
+fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<Todo>>>) {
+    let todo = (&*todo).clone().get();
+    let id = todo.id.clone();
+    let href = format!("/todo/{}", id);
+
+    let title = todo.title.clone();
+    let tl = title.clone();
+    let on_remove = todos.callback(move |todos, _e| {
+        let index = todos
+            .get()
+            .iter()
+            .position(|t| t.get().title == tl.clone())
+            .unwrap();
+        todos.remove(index);
+    });
     html! {
         <div class="flex mb-4 items-center">
-            <p class="w-full text-grey-darkest">{todo.get().title.clone()}</p>
-            <button
-                on:click={move |e| {
-                    on_click();
-                }}
-                class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green hover:bg-green">
+            <p class="w-full text-grey-darkest">{title.clone()}</p>
+            <a
+                href=href
+                class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green hover:bg-green"
+                mixin:route=&router.link()
+                >
                 "View"
-            </button>
+            </a>
             <button
                 on:click=on_remove
                 class="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red hover:text-white hover:bg-red">
@@ -64,7 +74,7 @@ fn home(app: &HirolaApp) -> Dom {
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;
 
-    let add_new = state.callback(|todos, e| {
+    let add_new = state.callback(|todos, _e| {
         let input = window()
             .unwrap()
             .document()
@@ -79,8 +89,6 @@ fn home(app: &HirolaApp) -> Dom {
         }))
     });
 
-    let todos = state.clone();
-
     html! {
         <div class="h-100 w-full flex items-center justify-center bg-teal-lightest font-sans">
             <div class="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
@@ -91,34 +99,30 @@ fn home(app: &HirolaApp) -> Dom {
                             id="add"
                             class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker"
                             placeholder="Add Todo"/>
-                        <button class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal" on:click={add_new}>"Add"</button>
+                        <button
+                            class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal"
+                            on:click=add_new>
+                            "Add"
+                        </button>
                     </div>
                 </div>
                 <div>
                 <Keyed
                     props={
                         KeyedProps {
-                            iterable: todos.handle(),
+                            iterable: state.handle(),
                             template: move | todo | {
-                                let id = todo.get().id.clone();
-                                let title = todo.get().title.clone();
-                                let cb = state.callback(move |todos, e| {
-                                    let index = todos
-                                        .get()
-                                        .iter()
-                                        .position(|t| t.get().title == title)
-                                        .unwrap();
-                                    todos.remove(index);
-                                });
-                                let r = router.clone();
+                                // let id = todo.get().id.clone();
+                                // let title = todo.get().title.clone();
+
                                 html! {
-                                    <TodoCard
-                                        todo=todo.handle()
-                                        on_remove=cb
-                                        on_click={Box::new(move || {
-                                            r.push(&format!("/todo/{}", id));
-                                        })}
-                                    />
+                                    <>
+                                        <TodoCard
+                                            todo=todo.handle()
+                                            router=router.clone()
+                                            todos=state.clone()
+                                        />
+                                    </>
                                 }
                             },
                             key: |item| (*item).clone().get().title.clone()
@@ -136,7 +140,21 @@ struct TodoStore {
     todos: Signal<Vec<Signal<Todo>>>,
 }
 
+fn index(app: &HirolaApp) -> Dom {
+    let router = app.data::<Router>().unwrap().clone();
+    let app = app.clone();
+    html! {
+        <div>
+            {router.render(&app)}
+        </div>
+    }
+}
+
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let todos = vec![
         Signal::new(Todo {
             id: String::from("1"),
@@ -152,13 +170,15 @@ fn main() {
     let todos = Signal::new(todos);
 
     let mut app = HirolaApp::new();
-    app.extend(TodoStore { todos });
 
     let mut router = Router::new();
     router.add("/", home);
     router.add("/todo/:id", todo_view);
 
-    app.mount("body", |app| router.render(app));
+    app.extend(TodoStore { todos });
+    app.extend(router);
+
+    app.mount(&body, index);
 }
 
 #[cfg(test)]

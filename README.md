@@ -1,98 +1,103 @@
 # Hirola
 
 [![Latest Version](https://img.shields.io/crates/v/hirola.svg)](https://crates.io/crates/hirola)
-[![Build Status](https://travis-ci.org/geofmureithi/hirola.svg?branch=master)](https://travis-ci.org/geofmureithi/hirola)
+[![Browser Tests](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml/badge.svg)](https://github.com/geofmureithi/hirola/actions/workflows/browser.yml)
+[![Unit Tests](https://github.com/geofmureithi/hirola/actions/workflows/unit.yml/badge.svg)](https://github.com/geofmureithi/hirola/actions/workflows/unit.yml)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**Hirola** is an opinionated web framework for that is focused on simplicity and predictability.
+**Hirola** is an un-opinionated webf ramework that is focused on simplicity and predictability.
 
 ## Goals
 
-1. Keep it simple. Most Rust web frameworks have a huge learning curve and verbose syntaxes. We yearn to minimize these.
+1. Keep it simple. A simple and declarative way to build web UIs in rust with a small learning curve.
 2. Make it easy to read, extend and share code. Mixins and components are kept simple and macro-free.
-3. No Context. You can choose passing props down, and/or use the global-state if routing. You can write hook-like functions though.
-4. Familiality. Uses rsx which is very similar to JSX.
+3. No context, you can choose passing props down, and/or use the `global-state`.
+4. Familiality. Uses rsx which is very similar to jsx.
 
-Here is a simple example:
+## Example
+
+We are going to create a simple counter program.
+
+```
+cargo new counter
+```
+
+With a new project, we need to create an index file which is the entry point and required by trunk
+
+```
+cd counter
+```
+
+Create an `index.html` in the root of counter. Add the contents below
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hirola Counter</title>
+    <body></body>
+  </head>
+</html>
+```
+
+Lets add some code to `src/main.rs`
 
 ```rust
 use hirola::prelude::*;
 
-fn counter(_: &HirolaApp) -> Dom {
-    let state = Signal::new(99);
-    let decerement = state.mut_callback(|count, _| *count - 1);
-    let incerement = state.mut_callback(|count, _| *count + 1);
-
+fn counter(app: &HirolaApp) -> Dom {
+    let count = Signal::new(0);
+    let increment = count.mut_callback(|c, _| c + 1)
     html! {
         <div>
-            <button on:click={decerement}>"-"</button>
-            <input value={state.get()} disabled/>
-            <button on:click={incerement}>"+"</button>
+            <button on:click=increment>"Increment"</button>
+            <span>{count.get()}</span>
         </div>
     }
 }
-
 fn main() {
-    let mut app = HirolaApp::new();
-    app.mount("body", counter);
-}
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
 
-```
-
-### Mixins
-
-Mixins are hirola's way of extending functionality and following DRY principles. Here is an example:
-
-```rust
-// Mixin that controls tailwind opacity based on a bool signal
-fn opacity<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-   let cb = move |node: DomNode| {
-       let element = node.unchecked_into::<Element>();
-       if *signal.get() {
-           element.class_list().add_1("opacity-100").unwrap();
-           element.class_list().remove_1("opacity-0").unwrap();
-       } else {
-           element.class_list().add_1("opacity-0").unwrap();
-           element.class_list().remove_1("opacity-100").unwrap();
-       }
-   };
-   Box::new(cb)
+    let app = HirolaApp::new();
+    app.mount(&body, counter);
 }
 ```
 
-You can now use you mixin on a dom node eg:
+Now lets run our project
 
-```rust
-html! {
-    <div class="bla blah" mixin:transition=opacity(&display)/>
-}
+```
+trunk serve
 ```
 
-Since you are passing a signal, you can now manipulate the signal to change the opacity.
-
-Mixins run in namespaces, eg the one above is run in `transition` namespace.
-This allows you to only run specific mixins. The inbuilt form mixins can only be run in `mixin:form` namespace.
+You should be able to get counter running: [Live Example](https://hirola-docs.vercel.app/basics/getting-started)
 
 ## Ecosystem
 
+Check out [Hirola Docs](https://hirola-docs.vercel.app/basics/getting-started) written with Hirola itself!
+
 Here are some extensions for hirola:
 
-1. [Form](https://crates.io/crates/hirola-form)
+1. [Form](https://hirola-docs.vercel.app/plugins/form)
+2. [Router](https://hirola-docs.vercel.app/plugins/router)
+3. [State](https://hirola-docs.vercel.app/plugins/state)
 
 ### Milestones
 
-| Status | Goal                                                                      | Labels        |
-| :----: | :------------------------------------------------------------------------ | ------------- |
-|   ✔    | Write code that is declarative and easy to follow                         | `ready`       |
-|   ✔    | Allow extensibility via mixins                                            | `ready`       |
-|   ❌   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `inprogress`  |
-|   🚀   | SSR First Approach                                                        | `help wanted` |
-|   🚀   | Hydration                                                                 | `help wanted` |
-|   🚀   | Serverside integrations                                                   | `help wanted` |
+| Status | Goal                                                                      | Labels  |
+| :----: | :------------------------------------------------------------------------ | ------- |
+|   ✔    | Write code that is declarative and easy to follow                         | `ready` |
+|   ✔    | Allow extensibility via mixins                                            | `ready` |
+|   🚀   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `ready` |
+|   🚀   | SSR                                                                       | `ready` |
+|   🚀   | Hydration                                                                 | `todo`  |
+|   🚀   | Serverside integrations                                                   | `todo`  |
 
 ### Inspiration
 
-- Sycamore/Maple
+- Sycamore
 - Alpine.js
 - React.js
 - Yew

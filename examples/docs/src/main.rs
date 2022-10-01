@@ -1,10 +1,7 @@
 mod components;
 mod pages;
 
-use std::fmt::Display;
-
 use components::logo::HirolaLogo;
-use hirola::prelude::mixins::text;
 use hirola::prelude::*;
 use pages::{
     async_page, event_handling_page, extending_page, forms_page, getting_started_page, home,
@@ -12,9 +9,7 @@ use pages::{
     testing_page,
 };
 
-use crate::components::seo_title::SeoTitle;
 use crate::components::side_bar::SideBar;
-use web_sys::Element;
 
 // macro_rules! make_example {
 
@@ -136,6 +131,10 @@ fn docs(app: &HirolaApp) -> Dom {
 }
 
 fn main() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
     let mut app = HirolaApp::new();
     let mut router = Router::new();
     router.add("/", home);
@@ -157,5 +156,5 @@ fn main() {
     router.add("/plugins/state", state_page);
 
     app.extend(router);
-    app.mount("body", docs);
+    app.mount(&body, docs);
 }

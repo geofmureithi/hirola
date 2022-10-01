@@ -24,16 +24,16 @@ pub fn event_handling_page(_app: &HirolaApp) -> Dom {
       "Click Me"
   </button>
 }"#
-    file_name="src/main.rs" />
+    file="src/main.rs" />
 
               <div class="demo">
                   {
 
                       html! {
                           <button
-                              on:click=|e| {
+                              on:click=|_e| {
                                 let window = web_sys::window().unwrap();
-                                window.alert_with_message("Hello from Hirola!");
+                                window.alert_with_message("Hello from Hirola!").unwrap();
                               }>
                               "Click Me"
                           </button>

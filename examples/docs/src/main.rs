@@ -6,7 +6,7 @@ use hirola::prelude::*;
 use pages::{
     async_page, event_handling_page, extending_page, forms_page, getting_started_page, home,
     inner_mixins, mixins_page, reactivity_page, router_page, ssr_page, state_page, templating_page,
-    testing_page,
+    testing_page, browser_instance_page,
 };
 
 use crate::components::side_bar::SideBar;
@@ -143,6 +143,7 @@ fn main() {
     router.add("/basics/templating", templating_page);
     router.add("/basics/mixins", mixins_page);
     router.add("/basics/events", event_handling_page);
+    router.add("/basics/browser-instance", browser_instance_page);
 
     router.add("/mixins/:mixin", inner_mixins);
 

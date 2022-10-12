@@ -10,7 +10,7 @@ pub fn SideBar(router: Router) -> Dom {
                 <li>
                   <span class="font-medium">"Basics"</span>
                   <ul class="pl-3">
-                    <li class="">
+                    <li class="gs-link">
                       <a mixin:route=&router.link() href="/basics/getting-started" class="hover:text-gray-900">"Installation"</a>
                     </li>
                     <li class="">
@@ -30,32 +30,32 @@ pub fn SideBar(router: Router) -> Dom {
                 <li>
                   <span class="font-medium">"Inbuilt Mixins"</span>
                   <ul class="pl-3">
-                    <li class="">
+                    <li class="mixin-s-link">
                       <a mixin::route=&router.link() href="/mixins/show" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"show" </a>
                     </li>
-                    <li class="">
+                    <li class="mixin-t-link">
                       <a mixin::route=&router.link() href="/mixins/text" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"text" </a>
                     </li>
-                    <li class="">
+                    <li class="mixin-rhtml-link">
                       <a mixin::route=&router.link() href="/mixins/rhtml" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"rhtml"</a>
                     </li>
-                    <li class="">
+                    <li class="mixin-model-link">
                       <a mixin::route=&router.link() href="/mixins/model" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"model" </a>
                     </li>
 
-                    <li class="">
+                    <li class="mixin-transition-link">
                       <a mixin::route=&router.link() href="/mixins/transition" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"transition 🚧" </a>
                     </li>
-                    <li class="">
+                    <li class="mixin-ignore-link">
                       <a mixin::route=&router.link() href="/mixins/ignore" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"ignore 🚧" </a>
                     </li>
-                    <li class="">
+                    <li class="mixin-if-link">
                       <a mixin::route=&router.link() href="/mixins/if" class="hover:text-gray-900">
                         <span class="text-orange-500">"mixin:"</span>"if 🚧"</a>
                     </li>
@@ -97,5 +97,5 @@ pub fn SideBar(router: Router) -> Dom {
                   </ul>
                 </li>
               </ul>
-    }
+    }.into()
 }

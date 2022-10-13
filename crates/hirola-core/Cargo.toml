@@ -46,7 +46,8 @@ features = [
   "CssRuleList",
   "CssStyleSheet",
   "CssStyleDeclaration",
-  "Window"
+  "Window",
+  "DomTokenList",
 ]
 optional = true
 version = "0.3"

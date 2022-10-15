@@ -266,19 +266,31 @@ pub fn create_effect_initial<R: 'static>(
 }
 
 /// Creates an effect on signals used inside the effect closure.
+/// 
+/// In some cases, you might want to track on the changes of your `Signal`. `create_effect` can make it happen. 
 ///
 /// # Example
 /// ```
 /// use hirola_core::prelude::*;
-///
-/// let state = Signal::new(0);
-///
-/// create_effect(cloned!((state) => move || {
-///     println!("State changed. New state value = {}", state.get());
-/// })); // Prints "State changed. New state value = 0"
-///
-/// state.set(1); // Prints "State changed. New state value = 1"
+/// 
+/// pub fn your_page(_app: &HirolaApp) -> Dom {
+///     let state = Signal::new(0);
+/// 
+///     create_effect(cloned!((state) => move || {
+///         let current_val = *state.get();
+///         web_sys::console::log_1(&current_val.to_string().into());
+///     }));
+/// 
+///     html! {
+///         <div>
+///             <button on:click= move |_| state.set(*state.get() + 1)>"Increase state by one"</button>
+///         </div>
+///     }
+/// }
 /// ```
+/// Running the above example will print out `0, 1, 2, 3, 4,...` on the console by clicking on the button.
+/// Notice that it also prints out `0`, this is because 
+/// Hirola will also run the effect at the start whenever it need to renders the page/component.
 pub fn create_effect<F>(effect: F)
 where
     F: Fn() + 'static,
@@ -296,18 +308,56 @@ where
 
 /// Creates a memoized value from some signals. Also know as "derived stores".
 ///
+/// Basically, a `memo` is a variable that depends on the value of one or more `signal(s)`. Once a `Signal` changes its value, 
+/// `memo` will re-calculate again its value based on the new value given by the `Signal`.
+/// 
 /// # Example
 /// ```
 /// use hirola_core::prelude::*;
-///
-/// let state = Signal::new(0);
-///
-/// let double = create_memo(cloned!((state) => move || *state.get() * 2));
-/// assert_eq!(*double.get(), 0);
-///
-/// state.set(1);
-/// assert_eq!(*double.get(), 2);
+/// 
+/// pub fn your_page(_app: &HirolaApp) -> Dom {
+///     let state = Signal::new(0);
+///     let memo = create_memo(cloned!((state) => move || *state.get() * 2));
+/// 
+///     html! {
+///         <div>
+///             <p>"state multiply by 2 is = "{memo.get()}</p>
+///             <button on:click= move |_| state.set(*state.get() + 1)>"Increase state by one"</button>
+///         </div>
+///     }
+/// }
 /// ```
+/// 
+/// Running the above example, you will notive `memo`'s value will turn `2, 4, 6...` as you clicking the button. This is because everytime `state`
+/// make any changes, `memo` will run again the closure with the new value given by the `state`.
+/// 
+/// # Note
+/// However, creating a memo this way will trigger all of it's subscriber even when the value is the same.
+/// 
+/// ## Example
+/// ```
+/// use hirola_core::prelude::*;
+/// 
+/// pub fn your_page(_app: &HirolaApp) -> Dom {
+///     let state = Signal::new(0);
+///     let memo = create_memo(cloned!((state) => move || *state.get() * 2));
+///     
+///     create_effect(cloned!((memo) => move || {
+///         let _val = memo.get();
+///         web_sys::console::log1(
+///         &"This message will printed out even when the memo's value is still the same when clicking the button".into());
+///     }));
+/// 
+///     html! {
+///         <div>
+///             <button on:click= move |_| state.set(*state.get())>"Constant"</button>
+///         </div>
+///     }
+/// }
+/// ```
+/// Running the above example, you will see the message printed out on the console whenever you clicks the button even when
+/// the value of the `memo` is still the same before and after. 
+/// To avoid this, you can use [`create_selector`] function.
 pub fn create_memo<F, Out>(derived: F) -> StateHandle<Out>
 where
     F: Fn() -> Out + 'static,
@@ -320,6 +370,39 @@ where
 /// Unlike [`create_memo`], this function will not notify dependents of a change if the output is the same.
 /// That is why the output of the function must implement [`PartialEq`].
 ///
+/// To specify a custom comparison function, use [`create_selector_with`].
+/// 
+/// # Example
+/// ```
+/// use hirola_core::prelude::*;
+/// 
+/// pub fn your_page(_app: &HirolaApp) -> Dom {
+///     let state = Signal::new(0);
+///     let state_copy = state.clone();
+/// 
+///     let memo = create_selector(cloned!((state) => move || *state.get()));
+///     
+///     create_effect(cloned!((memo) => move || {
+///         let _new_val = memo.get();
+///         web_sys::console::log1(&"You will only see this message when the value of memo changes".into());
+///     }));
+/// 
+///     html! {
+///         <div>
+///             <button on:click= move |_| state.set(*state.get())>"Constant"</button>
+///             <button on:click= move |_| state_copy.set(*state_copy.get() + 1)>"Increase state by one"</button>
+///         </div>
+///     }
+/// }
+/// ```
+/// 
+/// Running the above example, you will notice that Hirola will only run the `effect` when you click the second button.
+/// This is because `create_selector` returns a memo that will compare itself with the previous value of itself. If the two values
+/// are not the same, it will update the memo and triggers all of it's subscribers. If the two values are the same, nothing changes
+/// and nothing got triggered. 
+/// 
+/// ## Note
+/// By default, this function will use [`PartialEq`] to compare the old value and the new value. 
 /// To specify a custom comparison function, use [`create_selector_with`].
 pub fn create_selector<F, Out>(derived: F) -> StateHandle<Out>
 where
@@ -337,6 +420,32 @@ where
 ///
 /// To use the type's [`PartialEq`] implementation instead of a custom function, use
 /// [`create_selector`].
+/* 
+This example cannot be release yet because current "create_selector_with" implementation will only change the state
+when the output value of "comparator" return false. And the message will also printed out when rendering eventhough 
+the state is 0 at init.
+/// # Example
+/// ```
+/// use hirola_core::prelude::*;
+/// 
+/// pub fn your_page(_app: &HirolaApp) -> Dom {
+///     let state = Signal::new(0);
+///     let c = create_selector_with(cloned!((state) => move || { *state.get() }), move |_old , new| new > &5);
+/// 
+///     create_effect(cloned!((memo) => move || {
+///         let _new_val = memo.get();
+///         web_sys::console::log1(&"You will only see this message when the value of memo exceed 4".into());
+///     }));
+/// 
+///     html! {
+///         <div>
+///             <button on:click= move |_| state.set(*state.get() + 1)>"Increase state by one"</button>
+///         </div>
+///     }
+/// }
+/// ```
+/// By running this example, you will notice that the message will only be printed out when `state` exceeds 4.
+*/
 pub fn create_selector_with<F, Out, C>(derived: F, comparator: C) -> StateHandle<Out>
 where
     F: Fn() -> Out + 'static,

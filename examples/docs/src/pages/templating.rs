@@ -1,8 +1,6 @@
 use crate::components::seo_title::SeoTitle;
 use crate::pages::CodePreview;
 use hirola::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{Event, window, HtmlInputElement};
 
 pub fn templating_page(_app: &HirolaApp) -> Dom {
     html! {

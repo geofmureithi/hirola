@@ -229,21 +229,19 @@ impl<T> StateReduce<T> for Signal<T> {
     /// # Example
     /// ```
     /// pub struct State{
-    ///     pub counter: u32
+    ///     pub counter: Signal<u32>
     /// }
     /// 
     /// impl State {
     ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
-    ///         self.mut_callback(move |st, _e: Event| {
-    ///             let mut state = st.clone();
-    ///             state.counter += 1; 
-    ///             state
+    ///         self.counter.mut_callback(move |counter, _e: Event| {
+    ///             *counter + 1
     ///         })
     ///     }
     /// }
     /// 
     /// pub fn your_page(_app: HirolaApp) -> Dom {
-    ///     let state = Signal::new(State{counter: 0});
+    ///     let state = State{counter: Signal::new(0)};
     ///     let add_one = state.add_one();
     ///     
     ///     html! {

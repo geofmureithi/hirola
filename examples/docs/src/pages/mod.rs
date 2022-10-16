@@ -10,7 +10,6 @@ mod ssr;
 mod state;
 mod templating;
 mod testing;
-mod browser_instance;
 
 use hirola::prelude::*;
 
@@ -27,7 +26,6 @@ pub use ssr::ssr_page;
 pub use state::state_page;
 pub use templating::templating_page;
 pub use testing::testing_page;
-pub use browser_instance::browser_instance_page;
 
 use crate::components::code_preview::CodePreview;
 

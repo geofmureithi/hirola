@@ -112,6 +112,40 @@ pub fn render_to_string(
 pub type AsyncResult<T> = prelude::Signal<Option<Result<T, wasm_bindgen::JsValue>>>;
 
 /// Helper for making async calls
+/// 
+/// _This API requires the following crate features to be activated: `dom`_
+/// 
+/// # Example
+/// ```rust, no_run
+/// fn your_page(_app: &HirolaApp) -> Dom {
+///    let response = Signal::new(String::new());
+///    
+///    let submit_callback = response.callback(move |st, _e: Event| {
+///        let state = st.clone();
+/// 
+///        let async_task = async {
+///             //Some blocking task here...
+///             String::from("Async process done")
+///        }; 
+///    
+///        let async_response: Signal<Option<String>> = use_async(async_task);
+/// 
+///        create_effect(move || {
+///            match async_response.get().as_ref().clone() {
+///                Some(resp) => state.set(resp),
+///                None => ()
+///            }
+///        });
+///    });
+///
+///
+///    html!{
+///        <div>
+///            <button on:click=submit_callback >"Submit"</button>
+///        </div>
+///    }
+/// }
+/// ```
 #[cfg(feature = "async")]
 #[cfg_attr(docsrs, doc(cfg(feature = "async")))]
 pub fn use_async<F, T: 'static>(future: F) -> prelude::Signal<Option<T>>

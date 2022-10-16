@@ -1,6 +1,34 @@
 use crate::prelude::DomNode;
 
 pub trait StateReduce<T> {
+    /// Sets the return value.
+    /// 
+    /// # Example
+    /// ```
+    /// pub struct State{
+    ///     pub counter: Signal<u32>
+    /// }
+    /// 
+    /// impl State {
+    ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
+    ///         self.counter.mut_callback(move |counter: &u32, _e: Event| {
+    ///             *counter + 1
+    ///         })
+    ///     }
+    /// }
+    /// 
+    /// pub fn your_page(_app: HirolaApp) -> Dom {
+    ///     let state = State{counter: Signal::new(0)};
+    ///     let add_one = state.add_one();
+    ///     
+    ///     html! {
+    ///         <div>
+    ///             <p>"counter is: "{state.get().counter}</p>
+    ///             <button on:click=add_one>"add one"</button>
+    ///         </div>
+    ///     }
+    /// }
+    /// ```
     fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&T, E) -> T + 'static;
@@ -31,7 +59,35 @@ where
 }
 
 pub trait State: Clone {
-    // Get a callback that allows interacting with state
+    /// Get a callback that allows interacting with state
+    /// 
+    /// # Example
+    /// ```
+    /// pub struct State{
+    ///     pub counter: Signal<u32>
+    /// }
+    /// 
+    /// impl State {
+    ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
+    ///         self.counter.callback(move |counter: &Signal<u32>, _e: Event| {
+    ///             let num: u32 = *counter.get();
+    ///             counter.set(num + 1);
+    ///         })
+    ///     }
+    /// }
+    /// 
+    /// pub fn your_page(_app: HirolaApp) -> Dom {
+    ///     let state = State{counter: Signal::new(0)};
+    ///     let add_one = state.add_one();
+    ///     
+    ///     html! {
+    ///         <div>
+    ///             <p>"counter is: "{state.get().counter}</p>
+    ///             <button on:click=add_one>"add one"</button>
+    ///         </div>
+    ///     }
+    /// }
+    /// ```
     fn callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&Self, E) + 'static,

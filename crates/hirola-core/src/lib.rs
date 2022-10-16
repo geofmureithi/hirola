@@ -113,7 +113,7 @@ pub type AsyncResult<T> = prelude::Signal<Option<Result<T, wasm_bindgen::JsValue
 
 /// Helper for making async calls
 /// 
-/// _This API requires the following crate features to be activated: `dom`_
+/// _This API requires the following crate features to be activated: `async`_
 /// 
 /// # Example
 /// ```rust, no_run

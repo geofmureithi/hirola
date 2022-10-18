@@ -64,7 +64,7 @@ use crate::{
 /// 
 /// Note: This is a security risk if the string to be inserted might contain potentially malicious content.
 /// sanitize the content before it is inserted.
-/// See more: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+/// See more: [https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML)
 pub fn rhtml<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
@@ -199,7 +199,7 @@ where
             signal.set(new_value);
         });
 
-        node.event("keyup", handler);
+        node.event("input", handler);
         input.set_value(&format!("{}", &self.0.get_untracked()));
         Ok(())
     }
@@ -209,6 +209,20 @@ where
 pub mod model {
     use super::*;
     /// Bind a [HtmlInputElement] to a [Signal<T>]
+    /// 
+    /// ## Example
+    /// ```rust, no_run
+    /// pub fn about(_app: &HirolaApp) -> Dom {
+    ///     let state = Signal::new(0);
+    ///
+    ///     html!{
+    ///         <div>
+    ///             <p>"user input: "<span mixin:text=&text(&state) /></p>
+    ///             <input type="color" mixin:model=&input(&state) />
+    ///         </div>
+    ///     }
+    /// }
+    /// ```
     pub fn input<T>(s: &Signal<T>) -> Model<HtmlInputElement, T> {
         Model(s.clone(), PhantomData)
     }
@@ -289,148 +303,7 @@ pub fn class<'a>(signal: &'a Signal<Vec<String>>) -> Box<dyn Fn(DomNode) -> () +
     Box::new(cb)
 }
 
-///Mixin for reactive `src` attribute
-/// 
-/// ## Example
-/// ```rust, no_run
-/// pub fn reactive_img(_app: &HirolaApp) -> Dom {
-///     let state = Signal::new(String::from("./cat.jpg"));
-///     
-///     html! {
-///         <div>
-///             <img mixin:src=&src(&state) />
-///             <button on:click=move |_| state.set("./dog.jpg".to_string())>"Change to dog"</button>
-///         </div>
-///     }
-/// }
-/// ```
-pub fn src<'a>(signal: &'a Signal<String>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let signal = signal.clone();
-
-    let cb = move |node: DomNode| {
-        let el =node.unchecked_into::<Element>();
-        let signal = signal.clone();
-
-        create_effect(move || {
-            let src = signal.get().to_string();
-            el.set_attribute("src", &src).unwrap();
-        })
-    };
-
-    Box::new(cb)
-}
-
-///Mixin for reactive `alt` attribute
 /* 
-/// ## Example
-/// ```rust, no_run
-/// pub fn reactive_img(_app: &HirolaApp) -> Dom {
-///     let img_src = Signal::new(String::from("./cat.jpg"));
-///     let img_alt = Signal::new(String::from("cat image here"));
-/// 
-///     let callback = Box::new(cloned!(img_src, img_alt) => move |_e: Event| {
-///         img_src.set("./dog.jpg".to_string());
-///         img_alt.set("dog image here".to_string());
-///     });
-///     
-///     html! {
-///         <div>
-///             <img mixin:src=&src(&img_src) mixin:alt=&alt(&img_alt) />
-///             <button on:click=callback)>"Change to dog"</button>
-///         </div>
-///     }
-/// }
-/// ```
-*/
-pub fn alt<'a>(signal: &'a Signal<String>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let signal = signal.clone();
-
-    let cb = move |node: DomNode| {
-        let el =node.unchecked_into::<Element>();
-        let signal = signal.clone();
-
-        create_effect(move || {
-            let alt = signal.get().to_string();
-            el.set_attribute("alt", &alt).unwrap();
-        })
-    };
-
-    Box::new(cb)
-}
-
-
-///Mixin for reactive `href` attribute
-/// 
-/// ## Example
-/// ```
-/// pub fn dynamic_link(_app: &HirolaApp) -> Dom {
-///     let state = Signal::new(String::from("https://google.com"));
-///     
-///     html! {
-///         <div>
-///             <a mixin:href=&href(&state) >"Send me to somewhere not here"</a>
-///             <button on:click=move |_| state.set("https://youtube.com".to_string())>"Change to link to youtube"</button>
-///         </div>
-///     }
-/// }
-/// ```
-pub fn href<'a>(signal: &'a Signal<String>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let signal = signal.clone();
-
-    let cb = move |node: DomNode| {
-        let el =node.unchecked_into::<Element>();
-        let signal = signal.clone();
-
-        create_effect(move || {
-            let href = signal.get().to_string();
-            el.set_attribute("href", &href).unwrap();
-        })
-    };
-
-    Box::new(cb)
-}
-
-
-///Mixin for reactive `id` attribute
-/// 
-/// ## Example
-/// ```
-/// pub fn dynamic_id(_app: &HirolaApp) -> Dom {
-///     let id_state = Signal::new(String::from("important-text"));
-///     
-///     html! {
-///         <div>
-///             <p mixin:id=&id(&id_state) >"This is some important context"</p>
-///             <button on:click=move |_| id_state.set("very-important-text".to_string())>"Change id"</button>
-///         </div>
-///     }
-/// }
-/// ```
-pub fn id<'a>(signal: &'a Signal<String>) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let signal = signal.clone();
-
-    let cb = move |node: DomNode| {
-        let el =node.unchecked_into::<Element>();
-        let signal = signal.clone();
-
-        let current_id = Signal::new(String::new());
-        create_effect(move || {
-            let old_id = current_id.get().to_string();
-            let id = signal.get().to_string();
-            match &old_id == &id {
-                true => (),
-                false => {
-                    el.set_id(&id);
-                    current_id.set(id);
-                }
-            }
-        })
-    };
-
-    Box::new(cb)
-}
-
-
 /// Mixin for reactive `disabled` attributes
 /// 
 /// ## Example
@@ -466,3 +339,4 @@ pub fn disabled<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a>
 
     Box::new(cb)
 }
+*/

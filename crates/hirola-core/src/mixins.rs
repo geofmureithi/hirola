@@ -102,7 +102,9 @@ pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode)> {
 /// Meaning that, under the hood, `mixin:show` only controls the `display` property of that element.
 /// 
 /// ## Example
-/// ```rust, no_run
+/// ```rust
+/// use hirola::prelude::*;
+/// use hirola::prelude::mixins::show;
 /// pub fn show_or_not_box(_app: &HirolaApp) -> Dom {
 ///     let state = Signal::new(true);
 /// 
@@ -211,7 +213,9 @@ pub mod model {
     /// Bind a [HtmlInputElement] to a [Signal<T>]
     /// 
     /// ## Example
-    /// ```rust, no_run
+    /// ```rust
+    /// use hirola::prelude::*;
+    /// use hirola::prelude::mixins::{model::input, text};
     /// pub fn about(_app: &HirolaApp) -> Dom {
     ///     let state = Signal::new(0);
     ///
@@ -232,7 +236,10 @@ pub mod model {
 ///Mixin for reactive classes
 /// 
 /// ## Example
-/// ```
+/// ```rust
+/// use hirola::prelude::*;
+/// use hirola::prelude::mixins::class;
+/// use web_sys::Event;
 /// pub fn yellow_or_black_box(_app: &HirolaApp) -> Dom {
 ///     let state = Signal::new(vec!["black-box".to_string()]);
 ///

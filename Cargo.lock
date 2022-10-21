@@ -379,7 +379,7 @@ dependencies = [
 name = "hirola-macros"
 version = "0.2.0"
 dependencies = [
- "hirola-core",
+ "hirola",
  "once_cell",
  "proc-macro-error",
  "proc-macro-hack",
@@ -388,6 +388,7 @@ dependencies = [
  "syn",
  "syn-rsx",
  "trybuild",
+ "wasm-bindgen-test",
 ]
 
 [[package]]

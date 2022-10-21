@@ -1,5 +1,8 @@
 use hirola_macros::html;
-use hirola_core::TemplateResult;
+use hirola::prelude::*;
+use wasm_bindgen_test::*;
+
+wasm_bindgen_test_configure!(run_in_browser);
 
 // fn entry(entry: u8) -> String {
 //     html_to_string! {
@@ -7,7 +10,7 @@ use hirola_core::TemplateResult;
 //     }
 // }
 
-#[test]
+#[wasm_bindgen_test]
 fn test() {
     let world = "planet";
 
@@ -15,6 +18,6 @@ fn test() {
         html! {
             <p>{world}</p>
         },
-        TemplateResult::empty()
+        TemplateResult::<DomNode>::empty()
     );
 }

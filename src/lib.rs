@@ -9,7 +9,7 @@
 //! **Hirola** is an un-opinionated and extensible web framework for that is focused on simplicity and predictability.
 //!
 //! ## Example
-//! ```rust,no_run
+//! ```ignore
 //! use hirola::prelude::*;
 //!
 //! fn counter(_: &HirolaApp) -> Dom {

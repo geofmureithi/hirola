@@ -32,7 +32,7 @@ macro_rules! cloned {
 /// 
 /// # Example
 /// ```rust, no_run
-/// use hirola_core::prelude::*;
+/// use hirola::prelude::*;
 /// 
 /// fn your_page(_app: &HirolaApp) -> Dom {
 ///     let bool1 = Signal::new(false);
@@ -56,7 +56,17 @@ macro_rules! cloned {
 /// # Note
 /// Overlapping classes will create unexpected behaviour, for instance:
 /// ```rust, no_run
-/// <div class=classes.get().to_string() class="bg-black"></div>
+/// use hirola::prelude::*;
+/// 
+/// fn your_page(_app: HirolaApp) -> Dom {
+///     let classes = classes! {
+///         "bg-white" => () true
+///     };
+/// 
+///     html! {
+///         <div class=classes.get().to_string() class="bg-black"></div>
+///     }
+/// }
 /// ```
 /// 
 #[macro_export]

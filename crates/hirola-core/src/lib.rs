@@ -132,6 +132,7 @@ pub mod prelude {
     pub use hirola_macros::{component, html};
 
     pub use crate::cloned;
+    pub use crate::classes;
     pub use crate::flow::{Indexed, IndexedProps, Keyed, KeyedProps};
     #[cfg(feature = "dom")]
     pub use crate::generic_node::DomNode;

@@ -26,5 +26,6 @@ syn-rsx = { version = "0.8" }
 once_cell = "1.8"
 
 [dev-dependencies]
-hirola-core = {path = "../hirola-core"}
+hirola = {path = "../../"}
+wasm-bindgen-test = "0.3"
 trybuild = "1.0"

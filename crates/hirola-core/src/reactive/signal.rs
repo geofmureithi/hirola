@@ -228,11 +228,14 @@ impl<T> StateReduce<T> for Signal<T> {
     /// 
     /// # Example
     /// ```
-    /// pub struct State{
+    /// use hirola::prelude::*;
+    /// use web_sys::Event;
+    /// 
+    /// pub struct PageState{
     ///     pub counter: Signal<u32>
     /// }
     /// 
-    /// impl State {
+    /// impl PageState {
     ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
     ///         self.counter.mut_callback(move |counter, _e: Event| {
     ///             *counter + 1
@@ -241,12 +244,12 @@ impl<T> StateReduce<T> for Signal<T> {
     /// }
     /// 
     /// pub fn your_page(_app: HirolaApp) -> Dom {
-    ///     let state = State{counter: Signal::new(0)};
+    ///     let state = PageState{counter: Signal::new(0)};
     ///     let add_one = state.add_one();
     ///     
     ///     html! {
     ///         <div>
-    ///             <p>"counter is: "{state.get().counter}</p>
+    ///             <p>"counter is: "{state.counter.get()}</p>
     ///             <button on:click=add_one>"add one"</button>
     ///         </div>
     ///     }

@@ -5,11 +5,14 @@ pub trait StateReduce<T> {
     /// 
     /// # Example
     /// ```
-    /// pub struct State{
+    /// use hirola::prelude::{*, State};
+    /// use web_sys::Event;
+    /// 
+    /// pub struct PageState{
     ///     pub counter: Signal<u32>
     /// }
     /// 
-    /// impl State {
+    /// impl PageState {
     ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
     ///         self.counter.mut_callback(move |counter: &u32, _e: Event| {
     ///             *counter + 1
@@ -18,12 +21,12 @@ pub trait StateReduce<T> {
     /// }
     /// 
     /// pub fn your_page(_app: HirolaApp) -> Dom {
-    ///     let state = State{counter: Signal::new(0)};
+    ///     let state = PageState{counter: Signal::new(0)};
     ///     let add_one = state.add_one();
     ///     
     ///     html! {
     ///         <div>
-    ///             <p>"counter is: "{state.get().counter}</p>
+    ///             <p>"counter is: "{state.counter.get()}</p>
     ///             <button on:click=add_one>"add one"</button>
     ///         </div>
     ///     }
@@ -63,11 +66,14 @@ pub trait State: Clone {
     /// 
     /// # Example
     /// ```
-    /// pub struct State{
+    /// use hirola::prelude::*;
+    /// use web_sys::Event; 
+    /// 
+    /// pub struct PageState{
     ///     pub counter: Signal<u32>
     /// }
     /// 
-    /// impl State {
+    /// impl PageState {
     ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
     ///         self.counter.callback(move |counter: &Signal<u32>, _e: Event| {
     ///             let num: u32 = *counter.get();
@@ -77,12 +83,12 @@ pub trait State: Clone {
     /// }
     /// 
     /// pub fn your_page(_app: HirolaApp) -> Dom {
-    ///     let state = State{counter: Signal::new(0)};
+    ///     let state = PageState{counter: Signal::new(0)};
     ///     let add_one = state.add_one();
     ///     
     ///     html! {
     ///         <div>
-    ///             <p>"counter is: "{state.get().counter}</p>
+    ///             <p>"counter is: "{state.counter.get()}</p>
     ///             <button on:click=add_one>"add one"</button>
     ///         </div>
     ///     }

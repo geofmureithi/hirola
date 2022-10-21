@@ -344,7 +344,7 @@ where
 ///     
 ///     create_effect(cloned!((memo) => move || {
 ///         let _val = memo.get();
-///         web_sys::console::log1(
+///         web_sys::console::log_1(
 ///         &"This message will printed out even when the memo's value is still the same when clicking the button".into());
 ///     }));
 /// 
@@ -384,7 +384,7 @@ where
 ///     
 ///     create_effect(cloned!((memo) => move || {
 ///         let _new_val = memo.get();
-///         web_sys::console::log1(&"You will only see this message when the value of memo changes".into());
+///         web_sys::console::log_1(&"You will only see this message when the value of memo changes".into());
 ///     }));
 /// 
 ///     html! {

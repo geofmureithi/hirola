@@ -91,6 +91,25 @@ impl GenericNode for DomNode {
             .unwrap();
     }
 
+    /* 
+    #[cfg(feature = "async")]
+    fn append_child(&self, child: &Self) {
+        use wasm_bindgen_futures::spawn_local;
+        self.node.append_child(&child.node).unwrap();
+        let node = self.clone();
+        let child = child.clone();
+        node.node.append_child(&child.node).unwrap();
+        let task = async move {
+            
+            let el = child.node.unchecked_ref::<Element>();
+            crate::mixins::enter(el.clone()).await;
+            
+        };
+        let _fut = spawn_local(task);
+    }
+    */
+
+    
     fn append_child(&self, child: &Self) {
         self.node.append_child(&child.node).unwrap();
     }
@@ -105,6 +124,24 @@ impl GenericNode for DomNode {
         self.node.remove_child(&child.node).unwrap();
     }
 
+    #[cfg(feature = "async")]
+    fn replace_child(&self, old: &Self, new: &Self) {
+        let old = old.clone();
+        let new = new.clone();
+        let node = self.clone();
+        let task = async move {
+            let old_el = new.node.unchecked_ref::<Element>();
+            let new_el = old.node.unchecked_ref::<Element>();
+            crate::mixins::leave_transition(old_el.clone()).await;
+            node.node.replace_child(&old.node, &new.node).unwrap();
+            crate::mixins::enter_transition(new_el.clone()).await;
+        };
+        let _fut = wasm_bindgen_futures::spawn_local(task);
+
+    }
+
+    //fixme: seems like `old` and `new` is backwards?
+    #[cfg(not(feature = "async"))]
     fn replace_child(&self, old: &Self, new: &Self) {
         self.node.replace_child(&old.node, &new.node).unwrap();
     }

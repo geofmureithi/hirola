@@ -26,6 +26,7 @@ regex = "1"
 matchit = { version = "0.6", optional = true }
 anymap = { version = "1.0.0-beta.2", optional = true }
 wasm-bindgen-futures = { version = "0.4.29", optional = true  }
+js-sys = { version = "0.3.60", optional = true }
 
 
 
@@ -63,7 +64,7 @@ dom = []
 ssr = ["html-escape", "web-sys/Event"]
 router = ["matchit", "web-sys/History", "web-sys/Location", "web-sys/HtmlLinkElement"]
 global-state = ["anymap"]
-async = ["wasm-bindgen-futures"]
+async = ["wasm-bindgen-futures", "js-sys"]
 
 [[bench]]
 harness = false

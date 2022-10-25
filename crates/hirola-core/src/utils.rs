@@ -95,3 +95,9 @@ pub fn loop_raf(task: Task) {
         tasks.borrow_mut().insert(task);
     });
 }
+
+pub fn request_animation_frame(f: &wasm_bindgen::prelude::Closure<dyn FnMut()>) {
+    web_sys::window().unwrap()
+        .request_animation_frame(wasm_bindgen::JsCast::unchecked_ref(f.as_ref()))
+        .unwrap();
+}

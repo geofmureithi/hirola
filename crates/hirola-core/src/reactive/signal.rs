@@ -177,12 +177,12 @@ impl<T: 'static> Signal<T> {
 
     /// Set the current value of the state.
     ///
-    /// This will notify and update any effects and memos that depend on this value.
+    /// This will notify and update any [`create_effect`] and [`create_memo`] that depend on this value.
     ///
     /// # Example
     /// ```
     /// # use hirola_core::prelude::*;
-    ///
+    /// 
     /// let state = Signal::new(0);
     /// assert_eq!(*state.get(), 0);
     ///
@@ -225,6 +225,36 @@ impl<T: 'static> Signal<T> {
 
 impl<T> StateReduce<T> for Signal<T> {
     /// Sets the return value
+    /// 
+    /// # Example
+    /// ```
+    /// use hirola::prelude::*;
+    /// use web_sys::Event;
+    /// 
+    /// pub struct PageState{
+    ///     pub counter: Signal<u32>
+    /// }
+    /// 
+    /// impl PageState {
+    ///     fn add_one(&self) -> Box<dyn Fn(Event)> {
+    ///         self.counter.mut_callback(move |counter, _e: Event| {
+    ///             *counter + 1
+    ///         })
+    ///     }
+    /// }
+    /// 
+    /// pub fn your_page(_app: HirolaApp) -> Dom {
+    ///     let state = PageState{counter: Signal::new(0)};
+    ///     let add_one = state.add_one();
+    ///     
+    ///     html! {
+    ///         <div>
+    ///             <p>"counter is: "{state.counter.get()}</p>
+    ///             <button on:click=add_one>"add one"</button>
+    ///         </div>
+    ///     }
+    /// }
+    /// ```
     fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&T, E) -> T + 'static,

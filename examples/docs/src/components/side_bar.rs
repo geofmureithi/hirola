@@ -97,5 +97,5 @@ pub fn SideBar(router: Router) -> Dom {
                   </ul>
                 </li>
               </ul>
-    }
+    }.into()
 }

@@ -8,7 +8,7 @@ use anymap::{CloneAny, Map};
 #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
 type ExtensionMap = Map<dyn CloneAny>;
 
-/// Represents an instance of a mountable app
+/// Represents an instance of a mountable app. Can be extended to hold a `Global State` and [`Router`].
 #[derive(Clone)]
 pub struct HirolaApp {
     #[cfg(feature = "global-state")]

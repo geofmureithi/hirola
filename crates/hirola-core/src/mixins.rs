@@ -262,10 +262,12 @@ pub fn transition<'a>(signal: &'a Signal<String>, onenter: bool) -> Box<dyn Fn(D
         let node = node.clone();
         let element = node.clone().dyn_into::<Element>().unwrap();
 
+        
         create_effect(move || {
             let signal = signal.get().to_string();
             element.set_attribute("mixintransition", &signal).unwrap();
         });
+
          
         if onenter {
             let node = node.clone();
@@ -281,42 +283,6 @@ pub fn transition<'a>(signal: &'a Signal<String>, onenter: bool) -> Box<dyn Fn(D
 }
 
 
-/*
-FIXME
-description: when using conditional rendering using `if` statement inside a block, programme cannot find transition property.
-
-recreating bug:
-step1: remove the `if !duration.is_empty()` statement below.
-
-step2: run the following
-let state = Signal::new(true);
-let state_copy = state.clone();
-html! {
-    <div>
-    <style>
-    //some styling
-    </style>
-    {
-        let res = *state.get();
-        match res {
-            true => html! {
-                <div mixin:transition=&transition(Signal::new("box".to_string()), true)>
-                    <h1>"first opt"</h1>
-                </div>
-            },
-            false => {
-                html! {
-                    <div mixin:transition=&transition(Signal::new("box".to_string()), true)>
-                        <h1>"second opt"</h1>
-                    </div>
-                }
-            }
-        }
-    }
-    <button on:click=move|_| state_copy.set(!*state_copy.get())>"toggle"</button>
-    </div>
-}
-*/
 //transition when element is entering
 #[cfg(feature = "async")]
 #[cfg_attr(docsrs, doc(cfg(feature = "async")))]
@@ -324,13 +290,20 @@ pub async fn enter_transition(element: Element) {
     let transition = element.get_attribute("mixintransition").unwrap_or_default();
     let element_classes = element.class_list();
 
-    if !transition.is_empty() && !element_classes.contains(&format!("{}-enter-active", &transition)) {
+    if !transition.is_empty() {
+        web_sys::console::log_1(&"enter transiotion2".into());
 
         //config
         if element_classes.contains(&format!("{}-leave-active", &transition)) {
             let _ = element_classes.remove_1(&format!("{}-leave-from", &transition));
             let _ = element_classes.remove_1(&format!("{}-leave-active", &transition));
             let _ = element_classes.remove_1(&format!("{}-leave-to", &transition));
+        }
+
+        if element_classes.contains(&format!("{}-enter-active", &transition)) {
+            let _ = element_classes.remove_1(&format!("{}-enter-from", &transition));
+            let _ = element_classes.remove_1(&format!("{}-enter-active", &transition));
+            let _ = element_classes.remove_1(&format!("{}-enter-to", &transition));
         }
 
         element_classes.add_1(&format!("{}-enter-from", &transition)).unwrap();
@@ -343,28 +316,8 @@ pub async fn enter_transition(element: Element) {
         let _ = element_classes.remove_1(&format!("{}-enter-from", transition)).unwrap();
         element_classes.add_1(&format!("{}-enter-to", transition)).unwrap();
 
-        //find transition duration
-        let transition_property = web_sys::window().unwrap()
-        .get_computed_style(&element).unwrap().unwrap()
-        .get_property_value("transition").unwrap();
-        let duration = transition_property.split_ascii_whitespace().collect::<Vec<&str>>();
-
-        //TODO: fix above bug
-        if !duration.is_empty() {
-            let mut duration = duration[1].to_string();
-            duration.pop();
-            let duration = (duration.parse::<f64>().unwrap() * 1000.).round() as i32;
-            
-            
-            let sleep = wasm_bindgen_futures::JsFuture::from(sleep(duration));
-            sleep.await.unwrap();
-        }
-
-        element_classes.remove_1(&format!("{}-enter-active", &transition)).unwrap();
-        element_classes.remove_1(&format!("{}-enter-to", &transition)).unwrap();
-        
-        
-        
+        let wait_for_transition_fut = wasm_bindgen_futures::JsFuture::from(wait_for_transition(element, transition, element_classes));
+        wait_for_transition_fut.await.unwrap();
     }
 
 }
@@ -385,7 +338,6 @@ pub async fn leave_transition(element: Element) {
         }
 
         element_classes.add_1(&format!("{}-leave-from", &transition)).unwrap();
-        
     
         let next_frame_fut = wasm_bindgen_futures::JsFuture::from(next_frame());
         next_frame_fut.await.unwrap();
@@ -394,36 +346,10 @@ pub async fn leave_transition(element: Element) {
         
         let _ = element_classes.remove_1(&format!("{}-leave-from", transition)).unwrap();
         element_classes.add_1(&format!("{}-leave-to", transition)).unwrap();
-
-        //find wait duration
-        let transiton_property = web_sys::window().unwrap()
-        .get_computed_style(&element).unwrap().unwrap()
-        .get_property_value("transition").unwrap();
-        let duration = transiton_property.split_ascii_whitespace().collect::<Vec<&str>>();
-        let mut duration = duration[1].to_string();
-        duration.pop();
-        let duration = (duration.parse::<f64>().unwrap() * 1000.).round() as i32;
         
-        
-        let sleep = wasm_bindgen_futures::JsFuture::from(sleep(duration));
-        sleep.await.unwrap();
-
-        element_classes.remove_1(&format!("{}-leave-active", &transition)).unwrap();
-        element_classes.remove_1(&format!("{}-leave-to", &transition)).unwrap();
+        let wait_for_transition_fut = wasm_bindgen_futures::JsFuture::from(wait_for_transition(element, transition, element_classes));
+        wait_for_transition_fut.await.unwrap();
     }
-}
-
-
-//sleep function utils for mixin transition
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
-fn sleep(ms: i32) -> js_sys::Promise {
-    js_sys::Promise::new(&mut |resolve, _| {
-        web_sys::window()
-            .unwrap()
-            .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms)
-            .unwrap();
-    })
 }
 
 //wait for next frame, utils for mixin transition
@@ -438,3 +364,38 @@ fn next_frame() -> js_sys::Promise {
         wrapper1.forget();
     })
 }
+
+
+//wait for transition to be done
+#[cfg(feature = "async")]
+#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+fn wait_for_transition(element: Element, transition: String, element_classes: web_sys::DomTokenList) -> js_sys::Promise {
+    use std::{rc::Rc, cell::RefCell};
+
+    js_sys::Promise::new(&mut |resolve, _| {
+        let element2 = element.clone();
+        let element_classes = element_classes.clone();
+        let transition = transition.clone();
+
+        let function: Rc<RefCell<Option<wasm_bindgen::prelude::Closure<dyn FnMut()>>>> = Rc::new(RefCell::new(None));
+        let function2 = function.clone();
+
+        let transition_function = wasm_bindgen::prelude::Closure::new(Box::new(move || {
+            let _ = element_classes.remove_1(&format!("{}-enter-active", &transition));
+            let _ = element_classes.remove_1(&format!("{}-enter-to", &transition));
+            let _ = element_classes.remove_1(&format!("{}-leave-active", &transition));
+            let _ = element_classes.remove_1(&format!("{}-leave-to", &transition));     
+
+            let a = function2.borrow();
+            let a = a.as_ref().unwrap();
+            element2.remove_event_listener_with_callback("transitionend", a.as_ref().unchecked_ref()).unwrap();
+
+            resolve.call0(&"".into()).unwrap();
+        }) as Box<dyn FnMut()>);    
+
+        
+        let _a = element.add_event_listener_with_callback("transitionend", transition_function.as_ref().unchecked_ref()).unwrap();
+        *function.borrow_mut() = Some(transition_function);
+    })
+}
+

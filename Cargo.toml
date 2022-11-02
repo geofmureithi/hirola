@@ -39,7 +39,8 @@ docsrs = ["document-features"]
 ## Enables form mixins and utilities
 form = ["hirola-form"]
 
-
+## Enables transition mixin
+transition = ["hirola-core/transition"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"

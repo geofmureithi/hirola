@@ -90,25 +90,6 @@ impl GenericNode for DomNode {
             .set_attribute(name, value)
             .unwrap();
     }
-
-    /* 
-    #[cfg(feature = "async")]
-    fn append_child(&self, child: &Self) {
-        use wasm_bindgen_futures::spawn_local;
-        self.node.append_child(&child.node).unwrap();
-        let node = self.clone();
-        let child = child.clone();
-        node.node.append_child(&child.node).unwrap();
-        let task = async move {
-            
-            let el = child.node.unchecked_ref::<Element>();
-            crate::mixins::enter(el.clone()).await;
-            
-        };
-        let _fut = spawn_local(task);
-    }
-    */
-
     
     fn append_child(&self, child: &Self) {
         self.node.append_child(&child.node).unwrap();
@@ -173,7 +154,7 @@ impl GenericNode for DomNode {
     }
 
     
-    #[cfg(feature = "async")]
+    #[cfg(feature = "transition")]
     fn append_render(&self, child: Box<dyn Fn() -> Box<dyn crate::render::Render<Self>>>) {
 
         let parent = self.clone();
@@ -217,7 +198,7 @@ impl GenericNode for DomNode {
     }
     
 
-    #[cfg(not(feature = "async"))]
+    #[cfg(not(feature = "transition"))]
     fn append_render(&self, child: Box<dyn Fn() -> Box<dyn crate::render::Render<Self>>>) {
         let parent = self.clone();
         

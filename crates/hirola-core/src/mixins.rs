@@ -96,7 +96,7 @@ pub fn text<T: Display>(text: &Signal<T>) -> Box<dyn Fn(DomNode)> {
 }
 
 //show function for using mixin:transition feature
-#[cfg(feature = "async")]
+#[cfg(feature = "transition")]
 pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode)> {
     let signal = shown.clone();
     let cb = move |node: DomNode| {
@@ -133,7 +133,7 @@ pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode)> {
 }
 
 /// Mixin that adds text to a dom node
-#[cfg(not(feature = "async"))]
+#[cfg(not(feature = "transition"))]
 pub fn show(shown: &Signal<bool>) -> Box<dyn Fn(DomNode)> {
     let signal = shown.clone();
     let cb = move |node: DomNode| {
@@ -205,7 +205,7 @@ pub mod model {
 
 /// Mixin for playing with `transition`
 /// 
-/// _This mixin requires the following crate features to be activated: `async`_
+/// _This mixin requires the following crate features to be activated: `transition`_
 /// 
 /// The implementation is very similar to that in `VueJS` and `Alpine`. 
 /// 
@@ -254,8 +254,8 @@ pub mod model {
 ///     }
 /// } 
 /// ```
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+#[cfg(feature = "transition")]
+#[cfg_attr(docsrs, doc(cfg(feature = "transition")))]
 pub fn transition<'a>(signal: &'a Signal<String>, onenter: bool) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let signal = signal.clone();
@@ -283,9 +283,11 @@ pub fn transition<'a>(signal: &'a Signal<String>, onenter: bool) -> Box<dyn Fn(D
 }
 
 
-//transition when element is entering
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+/// Transition function  when element is entering
+/// 
+/// For most case, you wont be needing this function as it is already implemented under the hood.
+#[cfg(feature = "transition")]
+#[cfg_attr(docsrs, doc(cfg(feature = "transition")))]
 pub async fn enter_transition(element: Element) {
     let transition = element.get_attribute("mixintransition").unwrap_or_default();
     let element_classes = element.class_list();
@@ -321,9 +323,11 @@ pub async fn enter_transition(element: Element) {
 }
 
 
-//transition when element is leaving
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+/// Transition function when element is leaving
+/// 
+/// For most case, you wont be needing this function as it is already implemented under the hood.
+#[cfg(feature = "transition")]
+#[cfg_attr(docsrs, doc(cfg(feature = "transition")))]
 pub async fn leave_transition(element: Element) {
     let transition = element.get_attribute("mixintransition").unwrap_or_default();
     let element_classes = element.class_list();
@@ -351,8 +355,8 @@ pub async fn leave_transition(element: Element) {
 }
 
 //wait for next frame, utils for mixin transition
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+#[cfg(feature = "transition")]
+#[cfg_attr(docsrs, doc(cfg(feature = "transition")))]
 fn next_frame() -> js_sys::Promise {
     js_sys::Promise::new(&mut |resolve, _| {
         let wrapper1 = wasm_bindgen::prelude::Closure::new(move || {
@@ -365,8 +369,8 @@ fn next_frame() -> js_sys::Promise {
 
 
 //wait for transition to be done
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+#[cfg(feature = "transition")]
+#[cfg_attr(docsrs, doc(cfg(feature = "transition")))]
 fn wait_for_transition(element: Element, transition: String, element_classes: web_sys::DomTokenList) -> js_sys::Promise {
     use std::{rc::Rc, cell::RefCell};
 

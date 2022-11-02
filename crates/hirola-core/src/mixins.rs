@@ -291,8 +291,6 @@ pub async fn enter_transition(element: Element) {
     let element_classes = element.class_list();
 
     if !transition.is_empty() {
-        web_sys::console::log_1(&"enter transiotion2".into());
-
         //config
         if element_classes.contains(&format!("{}-leave-active", &transition)) {
             let _ = element_classes.remove_1(&format!("{}-leave-from", &transition));
@@ -330,7 +328,7 @@ pub async fn leave_transition(element: Element) {
     let transition = element.get_attribute("mixintransition").unwrap_or_default();
     let element_classes = element.class_list();
 
-    if !transition.is_empty() && !element_classes.contains(&format!("{}-leave-active", &transition)) {
+    if !transition.is_empty() {
         if element_classes.contains(&format!("{}-enter-active", &transition)) {
             let _ = element_classes.remove_1(&format!("{}-enter-from", &transition));
             let _ = element_classes.remove_1(&format!("{}-enter-active", &transition));

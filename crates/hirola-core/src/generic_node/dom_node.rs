@@ -124,24 +124,7 @@ impl GenericNode for DomNode {
         self.node.remove_child(&child.node).unwrap();
     }
 
-    #[cfg(feature = "async")]
-    fn replace_child(&self, old: &Self, new: &Self) {
-        let old = old.clone();
-        let new = new.clone();
-        let node = self.clone();
-        let task = async move {
-            let old_el = new.node.unchecked_ref::<Element>();
-            let new_el = old.node.unchecked_ref::<Element>();
-            crate::mixins::leave_transition(old_el.clone()).await;
-            node.node.replace_child(&old.node, &new.node).unwrap();
-            crate::mixins::enter_transition(new_el.clone()).await;
-        };
-        let _fut = wasm_bindgen_futures::spawn_local(task);
-
-    }
-
     //fixme: seems like `old` and `new` is backwards?
-    #[cfg(not(feature = "async"))]
     fn replace_child(&self, old: &Self, new: &Self) {
         self.node.replace_child(&old.node, &new.node).unwrap();
     }
@@ -187,5 +170,70 @@ impl GenericNode for DomNode {
             .dyn_ref::<Text>()
             .unwrap()
             .set_text_content(Some(text));
+    }
+
+    
+    #[cfg(feature = "async")]
+    fn append_render(&self, child: Box<dyn Fn() -> Box<dyn crate::render::Render<Self>>>) {
+
+        let parent = self.clone();
+
+
+        let node = crate::prelude::create_effect_initial(crate::cloned!((parent) => move || {
+            let node = std::rc::Rc::new(RefCell::new(child().render().node));
+            let leaving = std::rc::Rc::new(RefCell::new(false));
+            let render = std::rc::Rc::new(RefCell::new(child()));
+
+
+            let effect = crate::cloned!((node) => move || {
+                let leaving = leaving.clone();
+
+                let new_render = child();
+                *render.borrow_mut() = new_render;
+
+                //if the current state is leaving, effect will not run the transition and will not replace the node also.
+                //the effect will only replace the render
+                if !*leaving.borrow() {
+                    let node = node.clone();
+                    let parent = parent.clone();
+                    let render = render.clone();
+
+                    let task = async move {
+                        let _ = leaving.replace(true);
+                        crate::mixins::leave_transition(node.borrow().clone().unchecked_ref::<Element>().clone()).await;
+                        let _ = leaving.replace(false);
+                        let new_node = render.borrow().update_node(&parent, &node.borrow());
+                        *node.borrow_mut() = new_node.clone();
+                        crate::mixins::enter_transition(new_node.unchecked_into::<Element>()).await;
+                    };
+                    let _fut = wasm_bindgen_futures::spawn_local(task);
+                }
+            });
+
+            (std::rc::Rc::new(effect), node)
+        }));
+
+        parent.append_child(&node.borrow());
+    }
+    
+
+    #[cfg(not(feature = "async"))]
+    fn append_render(&self, child: Box<dyn Fn() -> Box<dyn crate::render::Render<Self>>>) {
+        let parent = self.clone();
+        
+
+        let node = crate::prelude::create_effect_initial(crate::cloned!((parent) => move || {
+            let node = RefCell::new(child().render().node);
+
+
+            let effect = crate::cloned!((node) => move || {
+                let new_node = child().update_node(&parent, &node.borrow());
+                *node.borrow_mut() = new_node;
+            });
+
+            (std::rc::Rc::new(effect), node)
+        }));
+
+        parent.append_child(&node.borrow());
     }
 }

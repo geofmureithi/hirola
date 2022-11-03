@@ -64,8 +64,8 @@ dom = []
 ssr = ["html-escape", "web-sys/Event"]
 router = ["matchit", "web-sys/History", "web-sys/Location", "web-sys/HtmlLinkElement"]
 global-state = ["anymap"]
-async = ["wasm-bindgen-futures", "js-sys"]
-transition = ["async"]
+async = ["wasm-bindgen-futures"]
+transition = ["async", "js-sys"]
 
 [[bench]]
 harness = false

@@ -25,8 +25,8 @@ wasm-bindgen = { version = "0.2", optional = true }
 regex = "1"
 matchit = { version = "0.6", optional = true }
 anymap = { version = "1.0.0-beta.2", optional = true }
-wasm-bindgen-futures = { version = "0.4.29", optional = true  }
-
+wasm-bindgen-futures = { version = "0.4.29"  }
+futures-signals = "0.3.32"
 
 
 [dependencies.web-sys]
@@ -63,7 +63,6 @@ dom = []
 ssr = ["html-escape", "web-sys/Event"]
 router = ["matchit", "web-sys/History", "web-sys/Location", "web-sys/HtmlLinkElement"]
 global-state = ["anymap"]
-async = ["wasm-bindgen-futures"]
 
 [[bench]]
 harness = false

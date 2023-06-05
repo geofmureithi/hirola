@@ -28,26 +28,7 @@ fn fetch_users(_app: &HirolaApp) -> Dom {
 
     html! {
             <div class="grid h-screen place-items-center">
-                {if users.get().is_none() {
-                    html!{
-                        <div class="h-10 w-32">"Loading..."</div>
-                    }
-                }  else {
-                    let users = &*users.get();
-                    let users = users.clone().unwrap();
-
-                    html! {
-                        <div class="grid h-screen place-items-center">
-                                {for user in users.unwrap() {
-                                    html! {
-                                        <div>
-                                            {user.name.clone()}
-                                        </div>
-                                    }
-                                }}
-                        </div>
-                    }
-                }}
+                {format!("{:#?}", users)}
            </div>
     }
 }

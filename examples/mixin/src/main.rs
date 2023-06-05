@@ -32,7 +32,7 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
                         "width": "max-content";
                         "margin-left": "auto";
                         "margin-right": "auto";
-                        "margin-top": {if *is_shown.get() { "5px" } else { "10px" }};
+                        "margin-top": {if is_shown.get() { "5px" } else { "10px" }};
                     }
 
                     @media "(orientation: landscape)" {

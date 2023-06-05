@@ -3,8 +3,8 @@ use std::{marker::PhantomData, rc::Rc};
 use hirola_core::{
     callback::MixinError,
     cloned,
+    prelude::{create_effect, Signal, StateHandle},
     prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef, State},
-    reactive::{create_effect, Signal, StateHandle},
 };
 use json_dotpath::DotPaths;
 use serde::{de::DeserializeOwned, Serialize};
@@ -19,7 +19,7 @@ pub struct FormHandler<T: 'static> {
     value: Signal<T>,
 }
 
-impl<T: Serialize + DeserializeOwned> FormHandler<T> {
+impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
     /// Build a new reactive form
     pub fn new(value: T) -> Self {
         Self {
@@ -30,7 +30,7 @@ impl<T: Serialize + DeserializeOwned> FormHandler<T> {
 
     /// Get the immutable handle for form value
     pub fn handle(&self) -> StateHandle<T> {
-        (&self.value).clone().into_handle()
+        (&self.value).read_only()
     }
 
     /// Update a specific field using the dot notation.
@@ -54,8 +54,8 @@ impl<T: Serialize + DeserializeOwned> FormHandler<T> {
     }
 
     // Get form value
-    pub fn get_value(&self) -> Rc<T> {
-        self.value.get()
+    pub fn get_value(&self) -> T {
+        self.value.get_cloned()
     }
 }
 
@@ -130,49 +130,60 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectEl
 #[derive(Clone, Debug)]
 pub struct Bind<B: 'static, F: 'static>(&'static str, FormHandler<F>, PhantomData<B>);
 
-impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned> Bind<B, F> {
+impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> Bind<B, F> {
     /// Manually set the value of the bound field
     pub fn set_value(&self, value: B) {
         self.1.update_field(self.0, value);
     }
 
     /// Get value of bound field
-    pub fn get_value(&self) -> B {
+    pub fn get_value(&self) -> Signal<B> {
         let current_value = self.1.value.clone();
-        let json = serde_json::to_value(&*current_value.get()).unwrap();
-        json.dot_get(&self.0).unwrap().unwrap()
+        let name = self.0;
+        fn read_inner_value<F, B>(value: &F, name: &str) -> B
+        where
+            B: Serialize + DeserializeOwned,
+            F: Serialize + DeserializeOwned,
+        {
+            let json = serde_json::to_value(value).unwrap();
+            json.dot_get(name).unwrap().unwrap()
+        }
+        let signal = Signal::new(read_inner_value::<F, B>(&current_value.get_cloned(), name));
+        let signal_ret = signal.clone();
+        create_effect(current_value, move |value| signal.set(read_inner_value(&value, name)));
+        signal_ret
     }
 }
 
 impl<B: Clone, F: Clone> State for Bind<B, F> {}
 
-impl<T: Validate> FormHandler<T> {
+impl<T: Validate + Clone> FormHandler<T> {
     /// Perform validation
     pub fn validate(&self) -> Result<(), ValidationErrors> {
-        self.value.get().validate()
+        self.value.get_cloned().validate()
     }
 
     /// Get error specific field
     pub fn error_for(&self, name: &'static str) -> Signal<String> {
         let signal = Signal::new(String::new());
         let value = self.value.clone();
-        create_effect(cloned!((signal) => move || {
-            let res = value.get().validate();
+        let ret_signal = signal.clone();
+        create_effect(value.clone(), move |v| {
+            let res = value.get_cloned().validate();
             if ValidationErrors::has_error(&res, name) {
                 let err = res.err().unwrap();
                 let err = err.field_errors();
                 let value = err.get(name).unwrap().first();
                 if let Some(v) = value {
-                    signal.set(format!("{}", v))
+                    signal.set(format!("{}", v.message.clone().unwrap()))
                 } else {
                     signal.set(String::new())
                 }
-
             } else {
                 signal.set(String::new())
             }
-        }));
-        signal
+        });
+        ret_signal
     }
 }
 

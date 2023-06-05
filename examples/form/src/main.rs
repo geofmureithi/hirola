@@ -26,16 +26,13 @@ struct Login {
 fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
     let increment = bind.callback(move |bind, _e: Event| {
         let value = bind.get_value();
-        bind.set_value(value + 1)
+        bind.set_value(value.get() + 1)
     });
-
-    let bind = bind.clone();
-
     html! {
         <>
             <span>"Counter"</span>
             <button type="button" on:click=increment>"+"</button>
-            <span>{bind.get_value()}</span>
+            <span mixin::text={&text(&bind.get_value())}></span>
         </>
     }
 }
@@ -53,6 +50,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
             class="h-screen flex flex-col items-center justify-center"
             method="post"
             ref={form.node_ref()}
+            on:submit=|e| {}
             >
             <div class="mb-6">
                 <label for="email"
@@ -63,10 +61,12 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    //required
+                    
                     mixin:form={&form.register::<HtmlInputElement>()}
                     />
-                <span class="text-red-700 text-sm" mixin:text=&text(&form.error_for("email"))></span>
+                <span class="text-red-700 text-sm"
+                    mixin:text=&text(&form.error_for("email"))
+                ></span>
             </div>
             <div class="mb-6">
                 <label
@@ -77,7 +77,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     id="password"
                     name="password"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    //required=""
+                    required=""
                     mixin:form={&form.register::<HtmlInputElement>()}
                 />
             </div>
@@ -92,7 +92,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                         value=""
                         class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                         required=""
-                        // mixin:form={&form.register::<HtmlInputElement>()}
+                        mixin:form={&form.register::<HtmlInputElement>()}
                     />
                 </div>
                 <label

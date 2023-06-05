@@ -13,17 +13,16 @@
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
 
+use futures_signals::signal::{Mutable, SignalExt};
 use generic_node::GenericNode;
 pub use hirola_macros::html;
 
 pub mod app;
 pub mod callback;
 pub mod easing;
-pub mod flow;
 pub mod generic_node;
 pub mod macros;
 pub mod noderef;
-pub mod reactive;
 pub mod render;
 
 #[macro_use]
@@ -37,26 +36,36 @@ pub mod mixins;
 
 pub mod utils;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TemplateResult<G: GenericNode> {
-    node: G,
+use thiserror::Error;
+
+#[derive(Error, Debug, Clone)]
+pub enum TemplateError {
+    #[error("Error occurred in Node")]
+    NodeError,
 }
 
-impl<G: GenericNode> TemplateResult<G> {
-    /// Create a new [`TemplateResult`] from a [`GenericNode`].
-    pub fn new(node: G) -> Self {
-        Self { node }
-    }
+pub type TemplateResult<G> = Result<G, TemplateError>;
 
-    /// Create a new [`TemplateResult`] with a blank comment node
-    pub fn empty() -> Self {
-        Self::new(G::marker())
-    }
+// #[derive(Debug, Clone, PartialEq, Eq)]
+// pub struct TemplateResult<G: GenericNode> {
+//     node: G,
+// }
 
-    pub fn inner_element(&self) -> G {
-        self.node.clone()
-    }
-}
+// impl<G: GenericNode> TemplateResult<G> {
+//     /// Create a new [`TemplateResult`] from a [`GenericNode`].
+//     pub fn new(node: G) -> Self {
+//         Self { node }
+//     }
+
+//     /// Create a new [`TemplateResult`] with a blank comment node
+//     pub fn empty() -> Self {
+//         Self::new(G::marker())
+//     }
+
+//     pub fn inner_element(&self) -> G {
+//         self.node.clone()
+//     }
+// }
 
 /// Render a [`TemplateResult`] into the DOM.
 /// Alias for [`render_to`] with `parent` being the `<body>` tag.
@@ -67,7 +76,7 @@ pub fn render(template_result: impl FnOnce() -> TemplateResult<generic_node::Dom
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
 
-    render_to(template_result, &document.body().unwrap());
+    render_to(|| template_result().unwrap(), &document.body().unwrap());
 }
 
 /// Render a [`TemplateResult`] under a `parent` node.
@@ -75,21 +84,10 @@ pub fn render(template_result: impl FnOnce() -> TemplateResult<generic_node::Dom
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render_to(
-    template_result: impl FnOnce() -> TemplateResult<generic_node::DomNode>,
-    parent: &web_sys::Node,
-) {
-    let owner = reactive::create_root(|| {
-        parent
-            .append_child(&template_result().node.inner_element())
-            .unwrap();
-    });
-
-    thread_local! {
-        static GLOBAL_OWNERS: std::cell::RefCell<Vec<reactive::Owner>> = std::cell::RefCell::new(Vec::new());
-    }
-
-    GLOBAL_OWNERS.with(|global_owners| global_owners.borrow_mut().push(owner));
+pub fn render_to(template_result: impl FnOnce() -> generic_node::DomNode, parent: &web_sys::Node) {
+    parent
+        .append_child(&template_result().inner_element())
+        .unwrap();
 }
 
 /// Render a [`TemplateResult`] into a static [`String`]. Useful for rendering to a string on the server side.
@@ -99,26 +97,16 @@ pub fn render_to(
 pub fn render_to_string(
     template_result: impl FnOnce() -> TemplateResult<generic_node::SsrNode>,
 ) -> String {
-    let mut ret = None;
-    let _owner =
-        reactive::create_root(|| ret = Some(format!("{}", template_result().inner_element())));
-
-    ret.unwrap()
+    format!("{}", template_result().unwrap().inner_element())
 }
 
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+pub type AsyncResult<T> = Mutable<Option<Result<T, wasm_bindgen::JsValue>>>;
 
-pub type AsyncResult<T> = prelude::Signal<Option<Result<T, wasm_bindgen::JsValue>>>;
-
-/// Helper for making async calls
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
-pub fn use_async<F, T: 'static>(future: F) -> prelude::Signal<Option<T>>
+pub fn use_async<F, T: 'static>(future: F) -> Mutable<Option<T>>
 where
     F: std::future::Future<Output = T> + 'static,
 {
-    let handler = prelude::Signal::new(None);
+    let handler = Mutable::new(None);
     let inner = handler.clone();
     wasm_bindgen_futures::spawn_local(async move {
         let res = future.await;
@@ -127,25 +115,37 @@ where
     handler
 }
 
+pub fn create_effect<A: Clone + 'static>(reactive: Mutable<A>, mut cb: impl FnMut(A) + 'static) {
+    let fut = reactive.signal_cloned().for_each(move |val| {
+        cb(val);
+        async {}
+    });
+    wasm_bindgen_futures::spawn_local(fut);
+}
+
 /// The maple prelude.
 pub mod prelude {
+    pub use futures_signals::signal::Mutable as Signal;
+    pub use futures_signals::signal::ReadOnlyMutable as StateHandle;
+    pub use super::create_effect;
     pub use hirola_macros::{component, html};
 
     pub use crate::cloned;
-    pub use crate::flow::{Indexed, IndexedProps, Keyed, KeyedProps};
+    // pub use crate::flow::{Indexed, IndexedProps, Keyed, KeyedProps};
     #[cfg(feature = "dom")]
     pub use crate::generic_node::DomNode;
     pub use crate::generic_node::GenericNode;
     #[cfg(feature = "ssr")]
     pub use crate::generic_node::SsrNode;
     pub use crate::noderef::NodeRef;
-    pub use crate::reactive::{
-        create_effect, create_effect_initial, create_memo, create_root, create_selector,
-        create_selector_with, on_cleanup, untrack, Signal, StateHandle,
-    };
+    // pub use crate::reactive::{
+    //     create_effect, create_effect_initial, create_memo, create_root, create_selector,
+    //     create_selector_with, on_cleanup, untrack, Signal, StateHandle,
+    // };
     pub use crate::render::Render;
     #[cfg(feature = "ssr")]
     pub use crate::render_to_string;
+    pub use crate::TemplateError;
     pub use crate::TemplateResult;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
@@ -157,9 +157,9 @@ pub mod prelude {
     pub use crate::app::*;
     #[cfg(feature = "router")]
     pub use crate::router::*;
-    #[cfg(feature = "async")]
+
     pub use crate::use_async;
-    #[cfg(feature = "async")]
+
     pub use crate::AsyncResult;
 
     pub use crate::styled::*;

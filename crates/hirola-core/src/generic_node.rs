@@ -89,17 +89,6 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
     fn append_render(&self, child: Box<dyn Fn() -> Box<dyn Render<Self>>>) {
         let parent = self.clone();
 
-        let node = create_effect_initial(cloned!((parent) => move || {
-            let node = RefCell::new(child().render().node);
-
-            let effect = cloned!((node) => move || {
-                let new_node = child().update_node(&parent, &node.borrow());
-                *node.borrow_mut() = new_node;
-            });
-
-            (Rc::new(effect), node)
-        }));
-
-        parent.append_child(&node.borrow());
+        parent.append_child(&child().render().unwrap());
     }
 }

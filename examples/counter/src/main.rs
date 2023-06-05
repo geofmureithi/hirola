@@ -1,11 +1,16 @@
-use hirola::prelude::*;
+use hirola::prelude::{*, mixins::text};
+use web_sys::window;
 
 fn counter(_app: &HirolaApp) -> Dom {
     let count = Signal::new(0);
+    create_effect(count.clone(), |val| {
+        // window().unwrap().alert_with_message(&format!("Count is at {val}")).unwrap();
+    });
     html! {
         <div>
-            <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
-            <span>{count.get()}</span>
+            <button style="margin:5px" on:click=count.mut_callback(|c, _| c - 1)>"-"</button>
+            <span mixin::text=&text(&count)/>
+            <button style="margin:5px" on:click=count.mut_callback(|c, _| c + 1)>"+"</button>
         </div>
 
     }

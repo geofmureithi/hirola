@@ -99,6 +99,7 @@ impl Router {
                 router.push(&href);
             }) as Box<dyn Fn(Event)>);
 
+
             element
                 .add_event_listener_with_callback("click", handle_click.as_ref().unchecked_ref())
                 .unwrap();

@@ -1,11 +1,5 @@
 use crate::prelude::DomNode;
-
-pub trait StateReduce<T> {
-    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
-    where
-        F: Fn(&T, E) -> T + 'static;
-}
-
+use futures_signals::signal::Mutable;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -40,6 +34,27 @@ pub trait State: Clone {
         let state = self.clone();
         let cb = move |e: E| {
             f(&state, e);
+        };
+        Box::new(cb)
+    }
+}
+
+pub trait StateReduce<T> {
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+    where
+        F: Fn(&T, E) -> T + 'static;
+}
+
+impl<T: Clone> State for Mutable<T> {}
+
+impl<T: Clone + 'static> StateReduce<T> for Mutable<T> {
+    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+    where
+        F: Fn(&T, E) -> T + 'static,
+    {
+        let state = self.clone();
+        let cb = move |e: E| {
+            state.set(f(&state.get_cloned(), e));
         };
         Box::new(cb)
     }

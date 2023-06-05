@@ -42,11 +42,9 @@ impl HirolaApp {
     /// Create a new app
     pub fn new() -> Self {
         #[cfg(feature = "global-state")]
-        #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
         let extensions = ExtensionMap::new();
         HirolaApp {
             #[cfg(feature = "global-state")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "global-state")))]
             extensions,
         }
     }
@@ -64,7 +62,7 @@ impl HirolaApp {
     /// Render a view
     #[cfg(not(feature = "ssr"))]
     pub fn mount<M: Mountable>(self, element: &web_sys::Node, view: M) {
-        render_to(|| view.mount(&self), element);
+        render_to(|| view.mount(&self).unwrap(), element);
     }
 
     /// Extend global data

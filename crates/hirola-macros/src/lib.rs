@@ -94,7 +94,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
             };
             tokens.extend(quote! {
             {
-                ::hirola::prelude::untrack(|| ::hirola::prelude::TemplateResult::inner_element( &#quoted.render()))
+                #quoted.render().unwrap()
              }
         });
         }
@@ -155,16 +155,11 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     } else {
                         let attribute_name = convert_name(&name);
                         quote! {
-                            ::hirola::prelude::create_effect({
-                                let element = ::std::clone::Clone::clone(&element);
-                                move || {
-                                    ::hirola::prelude::GenericNode::set_attribute(
-                                        &element,
-                                        #attribute_name,
-                                        &::std::format!("{}", #value),
-                                    );
-                                }
-                            });
+                            ::hirola::prelude::GenericNode::set_attribute(
+                                &element,
+                                #attribute_name,
+                                &::std::format!("{}", #value),
+                            );
                         }
                     }
                 }
@@ -182,16 +177,11 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     .expect("attribute should have a name"),
             );
             quote! {
-                ::hirola::prelude::create_effect({
-                    let element = ::std::clone::Clone::clone(&element);
-                    move || {
-                        ::hirola::prelude::GenericNode::set_attribute(
-                            &element,
-                            #name,
-                            &::std::format!(""),
-                        );
-                    }
-                });
+                ::hirola::prelude::GenericNode::set_attribute(
+                    &element,
+                    #name,
+                    &::std::format!(""),
+                );
             }
         }
     }
@@ -325,7 +315,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = to_token_stream(input);
 
     let quoted = quote! {
-        ::hirola::prelude::TemplateResult::new(::std::convert::Into::<_>::into(#output))
+        ::std::convert::Into::<_>::into(#output)
     };
     quoted.into()
 }

@@ -15,7 +15,7 @@ fn signature_pad(_app: &HirolaApp) -> Dom {
     });
 
     let mouse_move = tool.callback(|tool, e| {
-        if *tool.is_mouse_clicked.get() && *tool.is_mouse_in_canvas.get() {
+        if tool.is_mouse_clicked.get() && tool.is_mouse_in_canvas.get() {
             tool.update_position(e);
             tool.draw();
         }

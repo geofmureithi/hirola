@@ -36,8 +36,8 @@ impl SignTool {
             .inner_element()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();
-        self.prev_x.set(*self.cur_x.get());
-        self.prev_y.set(*self.cur_y.get());
+        self.prev_x.set(self.cur_x.get());
+        self.prev_y.set(self.cur_y.get());
         self.cur_x.set(e.client_x() - canvas.offset_left());
         self.cur_y.set(e.client_y() - canvas.offset_top());
     }
@@ -58,8 +58,8 @@ impl SignTool {
             .unwrap();
 
         context.begin_path();
-        context.move_to((*self.prev_x.get()).into(), (*self.prev_y.get()).into());
-        context.line_to((*self.cur_x.get()).into(), (*self.cur_y.get()).into());
+        context.move_to((self.prev_x.get()).into(), (self.prev_y.get()).into());
+        context.line_to((self.cur_x.get()).into(), (self.cur_y.get()).into());
         context.set_stroke_style(&JsValue::from_str("black"));
         context.set_line_width(2.0);
         context.stroke();

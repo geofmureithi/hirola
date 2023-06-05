@@ -31,9 +31,6 @@ router = ["hirola-core/router"]
 ## Enables global state management
 global-state = ["hirola-core/global-state"]
 
-## Enables async utilities
-async = ["hirola-core/async"]
-
 docsrs = ["document-features"]
 
 ## Enables form mixins and utilities

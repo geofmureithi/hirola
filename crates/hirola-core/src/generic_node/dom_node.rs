@@ -4,7 +4,7 @@ use ref_cast::RefCast;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::{Element, Event, Node, Text};
 
-use crate::generic_node::{EventListener, GenericNode};
+use crate::{generic_node::{EventListener, GenericNode}, TemplateResult};
 
 /// Rendering backend for the DOM.
 ///
@@ -36,6 +36,12 @@ impl AsRef<JsValue> for DomNode {
 impl From<DomNode> for JsValue {
     fn from(node: DomNode) -> Self {
         node.node.into()
+    }
+}
+
+impl From<DomNode> for TemplateResult<DomNode> {
+    fn from(node: DomNode) -> Self {
+        Ok(node)
     }
 }
 

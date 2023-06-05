@@ -94,7 +94,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
             };
             tokens.extend(quote! {
             {
-                #quoted.render().unwrap()
+                ::hirola::prelude::TemplateResult::inner_element( &#quoted.render())
              }
         });
         }
@@ -315,7 +315,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = to_token_stream(input);
 
     let quoted = quote! {
-        ::std::convert::Into::<_>::into(#output)
+        ::hirola::prelude::TemplateResult::new(::std::convert::Into::<_>::into(#output))
     };
     quoted.into()
 }

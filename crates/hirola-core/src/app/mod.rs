@@ -62,7 +62,7 @@ impl HirolaApp {
     /// Render a view
     #[cfg(not(feature = "ssr"))]
     pub fn mount<M: Mountable>(self, element: &web_sys::Node, view: M) {
-        render_to(|| view.mount(&self).unwrap(), element);
+        render_to(|| view.mount(&self), element);
     }
 
     /// Extend global data

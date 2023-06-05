@@ -13,8 +13,8 @@ fn opacity<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a> {
     let cb = move |node: DomNode| {
         let element = node.unchecked_into::<Element>();
         let signal = signal.clone();
-        create_effect(move || {
-            if *signal.get() {
+        create_effect(signal ,move |val| {
+            if val {
                 element.class_list().add_1("opacity-100").unwrap();
                 element.class_list().remove_1("opacity-0").unwrap();
             } else {
@@ -75,23 +75,23 @@ html! {
       file="main.rs"
       />
       <div class="demo">
-                {
+                // {
 
 
-                  let is_shown = Signal::new(true);
-                  let toggle = is_shown.mut_callback(|show, _e| !show);
-                    html! {
-                        <div class="transition ease-in-out">
+                //   let is_shown = Signal::new(true);
+                //   let toggle = is_shown.mut_callback(|show, _e| !show);
+                //     html! {
+                //         <div class="transition ease-in-out">
 
-                          <div
-                            class="h-64 w-64 block bg-blue-900 rounded-md my-2"
-                            mixin:opacity=&opacity(&is_shown)
-                          />
+                //           <div
+                //             class="h-64 w-64 block bg-blue-900 rounded-md my-2"
+                //             mixin:opacity=&opacity(&is_shown)
+                //           />
 
-                          <button on:click=toggle>"Toggle"</button>
-                        </div>
-                      }
-                  }
+                //           <button on:click=toggle>"Toggle"</button>
+                //         </div>
+                //       }
+                //   }
 
         </div>
 
@@ -181,7 +181,7 @@ html! {
                             html! {
                                 <div>
                                   <span class="block" mixin:text=&text(&message) />
-                                  <input on:keyup=handle_change value=&message.get()/>
+                                  <input on:keyup=handle_change value=&message.get_cloned()/>
                                 </div>
                             }
                         }

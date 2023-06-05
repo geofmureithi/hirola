@@ -49,15 +49,15 @@ pub fn getting_started_page(_app: &HirolaApp) -> Dom {
               <p>"You should be able to get counter running."</p>
               <p class="text-xs"><span>"Try it out"</span></p>
               <div class="demo">
-              {
-                  let count = Signal::new(0);
-                  html! {
-                      <div>
-                        <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
-                        <span class="ml-1">{count.get()}</span>
-                      </div>
-                    }
-                }
+              // {
+              //     let count = Signal::new(0);
+              //     html! {
+              //         <div>
+              //           <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
+              //           <span class="ml-1">{count.get()}</span>
+              //         </div>
+              //       }
+              //   }
               </div>
               <p>"We can also test our project using wasm-pack"</p>
               <code class="block one-liner my-1 py-1">

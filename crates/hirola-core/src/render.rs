@@ -18,7 +18,7 @@ pub trait Render<G: GenericNode> {
     ///
     /// Returns the new node. If the node is reused instead of replaced, the returned node is simply the node passed in.
     fn update_node(&self, parent: &G, node: &G) -> G {
-        let new_node = self.render().unwrap();
+        let new_node = self.render().node;
         parent.replace_child(&new_node, &node);
         new_node
     }
@@ -26,7 +26,7 @@ pub trait Render<G: GenericNode> {
 
 impl<T: fmt::Display + ?Sized, G: GenericNode> Render<G> for T {
     fn render(&self) -> TemplateResult<G> {
-        Ok(G::text_node(&format!("{}", self)))
+        TemplateResult::new(G::text_node(&format!("{}", self)))
     }
 
     fn update_node(&self, _parent: &G, node: &G) -> G {

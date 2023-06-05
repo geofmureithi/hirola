@@ -6,9 +6,10 @@ fn counter(_app: &HirolaApp) -> Dom {
     create_effect(count.clone(), |val| {
         // window().unwrap().alert_with_message(&format!("Count is at {val}")).unwrap();
     });
+    
     html! {
         <div>
-            <button style="margin:5px" on:click=count.mut_callback(|c, _| c - 1)>"-"</button>
+            <button style="margin:5px"  on:click=count.mut_callback(|c, _| c - 1)>"-"</button>
             <span mixin::text=&text(&count)/>
             <button style="margin:5px" on:click=count.mut_callback(|c, _| c + 1)>"+"</button>
         </div>

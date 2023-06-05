@@ -44,28 +44,28 @@ pub enum TemplateError {
     NodeError,
 }
 
-pub type TemplateResult<G> = Result<G, TemplateError>;
 
-// #[derive(Debug, Clone, PartialEq, Eq)]
-// pub struct TemplateResult<G: GenericNode> {
-//     node: G,
-// }
 
-// impl<G: GenericNode> TemplateResult<G> {
-//     /// Create a new [`TemplateResult`] from a [`GenericNode`].
-//     pub fn new(node: G) -> Self {
-//         Self { node }
-//     }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TemplateResult<G: GenericNode> {
+    node: G,
+}
 
-//     /// Create a new [`TemplateResult`] with a blank comment node
-//     pub fn empty() -> Self {
-//         Self::new(G::marker())
-//     }
+impl<G: GenericNode> TemplateResult<G> {
+    /// Create a new [`TemplateResult`] from a [`GenericNode`].
+    pub fn new(node: G) -> Self {
+        Self { node }
+    }
 
-//     pub fn inner_element(&self) -> G {
-//         self.node.clone()
-//     }
-// }
+    /// Create a new [`TemplateResult`] with a blank comment node
+    pub fn empty() -> Self {
+        Self::new(G::marker())
+    }
+
+    pub fn inner_element(&self) -> G {
+        self.node.clone()
+    }
+}
 
 /// Render a [`TemplateResult`] into the DOM.
 /// Alias for [`render_to`] with `parent` being the `<body>` tag.
@@ -76,7 +76,7 @@ pub fn render(template_result: impl FnOnce() -> TemplateResult<generic_node::Dom
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
 
-    render_to(|| template_result().unwrap(), &document.body().unwrap());
+    render_to(template_result, &document.body().unwrap());
 }
 
 /// Render a [`TemplateResult`] under a `parent` node.
@@ -84,9 +84,9 @@ pub fn render(template_result: impl FnOnce() -> TemplateResult<generic_node::Dom
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render_to(template_result: impl FnOnce() -> generic_node::DomNode, parent: &web_sys::Node) {
+pub fn render_to(template_result: impl FnOnce() -> TemplateResult<generic_node::DomNode>, parent: &web_sys::Node) {
     parent
-        .append_child(&template_result().inner_element())
+        .append_child(&template_result().inner_element().inner_element())
         .unwrap();
 }
 
@@ -97,7 +97,7 @@ pub fn render_to(template_result: impl FnOnce() -> generic_node::DomNode, parent
 pub fn render_to_string(
     template_result: impl FnOnce() -> TemplateResult<generic_node::SsrNode>,
 ) -> String {
-    format!("{}", template_result().unwrap().inner_element())
+    format!("{}", template_result().inner_element())
 }
 
 pub type AsyncResult<T> = Mutable<Option<Result<T, wasm_bindgen::JsValue>>>;

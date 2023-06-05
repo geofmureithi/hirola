@@ -26,13 +26,13 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
     file="src/main.rs"
     />
               <div class="demo">
-              {for i in 0..5 {
-                html! {
-                    <ul>
-                        <li>{i}</li>
-                    </ul>
-                }
-              }}
+              // {for i in 0..5 {
+              //   html! {
+              //       <ul>
+              //           <li>{i}</li>
+              //       </ul>
+              //   }
+              // }}
               </div>
                 <h2>"With Signal"</h2>
                 <p>"Sometimes, you are working with a signal and want to react to changes on the ui. You can use Keyed and Indexed"</p>

@@ -39,11 +39,6 @@ impl From<DomNode> for JsValue {
     }
 }
 
-impl From<DomNode> for TemplateResult<DomNode> {
-    fn from(node: DomNode) -> Self {
-        Ok(node)
-    }
-}
 
 impl JsCast for DomNode {
     fn instanceof(val: &JsValue) -> bool {

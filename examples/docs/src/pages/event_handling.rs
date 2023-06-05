@@ -27,9 +27,7 @@ pub fn event_handling_page(_app: &HirolaApp) -> Dom {
     file="src/main.rs" />
 
               <div class="demo">
-                  {
 
-                      html! {
                           <button
                               on:click=|_e| {
                                 let window = web_sys::window().unwrap();
@@ -37,8 +35,7 @@ pub fn event_handling_page(_app: &HirolaApp) -> Dom {
                               }>
                               "Click Me"
                           </button>
-                      }
-                    }
+
                   </div>
 
 

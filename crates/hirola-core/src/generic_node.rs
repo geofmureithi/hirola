@@ -87,8 +87,6 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
 
     /// Append an item that implements [`Render`] and automatically updates the DOM inside an effect.
     fn append_render(&self, child: Box<dyn Fn() -> Box<dyn Render<Self>>>) {
-        let parent = self.clone();
-
-        parent.append_child(&child().render().unwrap());
+        self.append_child(&child().render().node);
     }
 }

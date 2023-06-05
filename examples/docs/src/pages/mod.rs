@@ -71,19 +71,19 @@ fn main() {
       file="main.rs"/>
 
               <div class="demo">
-                {
-                  let state = Signal::new(99);
-                  let decerement = state.mut_callback(|count, _| *count - 1);
-                  let incerement = state.mut_callback(|count, _| *count + 1);
+                // {
+                //   let state = Signal::new(99);
+                //   let decerement = state.mut_callback(|count, _| *count - 1);
+                //   let incerement = state.mut_callback(|count, _| *count + 1);
 
-                  html! {
-                      <div class="flex flex-row h-10">
-                          <button on:click=decerement>"-"</button>
-                          <input class="w-12" value=state.get() disabled/>
-                          <button on:click=incerement>"+"</button>
-                      </div>
-                  }
-                }
+                //   html! {
+                //       <div class="flex flex-row h-10">
+                //           <button on:click=decerement>"-"</button>
+                //           <input class="w-12" value=state.get() disabled/>
+                //           <button on:click=incerement>"+"</button>
+                //       </div>
+                //   }
+                // }
               </div>
             <h2>"Features"</h2>
             <ul>

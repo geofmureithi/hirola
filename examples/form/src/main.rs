@@ -50,7 +50,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
             class="h-screen flex flex-col items-center justify-center"
             method="post"
             ref={form.node_ref()}
-            on:submit=|e| {}
+            on:submit=|e| e.prevent_default()
             >
             <div class="mb-6">
                 <label for="email"
@@ -61,12 +61,14 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    
+
                     mixin:form={&form.register::<HtmlInputElement>()}
                     />
                 <span class="text-red-700 text-sm"
                     mixin:text=&text(&form.error_for("email"))
                 ></span>
+
+
             </div>
             <div class="mb-6">
                 <label
@@ -82,6 +84,7 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                 />
             </div>
             <InnerComponent bind={form.bind::<u32>("count")} />
+
             <div class="flex items-start mb-6">
 
                 <div class="flex items-center h-5">
@@ -96,6 +99,8 @@ fn form_demo(_app: &HirolaApp) -> Dom {
                     />
                 </div>
                 <label
+                    x:text=""
+                    x:class=""
                     for="remember"
                     class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                     "Remember me"

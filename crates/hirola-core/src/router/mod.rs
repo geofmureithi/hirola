@@ -49,7 +49,7 @@ impl Router {
     }
 
     pub fn param(&self, name: &str) -> Option<String> {
-        let params = self.params().get();
+        let params = self.params().get_cloned();
         let params = params.params.clone();
         params.get(name).cloned()
     }
@@ -110,7 +110,7 @@ impl Router {
     }
 
     pub fn render(&self, app: &HirolaApp) -> Dom {
-        let path = (&self.current.get().path).clone();
+        let path = (&self.current.get_cloned().path).clone();
         // let params = value.params;
         let inner = self.inner.at(&path).unwrap();
         let params = inner.params.clone();
@@ -182,7 +182,7 @@ impl Router {
         handle_pop.forget();
         let route = self.current.clone();
         let router = self.inner.clone();
-        let path = &route.get().path;
+        let path = &route.get_cloned().path;
         let value = router.at(&path).unwrap();
         let pagefn = value.value;
         pagefn(&app)

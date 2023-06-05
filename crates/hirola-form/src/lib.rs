@@ -87,7 +87,7 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputEle
             let new_value = input.value();
             form.update_field(&name, new_value);
         });
-        node.event("change", handler);
+        node.event("input", handler);
         let input = {
             let node = node.clone();
             node.dyn_into::<HtmlInputElement>()
@@ -103,6 +103,7 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputEle
 impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectElement> {
     fn mixin(&self, ns: &str, node: DomNode) -> Result<(), MixinError> {
         if ns != "form" {
+            // compile_error!("This will never work");
             return Err(MixinError::InvalidNamespace {
                 expected: "form".to_string(),
                 found: ns.to_string(),

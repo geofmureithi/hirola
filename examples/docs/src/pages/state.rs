@@ -1,14 +1,15 @@
 use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
+use crate::App;
 use hirola::prelude::*;
 
-pub fn state_page(_app: &HirolaApp) -> Dom {
+pub fn state_page(_app: &App) -> Dom {
     html! {
         <div>
             <SeoTitle title={"State Management | Hirola"} />
 
             <h1>"State Management"</h1>
-            <p>"Hirola is un-opinionated in state management. It should be pretty easy to roll out your own. To enable the global state management use the feature flag "<code class="one-liner">"global-state"</code></p>
+            <p>"Hirola is un-opinionated in state management. It should be pretty easy to roll out your own."</p>
             <h2>"Getting started"</h2>
             <CodePreview
              code=
@@ -16,13 +17,18 @@ r#"let window = web_sys::window().unwrap();
 let document = window.document().unwrap();
 let body = document.body().unwrap();
 
-let mut app = HirolaApp::new();
+struct App {
+    todos: MutableVec<Todo>,
+}
 
-let todos = Signal::new(todos);
-app.extend(TodoStore { todos });
+impl App {
+    ///...
+}
+
+let mut app = App::new();
 
 app.mount(&body, |app| {
-    let todos: &TodoStore = app.data().unwrap();
+    let todos: &MutableVec<Todo> = app.todos;
     html! {
         ...
     }

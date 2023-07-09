@@ -2,9 +2,9 @@ use std::cell::RefCell;
 
 use ref_cast::RefCast;
 use wasm_bindgen::{prelude::*, JsCast};
-use web_sys::{Element, Event, Node, Text};
+use web_sys::{window, Element, Event, Node, Text};
 
-use crate::{generic_node::{EventListener, GenericNode}, TemplateResult};
+use super::{GenericNode, EventListener};
 
 /// Rendering backend for the DOM.
 ///
@@ -12,7 +12,7 @@ use crate::{generic_node::{EventListener, GenericNode}, TemplateResult};
 #[derive(Debug, Clone, PartialEq, Eq, RefCast)]
 #[repr(transparent)]
 pub struct DomNode {
-    node: Node,
+    pub node: Node,
 }
 
 impl DomNode {
@@ -22,9 +22,9 @@ impl DomNode {
     pub fn unchecked_into<T: JsCast>(self) -> T {
         self.node.unchecked_into()
     }
-    // pub fn dyn_into<T: JsCast>(self) -> Result<T, Node> {
-    //     self.node.dyn_into()
-    // }
+    pub fn dyn_into<T: JsCast>(self) -> Result<T, Node> {
+        self.node.dyn_into()
+    }
 }
 
 impl AsRef<JsValue> for DomNode {
@@ -38,7 +38,6 @@ impl From<DomNode> for JsValue {
         node.node.into()
     }
 }
-
 
 impl JsCast for DomNode {
     fn instanceof(val: &JsValue) -> bool {
@@ -75,7 +74,7 @@ impl GenericNode for DomNode {
 
     fn fragment() -> Self {
         DomNode {
-            node: document().create_document_fragment().into(),
+            node: document().create_document_fragment().dyn_into().unwrap(),
         }
     }
 
@@ -93,21 +92,44 @@ impl GenericNode for DomNode {
     }
 
     fn append_child(&self, child: &Self) {
-        self.node.append_child(&child.node).unwrap();
+        match self.node.append_child(&child.node) {
+            Err(e) => log::warn!("Could not append child: {e:?}"),
+            _ => {}
+        }
     }
 
     fn insert_child_before(&self, new_node: &Self, reference_node: Option<&Self>) {
-        self.node
+        match self
+            .node
             .insert_before(&new_node.node, reference_node.map(|n| &n.node))
-            .unwrap();
+        {
+            Ok(_) => {}
+            Err(e) => window()
+                .unwrap()
+                .alert_with_message(&format!("{e:?}"))
+                .unwrap(),
+        }
     }
 
     fn remove_child(&self, child: &Self) {
-        self.node.remove_child(&child.node).unwrap();
+
+        match self.node.remove_child(&child.node) {
+            Ok(_) => {}
+            Err(e) => window()
+                .unwrap()
+                .alert_with_message(&format!("{e:?}{:?}", child))
+                .unwrap(),
+        };
     }
 
     fn replace_child(&self, old: &Self, new: &Self) {
-        self.node.replace_child(&old.node, &new.node).unwrap();
+        match self.node.replace_child(&old.node, &new.node){
+            Ok(_) => {}
+            Err(e) => window()
+                .unwrap()
+                .alert_with_message(&format!("{e:?} \n {:?}, {:?}", &old.node, &new.node))
+                .unwrap(),
+        };
     }
 
     fn insert_sibling_before(&self, child: &Self) {
@@ -129,21 +151,12 @@ impl GenericNode for DomNode {
         self.node.unchecked_ref::<Element>().remove();
     }
 
-    fn event(&self, name: &str, handler: Box<EventListener>) {
-        type EventListener = dyn Fn(Event);
-
-        thread_local! {
-            /// A global event listener pool to prevent [`Closure`]s from being deallocated.
-            /// TODO: remove events when elements are detached.
-            static EVENT_LISTENERS: RefCell<Vec<Closure<EventListener>>> = RefCell::new(Vec::new());
-        }
-
+    fn event(&self, name: &str, handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
         let closure = Closure::wrap(handler);
         self.node
             .add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())
             .unwrap();
-
-        EVENT_LISTENERS.with(|event_listeners| event_listeners.borrow_mut().push(closure));
+        Some(closure)
     }
 
     fn update_inner_text(&self, text: &str) {

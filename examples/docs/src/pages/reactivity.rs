@@ -1,18 +1,19 @@
 use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
+use crate::App;
 use hirola::prelude::*;
 
-pub fn reactivity_page(_app: &HirolaApp) -> Dom {
+pub fn reactivity_page(_app: &App) -> Dom {
     html! {
                 <div>
                     <SeoTitle title={"Reactivity | Hirola"} />
                     <h1>"Reactivity"</h1>
                     <p>
-                    r#"Hirola offers reactivity via a primitive called signal and an effect called create_effect. Once a signal is updated, these changes are propagated to the dom."#
+                    r#"Hirola offers reactivity via a mutable called signal and an effect called create_effect. Once a signal is updated, these changes are propagated to the dom."#
                     </p>
                     <blockquote>
-                    <p>"Hirola uses a fork of maple(now sycamore) reactivity engine under the hood to provide these functions."
-                      <a href="https://sycamore-rs.netlify.app/docs/basics/reactivity">"→ Read more about sycamore reactivity primitives"</a>
+                    <p>"Hirola uses futures_signals crate as its reactivity base"
+                      <a href="https://docs.rs/futures-signals/0.3.32/futures_signals/tutorial/index.html">"→ Read more about futures_signals"</a>
                     </p>
                   </blockquote>
                   <h2>"Reactive Signal"</h2>
@@ -20,10 +21,10 @@ pub fn reactivity_page(_app: &HirolaApp) -> Dom {
                   code=
                       "use hirola_core::prelude::*;
 let state = Signal::new(0);
-assert_eq!(*state.get(), 0);
+assert_eq!(state.get(), 0);
               
 state.set(1);
-assert_eq!(*state.get(), 1);"
+assert_eq!(state.get(), 1);"
                     file="main.rs" />
 
 
@@ -34,11 +35,10 @@ assert_eq!(*state.get(), 1);"
                  code=
 "use hirola_core::prelude::*;
 let state = Signal::new(0);
-assert_eq!(*state.get(), 0);
-create_effect(move || {
-let new_value = state.get();
+assert_eq!(state.get(), 0);
+create_effect(state.clone(), move |new_value| {
 // do something with new value
-})
+});
 /// later
 state.set(1);
 "

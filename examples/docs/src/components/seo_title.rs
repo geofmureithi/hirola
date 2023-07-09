@@ -9,5 +9,5 @@ pub fn SeoTitle<'a, T: Display + ?Sized>(title: &'a T) -> Dom {
         .document()
         .unwrap()
         .set_title(&format!("{title}"));
-    DomNode::fragment()
+    TemplateResult::empty()
 }

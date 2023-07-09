@@ -1,5 +1,5 @@
-use hirola_macros::html;
 use hirola_core::TemplateResult;
+use hirola_macros::html;
 
 // fn entry(entry: u8) -> String {
 //     html_to_string! {

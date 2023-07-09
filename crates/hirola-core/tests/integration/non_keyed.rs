@@ -2,7 +2,7 @@ use super::*;
 
 #[wasm_bindgen_test]
 fn append() {
-    let count = Signal::new(vec![1, 2]);
+    let count = Mutable::new(vec![1, 2]);
 
     let node = cloned!((count) => html! {
         <ul>
@@ -36,7 +36,7 @@ fn append() {
 
 #[wasm_bindgen_test]
 fn swap_rows() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = Mutable::new(vec![1, 2, 3]);
 
     let node = cloned!((count) => html! {
         <ul>
@@ -73,7 +73,7 @@ fn swap_rows() {
 
 #[wasm_bindgen_test]
 fn delete_row() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = Mutable::new(vec![1, 2, 3]);
 
     let node = cloned!((count) => html! {
         <ul>
@@ -103,7 +103,7 @@ fn delete_row() {
 
 #[wasm_bindgen_test]
 fn clear() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = Mutable::new(vec![1, 2, 3]);
 
     let node = cloned!((count) => html! {
         <ul>
@@ -129,7 +129,7 @@ fn clear() {
 
 #[wasm_bindgen_test]
 fn insert_front() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = Mutable::new(vec![1, 2, 3]);
 
     let node = cloned!((count) => html! {
         <ul>
@@ -159,7 +159,7 @@ fn insert_front() {
 
 #[wasm_bindgen_test]
 fn nested_reactivity() {
-    let count = Signal::new(vec![1, 2, 3].into_iter().map(Signal::new).collect());
+    let count = Mutable::new(vec![1, 2, 3].into_iter().map(Mutable::new).collect());
 
     let node = cloned!((count) => html! {
         <ul>
@@ -184,7 +184,7 @@ fn nested_reactivity() {
 
     count.set({
         let mut tmp = (*count.get()).clone();
-        tmp.push(Signal::new(5));
+        tmp.push(Mutable::new(5));
         tmp
     });
     assert_eq!(p.text_content().unwrap(), "4235");

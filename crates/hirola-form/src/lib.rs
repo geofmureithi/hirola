@@ -1,9 +1,9 @@
 use std::{marker::PhantomData, rc::Rc};
 
 use hirola_core::{
-    callback::MixinError,
+    update::MixinError,
     cloned,
-    prelude::{create_effect, Signal, StateHandle},
+    prelude::{create_effect, Mutable, ReadOnlyMutable},
     prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef, State},
 };
 use json_dotpath::DotPaths;
@@ -16,7 +16,7 @@ use web_sys::{Event, HtmlInputElement, HtmlSelectElement};
 #[derive(Clone, Debug)]
 pub struct FormHandler<T: 'static> {
     node_ref: NodeRef<DomType>,
-    value: Signal<T>,
+    value: Mutable<T>,
 }
 
 impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
@@ -24,12 +24,12 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
     pub fn new(value: T) -> Self {
         Self {
             node_ref: NodeRef::new(),
-            value: Signal::new(value),
+            value: Mutable::new(value),
         }
     }
 
     /// Get the immutable handle for form value
-    pub fn handle(&self) -> StateHandle<T> {
+    pub fn handle(&self) -> ReadOnlyMutable<T> {
         (&self.value).read_only()
     }
 
@@ -138,7 +138,7 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> B
     }
 
     /// Get value of bound field
-    pub fn get_value(&self) -> Signal<B> {
+    pub fn get_value(&self) -> Mutable<B> {
         let current_value = self.1.value.clone();
         let name = self.0;
         fn read_inner_value<F, B>(value: &F, name: &str) -> B
@@ -149,9 +149,11 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> B
             let json = serde_json::to_value(value).unwrap();
             json.dot_get(name).unwrap().unwrap()
         }
-        let signal = Signal::new(read_inner_value::<F, B>(&current_value.get_cloned(), name));
+        let signal = Mutable::new(read_inner_value::<F, B>(&current_value.get_cloned(), name));
         let signal_ret = signal.clone();
-        create_effect(current_value, move |value| signal.set(read_inner_value(&value, name)));
+        create_effect(current_value, move |value| {
+            signal.set(read_inner_value(&value, name))
+        });
         signal_ret
     }
 }
@@ -165,8 +167,8 @@ impl<T: Validate + Clone> FormHandler<T> {
     }
 
     /// Get error specific field
-    pub fn error_for(&self, name: &'static str) -> Signal<String> {
-        let signal = Signal::new(String::new());
+    pub fn error_for(&self, name: &'static str) -> Mutable<String> {
+        let signal = Mutable::new(String::new());
         let value = self.value.clone();
         let ret_signal = signal.clone();
         create_effect(value.clone(), move |v| {

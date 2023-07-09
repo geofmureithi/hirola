@@ -1,34 +1,39 @@
-use std::collections::HashMap;
+use std::{
+    cell::RefCell, collections::HashMap, future::IntoFuture, marker::PhantomData, rc::Rc, sync::Arc,
+};
 
-use crate::prelude::*;
-
+use crate::{prelude::*, builder::ViewBuilder, view::View};
+use discard::DiscardOnDrop;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{Element, Event, HtmlLinkElement};
+use web_sys::{window, Element, Event, HtmlLinkElement};
 
-/// Route that is matched
 #[derive(Clone, Debug)]
-pub struct RouteMatch {
-    //page: TemplateResult<DomNode>,
-    path: String,
-    pub params: HashMap<String, String>,
+pub struct RouteHandler {
+    current: Mutable<String>,
+}
+impl RouteHandler {
+    fn push(&self, path: &str) {
+        self.current.set(path.to_owned());
+    }
 }
 
 /// Represents a Single page router
 #[derive(Clone)]
-pub struct Router {
-    current: Signal<RouteMatch>,
-    inner: matchit::Router<fn(&HirolaApp) -> Dom>,
+pub struct Router<A> {
+    handler: RouteHandler,
+    inner: matchit::Router<fn(&A) -> ViewBuilder<DomNode>>,
+    app: PhantomData<A>,
 }
 
-impl std::fmt::Debug for Router {
+impl<A> std::fmt::Debug for Router<A> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.debug_struct("Router")
-            .field("current", &self.current)
+            .field("current", &self.handler)
             .finish()
     }
 }
 
-impl Router {
+impl<A: 'static> Router<A> {
     pub fn new() -> Self {
         let mut path = String::from("/");
         if let Some(window) = web_sys::window() {
@@ -36,26 +41,32 @@ impl Router {
         }
 
         Self {
-            current: Signal::new(RouteMatch {
-                path,
-                params: HashMap::new(),
-            }),
+            handler: RouteHandler {
+                current: Mutable::new(path),
+            },
             inner: matchit::Router::new(),
+            app: PhantomData,
         }
     }
 
-    pub fn params(&self) -> Signal<RouteMatch> {
-        self.current.clone()
+    pub fn params(&self) -> HashMap<String, String> {
+        let path = self.handler.current.get_cloned();
+        let binding = &self.inner;
+        let inner = binding.at(&path).unwrap();
+        let params = &inner.params.clone();
+        let params = params.iter().fold(HashMap::new(), |mut map, c| {
+            map.insert(c.0.to_string(), c.1.to_string());
+            map
+        });
+        params
     }
 
     pub fn param(&self, name: &str) -> Option<String> {
-        let params = self.params().get_cloned();
-        let params = params.params.clone();
-        params.get(name).cloned()
+        self.params().get(name).cloned()
     }
 
     /// Add a new route
-    pub fn add(&mut self, path: &str, page: fn(&HirolaApp) -> Dom) {
+    pub fn add(&mut self, path: &str, page: fn(&A) -> ViewBuilder<DomNode>) {
         self.inner.insert(path.to_string(), page).unwrap();
     }
 
@@ -66,30 +77,18 @@ impl Router {
             .unwrap()
             .push_state_with_url(&JsValue::default(), "", Some(&path))
             .unwrap();
-        let inner = self.inner.at(&path).unwrap();
-
-        let params = inner.params.clone();
-        let params = params.iter().fold(HashMap::new(), |mut map, c| {
-            map.insert(c.0.to_string(), c.1.to_string());
-            map
-        });
-        self.current.set(RouteMatch {
-            path: path.to_owned(),
-            params,
-        });
+        self.handler.push(path);
     }
 
     fn get_fragment() -> String {
         return web_sys::window().unwrap().location().pathname().unwrap();
     }
 
-    pub fn link<'a>(&'a self) -> Box<dyn Fn(DomNode) -> () + 'a> {
-        let router = self.clone();
-        let cb = move |node: DomNode| {
-            let element = node.unchecked_into::<HtmlLinkElement>();
-
+    pub fn link(&self) -> Box<dyn Fn(&View<DomNode>) -> () + '_> {
+        let router: RouteHandler = self.handler.clone();
+        let cb = move |node: &View<DomNode>| {
             let router = router.clone();
-            let handle_click = Closure::wrap(Box::new(move |e: Event| {
+            let handle_click = Box::new(move |e: Event| {
                 e.prevent_default();
 
                 let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
@@ -97,30 +96,16 @@ impl Router {
                 let href = element.get_attribute("href").unwrap();
 
                 router.push(&href);
-            }) as Box<dyn Fn(Event)>);
+            }) as Box<dyn Fn(Event)>;
 
-
-            element
-                .add_event_listener_with_callback("click", handle_click.as_ref().unchecked_ref())
-                .unwrap();
-
-            handle_click.forget();
+            node.event("click", handle_click);
         };
         Box::new(cb)
     }
 
-    pub fn render(&self, app: &HirolaApp) -> Dom {
-        let path = (&self.current.get_cloned().path).clone();
-        // let params = value.params;
-        let inner = self.inner.at(&path).unwrap();
-        let params = inner.params.clone();
-        let params = params.iter().fold(HashMap::new(), |mut map, c| {
-            map.insert(c.0.to_string(), c.1.to_string());
-            map
-        });
-        self.current.set(RouteMatch { path, params });
-
-        let current = self.current.clone();
+    pub fn render(&self, app: A) -> Mutable<Dom> {
+        let router = &self.inner;
+        let current = self.handler.current.clone();
 
         //Hash routing forward in history and URL rewrite
         let handle_hash = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
@@ -133,16 +118,13 @@ impl Router {
                 .skip(1)
                 .collect();
 
-            //log(&["hash handle : ", l.as_str()].concat());
+            log::debug!("hash handle : {l}");
 
             let h = web_sys::window().unwrap().history().unwrap();
             h.replace_state_with_url(&JsValue::NULL, "", Some(l.as_str()))
                 .unwrap();
 
-            current.set(RouteMatch {
-                path: l.to_string(),
-                params: Default::default(),
-            });
+            current.set(l.to_string());
         }) as Box<dyn Fn(_)>);
 
         web_sys::window()
@@ -150,7 +132,7 @@ impl Router {
             .set_onhashchange(Some(handle_hash.as_ref().unchecked_ref()));
         handle_hash.forget();
 
-        let current = self.current.clone();
+        let current = self.handler.current.clone();
         //Routing for navigating in history and escaping hash routes
         let handle_pop = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let l = Self::get_fragment();
@@ -164,15 +146,11 @@ impl Router {
                 .count()
                 > 0
             {
-                //log("hash detected");
+                log::debug!("hash detected");
                 return ();
             }
-            current.set(RouteMatch {
-                path: l.to_string(),
-                params: Default::default(),
-            });
-
-            //log(&["pop handle : ", l.as_str()].concat());
+            current.set(l.to_string());
+            log::debug!("pop handle : {l}");
         }) as Box<dyn Fn(_)>);
 
         web_sys::window()
@@ -180,11 +158,25 @@ impl Router {
             .set_onpopstate(Some(handle_pop.as_ref().unchecked_ref()));
 
         handle_pop.forget();
-        let route = self.current.clone();
-        let router = self.inner.clone();
-        let path = &route.get_cloned().path;
-        let value = router.at(&path).unwrap();
-        let pagefn = value.value;
-        pagefn(&app)
+        let route = (&self.handler).current.clone();
+
+        let res = Mutable::new(DomNode::marker());
+        let res_ret = res.clone();
+        let router = router.clone();
+        let next = route
+            .signal_ref(move |route_match| {
+                let page_fn = router.at(&(route_match.clone())).unwrap().value;
+                res.set(page_fn(&app));
+                let window = web_sys::window().unwrap();
+                window
+                    .history()
+                    .unwrap()
+                    .push_state_with_url(&JsValue::default(), "", Some(&route_match))
+                    .unwrap();
+                log::debug!("Router received new path: {route_match}");
+            })
+            .to_future();
+        w
+        res_ret
     }
 }

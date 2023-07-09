@@ -1,8 +1,9 @@
 use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
+use crate::App;
 use hirola::prelude::*;
 
-pub fn ssr_page(_app: &HirolaApp) -> Dom {
+pub fn ssr_page(_app: &App) -> Dom {
     html! {
       <div>
       <SeoTitle title={"Server Side Rendering | Hirola"} />

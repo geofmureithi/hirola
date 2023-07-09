@@ -9,7 +9,7 @@ use wasm_bindgen::{prelude::*, JsCast};
 thread_local! {
     static STYLED: RefCell<HashSet<u64>> = RefCell::new(HashSet::new());
     static SHEET: RefCell<Option<web_sys::CssStyleSheet>> = RefCell::new(None);
-    static CLASS_SELECTER: Regex = Regex::new(r"\.([a-zA-Z][a-zA-Z0-9\-_]*)").unwrap();
+    static CLASS_SELECTOR: Regex = Regex::new(r"\.([a-zA-Z][a-zA-Z0-9\-_]*)").unwrap();
 }
 
 fn hash_of_type<C>() -> u64 {
@@ -49,7 +49,7 @@ pub trait Styled: Sized {
 
 #[derive(Clone, PartialEq, Debug)]
 enum Rule {
-    Selecter(String, Vec<(String, String)>),
+    Selector(String, Vec<(String, String)>),
     Keyframes(String, Style),
     Media(String, Style),
 }
@@ -76,7 +76,7 @@ impl Style {
 
         for rule in self.rules.iter_mut() {
             match rule {
-                Rule::Selecter(s, defs) if *s == selecter => {
+                Rule::Selector(s, defs) if *s == selecter => {
                     for (p, v) in defs.iter_mut() {
                         if *p == property {
                             *v = value;
@@ -90,7 +90,7 @@ impl Style {
             }
         }
         self.rules
-            .push(Rule::Selecter(selecter, vec![(property, value)]));
+            .push(Rule::Selector(selecter, vec![(property, value)]));
     }
 
     pub fn add_keyframes(&mut self, name: impl Into<String>, style: Style) {
@@ -106,7 +106,7 @@ impl Style {
     pub fn append(&mut self, other: &Self) {
         for rule in &other.rules {
             match rule {
-                Rule::Selecter(s, defs) => {
+                Rule::Selector(s, defs) => {
                     for (p, v) in defs {
                         self.add(s, p, v);
                     }
@@ -126,9 +126,9 @@ impl Style {
 
         for rule in self.rules.iter() {
             let str_rule = match rule {
-                Rule::Selecter(selecter, defs) => {
+                Rule::Selector(selecter, defs) => {
                     let mut str_rule = String::new();
-                    let str_selecter = CLASS_SELECTER.with(|class_selecter| {
+                    let str_selecter = CLASS_SELECTOR.with(|class_selecter| {
                         class_selecter.replace_all(
                             selecter,
                             format!("._{}__$1", styled_class_prefix::<C>()).as_str(),
@@ -237,7 +237,7 @@ impl std::fmt::Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for rule in &self.rules {
             match rule {
-                Rule::Selecter(selecter, defs) => {
+                Rule::Selector(selecter, defs) => {
                     return_if!(x = write!(f, "{} {}\n", selecter, "{"); x.is_err());
                     for (property, value) in defs {
                         return_if!(x = write!(f, "    {}: {};\n", property, value); x.is_err());
@@ -386,14 +386,14 @@ mod tests {
     fn debug_style() {
         let style = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),
@@ -421,14 +421,14 @@ mod tests {
     fn debug_style_with_media() {
         let media_style = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),
@@ -439,14 +439,14 @@ mod tests {
         };
         let style = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),
@@ -485,14 +485,14 @@ mod tests {
     fn gen_style_by_manual() {
         let style_a = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),
@@ -515,14 +515,14 @@ mod tests {
     fn gen_style_with_media_by_manual() {
         let media_style_a = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),
@@ -533,14 +533,14 @@ mod tests {
         };
         let style_a = Style {
             rules: vec![
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("foo"),
                     vec![
                         (String::from("width"), String::from("100px")),
                         (String::from("height"), String::from("100px")),
                     ],
                 ),
-                Rule::Selecter(
+                Rule::Selector(
                     String::from("bar"),
                     vec![
                         (String::from("width"), String::from("100px")),

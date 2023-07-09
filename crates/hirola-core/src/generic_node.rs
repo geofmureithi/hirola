@@ -9,10 +9,9 @@ pub mod ssr_node;
 pub use dom_node::*;
 #[cfg(feature = "ssr")]
 pub use ssr_node::*;
+use wasm_bindgen::prelude::Closure;
 
-use std::cell::RefCell;
 use std::fmt;
-use std::rc::Rc;
 
 use web_sys::Event;
 
@@ -34,7 +33,7 @@ pub type EventListener = dyn Fn(Event);
 /// * [`SsrNode`] - Render to a static string (often on the server side for Server Side Rendering, aka. SSR).
 ///
 /// To implement your own rendering backend, you will need to create a new struct which implements [`GenericNode`].
-pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
+pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Create a new element node.
     fn element(tag: &str) -> Self;
 
@@ -80,13 +79,10 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
     fn remove_self(&self);
 
     /// Add a [`EventListener`] to the event `name`.
-    fn event(&self, name: &str, handler: Box<EventListener>);
+    fn event(&self, name: &str, handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
+        None
+    }
 
     /// Update inner text of the node. If the node has elements, all the elements are replaced with a new text node.
     fn update_inner_text(&self, text: &str);
-
-    /// Append an item that implements [`Render`] and automatically updates the DOM inside an effect.
-    fn append_render(&self, child: Box<dyn Fn() -> Box<dyn Render<Self>>>) {
-        self.append_child(&child().render().node);
-    }
 }

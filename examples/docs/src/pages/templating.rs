@@ -1,8 +1,9 @@
 use crate::components::seo_title::SeoTitle;
 use crate::pages::CodePreview;
+use crate::App;
 use hirola::prelude::*;
 
-pub fn templating_page(_app: &HirolaApp) -> Dom {
+pub fn templating_page(_app: &App) -> Dom {
     html! {
             <div>
               <SeoTitle title={"Templating | Hirola"} />
@@ -26,13 +27,13 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
     file="src/main.rs"
     />
               <div class="demo">
-              // {for i in 0..5 {
-              //   html! {
-              //       <ul>
-              //           <li>{i}</li>
-              //       </ul>
-              //   }
-              // }}
+              {for i in 0..5 {
+                html! {
+                    <ul>
+                        <li>{i.render()}</li>
+                    </ul>
+                }
+              }}
               </div>
                 <h2>"With Signal"</h2>
                 <p>"Sometimes, you are working with a signal and want to react to changes on the ui. You can use Keyed and Indexed"</p>
@@ -78,9 +79,10 @@ pub fn templating_page(_app: &HirolaApp) -> Dom {
            file="src/main.rs"
            />
            <h2>"Components"</h2>
-           <p>"One can write components as functions starting with uppercase"</p>
+           <p>"One can write components as functions starting with uppercase and include a derive macro"</p>
            <CodePreview
-            code="fn Todo(router: Router) -> Dom {}
+            code="#[component]
+fn Todo(router: Router) -> Dom {}
 html! {
   <Todo router={router} />
 }

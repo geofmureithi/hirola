@@ -11,14 +11,14 @@ struct Todo {
 }
 
 #[component]
-fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<Todo>>>) {
+fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Mutable<Todo>>>) {
     let todo = (&*todo).clone().get();
     let id = todo.id.clone();
     let href = format!("/todo/{}", id);
 
     let title = todo.title.clone();
     let tl = title.clone();
-    let on_remove = todos.callback(move |todos, _e| {
+    let on_remove = todos.update(move |todos, _e| {
         let index = todos
             .get()
             .iter()
@@ -82,7 +82,7 @@ fn home(app: &HirolaApp) -> Dom {
             .get_element_by_id("add")
             .unwrap();
         let input = input.dyn_ref::<HtmlInputElement>().unwrap();
-        todos.push(Signal::new(Todo {
+        todos.push(Mutable::new(Todo {
             id: format!("{}", todos.get_untracked().len() + 1),
             title: input.value(),
             complete: false,
@@ -137,7 +137,7 @@ fn home(app: &HirolaApp) -> Dom {
 
 #[derive(Clone)]
 struct TodoStore {
-    todos: Signal<Vec<Signal<Todo>>>,
+    todos: Mutable<Vec<Mutable<Todo>>>,
 }
 
 fn index(app: &HirolaApp) -> Dom {
@@ -156,18 +156,18 @@ fn main() {
     let body = document.body().unwrap();
 
     let todos = vec![
-        Signal::new(Todo {
+        Mutable::new(Todo {
             id: String::from("1"),
             title: String::from("Add another component to Tailwind Components"),
             complete: false,
         }),
-        Signal::new(Todo {
+        Mutable::new(Todo {
             id: String::from("2"),
             title: String::from("Submit Todo App Component to Tailwind Components"),
             complete: true,
         }),
     ];
-    let todos = Signal::new(todos);
+    let todos = Mutable::new(todos);
 
     let mut app = HirolaApp::new();
 

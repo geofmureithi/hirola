@@ -11,7 +11,7 @@
 
 1. Keep it simple. A simple and declarative way to build web UIs in rust with a small learning curve.
 2. Make it easy to read, extend and share code. Mixins and components are kept simple and macro-free.
-3. No context, you can choose passing props down, and/or use the `global-state`.
+3. No context, you can choose passing props down.
 4. Familiality. Uses rsx which is very similar to jsx.
 
 ## Example
@@ -46,23 +46,20 @@ Lets add some code to `src/main.rs`
 ```rust
 use hirola::prelude::*;
 
-fn counter(app: &HirolaApp) -> Dom {
-    let count = Signal::new(0);
-    let increment = count.mut_callback(|c, _| c + 1)
+fn counter() -> Dom {
+    let count = Mutable::new(0);
+    let increment = count.update(|c| c + 1);
+    let decrement = count.update(|c| c - 1);
     html! {
         <div>
-            <button on:click=increment>"Increment"</button>
-            <span>{count.get()}</span>
+            <button on:click=decrement>"-"</button>
+            <span>{count}</span>
+            <button on:click=increment>"+"</button>
         </div>
     }
 }
 fn main() {
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
-
-    let app = HirolaApp::new();
-    app.mount(&body, counter);
+    hirola::render(counter);
 }
 ```
 
@@ -90,10 +87,8 @@ Here are some extensions for hirola:
 | :----: | :------------------------------------------------------------------------ | ------- |
 |   ✔    | Write code that is declarative and easy to follow                         | `ready` |
 |   ✔    | Allow extensibility via mixins                                            | `ready` |
-|   🚀   | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `ready` |
-|   🚀   | SSR                                                                       | `ready` |
-|   🚀   | Hydration                                                                 | `todo`  |
-|   🚀   | Serverside integrations                                                   | `todo`  |
+|   ✔    | [Standardize Components](https://github.com/geofmureithi/hirola/issues/1) | `ready` |
+|   ✔    | SSR                                                                       | `ready` |
 
 ### Inspiration
 
@@ -101,6 +96,7 @@ Here are some extensions for hirola:
 - Alpine.js
 - React.js
 - Yew
+- Choojs
 
 #### Demo examples
 

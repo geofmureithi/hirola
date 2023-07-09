@@ -28,9 +28,6 @@ ssr = ["hirola-core/ssr"]
 ## Enables Isomorphic Routing
 router = ["hirola-core/router"]
 
-## Enables global state management
-global-state = ["hirola-core/global-state"]
-
 docsrs = ["document-features"]
 
 ## Enables form mixins and utilities
@@ -41,13 +38,14 @@ form = ["hirola-form"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
 wasm-bindgen = { version = "0.2.79" }
-hirola = { path = ".", default-features=false, features =["router", "global-state", "ssr"]}
+hirola = { path = ".", default-features=false, features =["router", "ssr"]}
 
 [workspace]
 members = [
     "crates/hirola-core",
     "crates/hirola-macros",
     "crates/hirola-form",
+    "crates/hirola-kit",
     "examples/counter",
     "examples/todo",
     "examples/canvas",

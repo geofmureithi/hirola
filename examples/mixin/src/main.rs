@@ -11,8 +11,8 @@ fn x_html<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
 
 fn mixin_demo(_app: &HirolaApp) -> Dom {
     let raw = "<strong>calebporzio</strong>";
-    let is_shown = Signal::new(true);
-    let toggle = is_shown.mut_callback(|show, _e| !show);
+    let is_shown = Mutable::new(true);
+    let toggle = is_shown.update_with(|show, _e| !show);
 
     html! {
         <div

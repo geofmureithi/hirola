@@ -98,7 +98,7 @@ fn interpolation() {
 
 #[wasm_bindgen_test]
 fn reactive_text() {
-    let count = Signal::new(0);
+    let count = Mutable::new(0);
 
     let node = cloned!((count) => html! {
         <p> { count.get() }</p>
@@ -116,7 +116,7 @@ fn reactive_text() {
 
 #[wasm_bindgen_test]
 fn reactive_attribute() {
-    let count = Signal::new(0);
+    let count = Mutable::new(0);
 
     let node = cloned!((count) => html! {
         <span attribute=count.get()/>

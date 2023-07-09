@@ -10,19 +10,25 @@ extern "C" {
 }
 
 /// mixin to highlight code
-fn highlight_code<'a>(_example_name: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
-    let cb = move |node: DomNode| {
-        let element = node.unchecked_into::<Element>();
+fn highlight_code<'a>(_example_name: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
+    let cb = move |node: &Dom| {
+        let element = node
+            .inner_element()
+            .as_ref()
+            .clone()
+            .unchecked_into::<Element>();
         highlightElement(element);
     };
     Box::new(cb)
 }
 
 #[component]
-pub fn CodePreview<'a>(code: &'a str, file: &'a str) -> Dom {
-    let file = file.to_string();
-    let code = code.to_string();
+pub fn CodePreview<T: AsRef<str>>(code: T, file: T) -> Dom {
+    let file = file.as_ref();
+    let code = code.as_ref().to_owned();
     html! {
-        <pre class="text-sm my-2 p-2" mixin:code=&highlight_code(&file)><code>{code.clone()}</code></pre>
+        <pre class="text-sm my-2 p-2" mixin:identity=&highlight_code(file)>
+            <code>{code.render()}</code>
+        </pre>
     }
 }

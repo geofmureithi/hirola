@@ -28,8 +28,9 @@ pub use templating::templating_page;
 pub use testing::testing_page;
 
 use crate::components::code_preview::CodePreview;
+use crate::App;
 
-pub fn home(_: &HirolaApp) -> Dom {
+pub fn home(_: &App) -> Dom {
     html! {
         <div>
             <h1>"What is Hirola?"</h1>
@@ -71,19 +72,19 @@ fn main() {
       file="main.rs"/>
 
               <div class="demo">
-                // {
-                //   let state = Signal::new(99);
-                //   let decerement = state.mut_callback(|count, _| *count - 1);
-                //   let incerement = state.mut_callback(|count, _| *count + 1);
+                {
+                  let state = Mutable::new(99);
+                  let decrement = state.update_with(|count, _| *count - 1);
+                  let increment = state.update_with(|count, _| *count + 1);
 
-                //   html! {
-                //       <div class="flex flex-row h-10">
-                //           <button on:click=decerement>"-"</button>
-                //           <input class="w-12" value=state.get() disabled/>
-                //           <button on:click=incerement>"+"</button>
-                //       </div>
-                //   }
-                // }
+                  html! {
+                      <div class="flex flex-row h-10">
+                          <button on:click=decrement>"-"</button>
+                          <input class="w-12" value=state.get() disabled/>
+                          <button on:click=increment>"+"</button>
+                      </div>
+                  }
+                }
               </div>
             <h2>"Features"</h2>
             <ul>
@@ -95,12 +96,6 @@ fn main() {
               </li>
               <li>
               <p><strong><code>"router"</code></strong> "—  Enables Isomorphic Routing"</p>
-              </li>
-              <li>
-              <p><strong><code>"global-state"</code></strong> "—  Enables global state management"</p>
-              </li>
-              <li>
-              <p><strong><code>"async"</code></strong> "—  Enables async utilities 🚧"</p>
               </li>
               <li>
               <p><strong><code>"form"</code></strong> "—  Enables form mixins and utilities 🚧"</p>

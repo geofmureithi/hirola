@@ -1,7 +1,9 @@
+use hirola::prelude::mixins::text;
 use hirola::prelude::*;
 
 use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
+use crate::App;
 
 const INDEX: &str = r#"<!DOCTYPE html>
 <html>
@@ -12,7 +14,7 @@ const INDEX: &str = r#"<!DOCTYPE html>
 </html>
 "#;
 
-pub fn getting_started_page(_app: &HirolaApp) -> Dom {
+pub fn getting_started_page(_app: &App) -> Dom {
     html! {
         <div>
           <SeoTitle title={"Getting Started | Hirola"} />
@@ -48,17 +50,17 @@ pub fn getting_started_page(_app: &HirolaApp) -> Dom {
               </code>
               <p>"You should be able to get counter running."</p>
               <p class="text-xs"><span>"Try it out"</span></p>
-              <div class="demo">
+              // <div class="demo">
               // {
               //     let count = Signal::new(0);
               //     html! {
               //         <div>
               //           <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
-              //           <span class="ml-1">{count.get()}</span>
+              //           <span class="ml-1" mixin::text=&text(&count)></span>
               //         </div>
               //       }
               //   }
-              </div>
+              // </div>
               <p>"We can also test our project using wasm-pack"</p>
               <code class="block one-liner my-1 py-1">
                 "wasm-pack test --node"

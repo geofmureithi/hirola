@@ -4,7 +4,7 @@ use hirola::prelude::{mixins::model::input, *};
 use web_sys::Event;
 
 #[component]
-fn Color(text: Signal<String>) -> Dom {
+fn Color(text: Mutable<String>) -> Dom {
     html! {
         <div
             class="block"
@@ -49,14 +49,14 @@ fn Page<'a, Children: Render<DomType>>(title: &'a str, children: Children) {
 }
 
 fn colors(_app: &HirolaApp) -> Dom {
-    let colors = Signal::new(
+    let colors = Mutable::new(
         vec!["Red", "Green", "Blue"]
             .iter()
-            .map(|c| Signal::new(c.to_string()))
-            .collect::<Vec<Signal<String>>>(),
+            .map(|c| Mutable::new(c.to_string()))
+            .collect::<Vec<Mutable<String>>>(),
     );
-    let add_new = colors.callback(move |colors, _e: Event| {
-        colors.push(Signal::new("New Color".to_string()));
+    let add_new = colors.update(move |colors, _e: Event| {
+        colors.push(Mutable::new("New Color".to_string()));
     });
 
     html! {

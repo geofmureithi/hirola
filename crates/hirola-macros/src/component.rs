@@ -43,11 +43,11 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
     };
 
     TokenStream::from(quote! {
-        //#[derive(Debug)]
+        #[derive(Debug)]
         #vis struct #struct_name #impl_generics #inputs_block
 
         impl #impl_generics ::hirola::prelude::Render<DomType> for #struct_name #ty_generics #where_clause {
-            fn render(&self) -> ::hirola::prelude::Dom {
+            fn render(self) -> ::hirola::prelude::Dom {
                 let result = {
                     #inputs_reading
                     #block

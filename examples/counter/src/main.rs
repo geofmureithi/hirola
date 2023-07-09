@@ -1,4 +1,11 @@
+extern crate wee_alloc;
+
+// Use `wee_alloc` as the global allocator.
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 use std::default;
+use std::ops::{Deref, DerefMut};
 use std::{marker::PhantomData, ops::Range};
 
 use discard::DiscardOnDrop;
@@ -9,7 +16,7 @@ use wasm_bindgen::JsValue;
 use web_sys::Response;
 use web_sys::{window, Event, Request, RequestInit};
 
-use hirola::prelude::html as view;
+use hirola::prelude::html;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -54,73 +61,6 @@ pub struct Company {
     pub bs: String,
 }
 
-// #[derive(Debug, Clone)]
-// struct App {
-//     router: Router<Self>,
-//     numbers: MutableVec<i32>,
-// }
-
-// impl App {
-//     fn new(router: Router<Self>) -> Self {
-//         Self {
-//             router,
-//             numbers: MutableVec::new_with_values(vec![1, 2, 3]),
-//         }
-//     }
-//     fn mount(self, parent: &web_sys::Node) {
-//         let display = NodeRef::new();
-//         let node: NodeRef<DomType> = display.clone();
-//         let router = self.router.clone();
-//         let renderer = router
-//             .render(self)
-//             .signal_ref(move |dom| {
-//                 let node = node.get::<DomNode>();
-//                 let node = node.dyn_into::<web_sys::HtmlElement>().unwrap();
-//                 node.replace_children_with_node_1(&dom.inner_element().inner_element());
-//                 dom.on_mount();
-//             })
-//             .to_future();
-
-//         render_to(
-//             view! {
-//                 <main use:renderer ref=display/>
-//             },
-//             parent,
-//         );
-//     }
-// }
-
-// struct If<S: Signal<bool>, F: Fn(bool) -> TemplateResult<DomType>> {
-//     signal: S,
-//     renderer: F,
-// }
-
-// impl<S: Signal<bool>, F: Fn(bool) -> TemplateResult<DomType>> Render for If<S, F> {
-//     fn render(self) -> TemplateResult<G> {
-//         let fragment = DomType::fragment();
-//         self.signal.switch(|s| fragment );
-
-//     }
-// }
-
-// #[component]
-// fn If<F: Fn() -> Dom>(signal: Mutable<bool>, on: F, off: F) -> Dom {
-//     let fragment = DomType::fragment();
-//     let template = TemplateResult::new(fragment.clone());
-
-//     let fut = signal
-//         .signal_ref(|res| {
-//             if *res {
-//                 fragment.append_child(on());
-//             } else {
-//                 fragment.append_child(off());
-//             }
-//         })
-//         .to_future();
-//     template.effect(DiscardOnDrop::leak(spawn(fut)));
-//     template
-// }
-
 #[derive(Debug, Default)]
 pub enum SuspenseResult<Res> {
     #[default]
@@ -162,8 +102,9 @@ async fn user_fetcher() -> Result<Users, JsValue> {
 
 pub use SuspenseResult::*;
 
-fn counter() -> ViewBuilder<DomNode> {
-    // let router = &app.router;
+fn counter(app: &App) -> ViewBuilder<DomNode> {
+    let app = app.clone();
+    let go_to_test = move |_| app.push("/test");
     let values = MutableVec::new_with_values(vec![]);
     let add_one = values.update_with(|numbers, _e: Event| {
         let len: i32 = numbers.lock_ref().len().try_into().unwrap();
@@ -201,17 +142,17 @@ fn counter() -> ViewBuilder<DomNode> {
                         }
                     })}
             </ul>
-            <ul>
-                {for item in values.signal_vec() {
-                    let values = values.clone();
-                    html! {
-                        <li on:click=move |_| remove_me(
-                            item,
-                            values.clone(),
-                        )>{item.to_string()}</li>
-                    }
-                }}
-            </ul>
+            // <ul>
+            // {for item in values.signal_vec() {
+            //     let values = values.clone();
+            //     html! {
+            //         <li on:click=move |_| remove_me(
+            //             item,
+            //             values.clone(),
+            //         )>{item.to_string()}</li>
+            //     }
+            // }}
+            // </ul>
             <h2>"Evens"</h2>
             <div>
                 {match user_fetcher().suspense().await {
@@ -264,6 +205,8 @@ fn counter() -> ViewBuilder<DomNode> {
             "Text"
             {ideal()}
             <button on:click=add_one>"Add Next"</button>
+            <button on:click=go_to_test>"Go To Test"</button>
+
         </div>
     }
 }
@@ -273,10 +216,13 @@ fn main() {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
-    counter().mount(&DomNode { node: body.into() }).unwrap();
+    let mut app = App::new(());
+    app.route("/", counter);
+    app.route("/test", |app| ViewBuilder::Text("Welcome".to_owned()));
+    app.mount(&body);
 }
 
-fn ideal() -> ViewBuilder<DomNode> {
+fn ideal() -> impl Render<DomNode> {
     let counter = Mutable::new(0);
     let increment = counter.update_with(|v, _| {
         v.set(v.get() + 1);
@@ -288,12 +234,8 @@ fn ideal() -> ViewBuilder<DomNode> {
                     html! { <li>"Her name is Kitty White."</li> }
                 }}
             </ul>
-            <p>
-                Welcome to Hirola
-            </p>
-            <button on:click=increment>
-                Increment
-            </button>
+            <p>"Welcome to Hirola"</p>
+            <button on:click=increment>"Increment"</button>
             <p>{counter}</p>
         </div>
     }

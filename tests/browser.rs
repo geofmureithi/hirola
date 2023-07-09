@@ -21,7 +21,7 @@ fn app_renders() {
 fn router_renders() {
     let mut app = HirolaApp::new();
     let mut router = Router::new();
-    router.add("/", |_| {
+    router.route("/", |_| {
         html! {
             <main>"Main"</main>
         }
@@ -41,12 +41,12 @@ fn router_renders() {
 fn router_pushes() {
     let mut app = HirolaApp::new();
     let mut router = Router::new();
-    router.add("/", |_| {
+    router.route("/", |_| {
         html! {
             <main>"Main"</main>
         }
     });
-    router.add("/page", |_| {
+    router.route("/page", |_| {
         html! {
             <main>"Page"</main>
         }

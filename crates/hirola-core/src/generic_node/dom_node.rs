@@ -4,7 +4,7 @@ use ref_cast::RefCast;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::{window, Element, Event, Node, Text};
 
-use super::{GenericNode, EventListener};
+use super::{EventListener, GenericNode};
 
 /// Rendering backend for the DOM.
 ///
@@ -104,31 +104,21 @@ impl GenericNode for DomNode {
             .insert_before(&new_node.node, reference_node.map(|n| &n.node))
         {
             Ok(_) => {}
-            Err(e) => window()
-                .unwrap()
-                .alert_with_message(&format!("{e:?}"))
-                .unwrap(),
+            Err(e) => log::warn!("Failed to insert child: {e:?}"),
         }
     }
 
     fn remove_child(&self, child: &Self) {
-
         match self.node.remove_child(&child.node) {
             Ok(_) => {}
-            Err(e) => window()
-                .unwrap()
-                .alert_with_message(&format!("{e:?}{:?}", child))
-                .unwrap(),
+            Err(e) => log::warn!("Failed to remove child: {e:?}"),
         };
     }
 
     fn replace_child(&self, old: &Self, new: &Self) {
-        match self.node.replace_child(&old.node, &new.node){
+        match self.node.replace_child(&old.node, &new.node) {
             Ok(_) => {}
-            Err(e) => window()
-                .unwrap()
-                .alert_with_message(&format!("{e:?} \n {:?}, {:?}", &old.node, &new.node))
-                .unwrap(),
+            Err(e) => log::warn!("Failed to replace child: {e:?}"),
         };
     }
 

@@ -4,7 +4,6 @@ use crate::{
     builder::{component::Component, ViewBuilder},
     generic_node::GenericNode,
     render::Error,
-    templating::live_fragment::LiveFragment,
     view::View,
 };
 pub type SuspenseResult<T, E> = Result<Option<T>, E>;
@@ -18,14 +17,14 @@ impl<Res: Default + 'static, G: GenericNode> Component<G> for Suspense<Res, G> {
     fn render(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
         let template = self.template;
         struct State<G: GenericNode> {
-            holder: LiveFragment<G>,
+            holder: G,
             current: Option<View<G>>,
         }
 
         impl<G: GenericNode> State<G> {
             fn new(parent: G) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
-                    holder: LiveFragment::new(parent),
+                    holder: parent,
                     current: None,
                 }))
             }
@@ -49,7 +48,7 @@ impl<Res: Default + 'static, G: GenericNode> Component<G> for Suspense<Res, G> {
                     }
                 }
                 let view = dom.mount(&G::fragment())?;
-                node.append_child(view.node().clone());
+                node.append_child(&view.node());
                 self.current = Some(view);
                 Ok(())
             }

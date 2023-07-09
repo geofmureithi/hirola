@@ -14,6 +14,7 @@ log = "0.4.6"
 wasm-logger = "0.2.0"
 wasm-bindgen-futures = { version = "0.4.29" }
 serde = "1"
+wee_alloc = "0.4.5"
 
 
 [dependencies.web-sys]

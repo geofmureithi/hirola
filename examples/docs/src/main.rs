@@ -159,23 +159,23 @@ fn main() {
     let body = document.body().unwrap();
 
     let mut router = Router::new();
-    router.add("/", home);
-    router.add("/basics/getting-started", getting_started_page);
-    router.add("/basics/reactivity", reactivity_page);
-    router.add("/basics/templating", templating_page);
-    router.add("/basics/mixins", mixins_page);
-    router.add("/basics/events", event_handling_page);
+    router.route("/", home);
+    router.route("/basics/getting-started", getting_started_page);
+    router.route("/basics/reactivity", reactivity_page);
+    router.route("/basics/templating", templating_page);
+    router.route("/basics/mixins", mixins_page);
+    router.route("/basics/events", event_handling_page);
 
-    router.add("/mixins/:mixin", inner_mixins);
+    router.route("/mixins/:mixin", inner_mixins);
 
-    router.add("/advanced/testing", testing_page);
-    router.add("/advanced/ssr", ssr_page);
-    router.add("/advanced/async", async_page);
-    router.add("/advanced/extending", extending_page);
+    router.route("/advanced/testing", testing_page);
+    router.route("/advanced/ssr", ssr_page);
+    router.route("/advanced/async", async_page);
+    router.route("/advanced/extending", extending_page);
 
-    router.add("/plugins/form", forms_page);
-    router.add("/plugins/router", router_page);
-    router.add("/plugins/state", state_page);
+    router.route("/plugins/form", forms_page);
+    router.route("/plugins/router", router_page);
+    router.route("/plugins/state", state_page);
 
     let app = App::new(router);
     app.mount(&body);

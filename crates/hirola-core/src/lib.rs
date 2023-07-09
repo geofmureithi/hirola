@@ -26,9 +26,9 @@ pub mod generic_node;
 pub mod render;
 pub mod update;
 
-// #[cfg(feature = "router")]
-// #[cfg_attr(docsrs, doc(cfg(feature = "router")))]
-// pub mod router;
+#[cfg(feature = "router")]
+#[cfg_attr(docsrs, doc(cfg(feature = "router")))]
+pub mod router;
 
 // pub mod mixins;
 
@@ -114,9 +114,11 @@ pub mod prelude {
 
     pub use crate::BoxedLocal;
 
-    // // pub use crate::app::*;
-    // #[cfg(feature = "router")]
-    // pub use crate::router::*;
+    #[cfg(feature = "router")]
+    pub use crate::app::*;
+    
+    #[cfg(feature = "router")]
+    pub use crate::router::*;
 
     // pub use crate::use_async;
 

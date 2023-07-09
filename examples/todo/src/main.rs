@@ -172,8 +172,8 @@ fn main() {
     let mut app = HirolaApp::new();
 
     let mut router = Router::new();
-    router.add("/", home);
-    router.add("/todo/:id", todo_view);
+    router.route("/", home);
+    router.route("/todo/:id", todo_view);
 
     app.extend(TodoStore { todos });
     app.extend(router);
@@ -187,7 +187,7 @@ mod test {
     #[test]
     fn app_renders() {
         let mut router = Router::new();
-        router.add("/", |app| {
+        router.route("/", |app| {
             html! {
                 <p>"Homepage"</p>
             }

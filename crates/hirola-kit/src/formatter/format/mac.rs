@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use leptosfmt_pretty_printer::Printer;
-use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
+use proc_macro2::Span;
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
 
@@ -9,8 +9,6 @@ use super::{Formatter, FormatterSettings};
 
 pub struct HtmlMacro<'a> {
     pub parent_ident: Option<usize>,
-    // pub cx: TokenTree,
-    // pub global_class: Option<TokenTree>,
     pub nodes: Vec<Node>,
     pub span: Span,
     pub mac: &'a Macro,
@@ -19,15 +17,10 @@ pub struct HtmlMacro<'a> {
 impl<'a> HtmlMacro<'a> {
     pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
         let tokens = mac.tokens.clone().into_iter();
-        // let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return None; };
-
-        // let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
         let nodes = rstml::parse2(tokens.collect()).ok()?;
 
         Some(Self {
             parent_ident,
-            // cx,
-            // global_class,
             nodes,
             span: mac.span(),
             mac,
@@ -43,8 +36,6 @@ impl Formatter<'_> {
     pub fn html_macro(&mut self, view_mac: &HtmlMacro) {
         let HtmlMacro {
             parent_ident,
-            // cx,
-            // global_class,
             nodes,
             span,
             ..
@@ -59,15 +50,6 @@ impl Formatter<'_> {
         self.printer.cbox(indent as isize);
 
         self.printer.word("html! {");
-        // self.printer.word(cx.to_string());
-        // self.printer.word(",");
-
-        // if let Some(global_class) = global_class {
-        //     self.printer.word(" class=");
-        //     self.printer.word(global_class.to_string());
-        //     self.printer.word(",");
-        // }
-
         self.view_macro_nodes(nodes);
         self.printer.word("}");
         self.printer.end();
@@ -89,40 +71,6 @@ impl Formatter<'_> {
         self.printer.space();
         self.printer.end_dedent();
     }
-}
-
-fn extract_global_class(
-    mut tokens: token_stream::IntoIter,
-) -> Option<(TokenStream, Option<TokenTree>)> {
-    let first = tokens.next();
-    let second = tokens.next();
-    let third = tokens.next();
-    let fourth = tokens.next();
-    let global_class = match (&first, &second) {
-        (Some(TokenTree::Ident(first)), Some(TokenTree::Punct(eq)))
-            if *first == "class" && eq.as_char() == '=' =>
-        {
-            match &fourth {
-                Some(TokenTree::Punct(comma)) if comma.as_char() == ',' => third.clone(),
-                _ => {
-                    return None;
-                }
-            }
-        }
-        _ => None,
-    };
-
-    let tokens = if global_class.is_some() {
-        tokens.collect::<proc_macro2::TokenStream>()
-    } else {
-        [first, second, third, fourth]
-            .into_iter()
-            .flatten()
-            .chain(tokens)
-            .collect()
-    };
-
-    Some((tokens, global_class))
 }
 
 pub fn format_macro(mac: &HtmlMacro, settings: &FormatterSettings, source: Option<&str>) -> String {
@@ -167,16 +115,4 @@ mod tests {
         }
         "###);
     }
-
-    // #[test]
-    // fn with_global_class() {
-    //     let formatted = view_macro!(html! { class = STYLE, <div><span>"hi"</span></div> });
-    //     insta::assert_snapshot!(formatted, @r###"
-    //     html! { class=STYLE,
-    //         <div>
-    //             <span>"hi"</span>
-    //         </div>
-    //     }
-    //     "###);
-    // }
 }

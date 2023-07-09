@@ -4,4 +4,3 @@ pub mod noderef;
 pub mod styled;
 pub mod suspense;
 pub mod switch;
-mod live_fragment;

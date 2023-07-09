@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     generic_node::{EventListener, GenericNode},
     render::Render,
@@ -17,6 +19,7 @@ impl<G: 'static + GenericNode> HtmlBuilder<G> {
             tag: tag.to_owned(),
             children: vec![],
             events: vec![],
+            // attributes: HashMap<String, >
         }
     }
 

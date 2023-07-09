@@ -1,5 +1,4 @@
-// Borrowed from render.rs
-// https://github.com/render-rs/render.rs
+
 use proc_macro::TokenStream;
 use proc_macro_error::emit_error;
 use quote::quote;

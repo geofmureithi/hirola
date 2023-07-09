@@ -177,7 +177,7 @@ impl<A: 'static + Clone> Router<A> {
         let app = app.clone();
         let next = route
         .signal_cloned().map(move|route_match| {
-            let match_result = router.at(&(route_match.clone())).unwrap();
+            let match_result = router.at(&route_match).unwrap();
             let page_fn = match_result.value;
 
             let builder = page_fn(&app);

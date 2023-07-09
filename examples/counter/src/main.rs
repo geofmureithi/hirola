@@ -102,9 +102,9 @@ async fn user_fetcher() -> Result<Users, JsValue> {
 
 pub use SuspenseResult::*;
 
-fn counter(app: &App) -> ViewBuilder<DomNode> {
-    let app = app.clone();
-    let go_to_test = move |_| app.push("/test");
+fn counter(app: &App<()>) -> ViewBuilder<DomNode> {
+    let router = app.router().clone();
+    let go_to_test = move |_| router.push("/test");
     let values = MutableVec::new_with_values(vec![]);
     let add_one = values.update_with(|numbers, _e: Event| {
         let len: i32 = numbers.lock_ref().len().try_into().unwrap();
@@ -128,7 +128,7 @@ fn counter(app: &App) -> ViewBuilder<DomNode> {
             <ul>
                 {for (index, item) in (0..3).enumerate() {
                     html! {
-                        <li on:click=move |_| log::debug!("Clicked {index}")>{item.to_string()}</li>
+                        <li class="md" on:click=move |_| log::debug!("Clicked {index}")>{item.to_string()}</li>
                     }
                 }}
             </ul>
@@ -143,15 +143,15 @@ fn counter(app: &App) -> ViewBuilder<DomNode> {
                     })}
             </ul>
             // <ul>
-            // {for item in values.signal_vec() {
-            //     let values = values.clone();
-            //     html! {
-            //         <li on:click=move |_| remove_me(
-            //             item,
-            //             values.clone(),
-            //         )>{item.to_string()}</li>
-            //     }
-            // }}
+            //     {for item in values.signal_vec() {
+            //         let values = values.clone();
+            //         html! {
+            //             <li on:click=move |_| remove_me(
+            //                 item,
+            //                 values.clone(),
+            //             )>{item.to_string()}</li>
+            //         }
+            //     }}
             // </ul>
             <h2>"Evens"</h2>
             <div>

@@ -1,7 +1,7 @@
 use discard::DiscardOnDrop;
 use hirola::prelude::{mixins::text, *};
 use web_sys::{window, Event};
-fn counter(_app: &HirolaApp) -> Dom {
+fn counter(_app: &App<S, G>) -> Dom {
     let count = Signal::new(0);
     let todos = MutableVec::<u32>::new_with_values(vec![0, 1, 2]);
     let alert = count
@@ -73,14 +73,14 @@ fn main() {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
-    let mut app = HirolaApp::new();
+    let mut app = App<S, G>::new();
 
     let mut router = Router::new();
     router.add("/", |app| "Test".to_owned().render());
     router.add("/counter/1", counter);
     router.add("/counter/2", counter);
 
-    fn main_view(app: &HirolaApp) -> Dom {
+    fn main_view(app: &App<S, G>) -> Dom {
         let router = app.data::<Router>().unwrap().clone();
         let app = app.clone();
 

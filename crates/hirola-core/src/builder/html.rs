@@ -1,25 +1,23 @@
 use std::collections::HashMap;
 
-use crate::{
-    generic_node::{EventListener, GenericNode},
-    render::Render,
-};
+use crate::{generic_node::EventListener, render::Render};
 
-use super::{fragment::Fragment, ViewBuilder};
+use super::ViewBuilder;
 
-pub struct HtmlBuilder<G> {
+pub struct HtmlBuilder {
     pub(super) tag: String,
-    pub(super) children: Vec<Box<dyn Render<G>>>,
+    pub(super) children: Vec<Box<dyn Render>>,
     pub(super) events: Vec<(&'static str, Box<EventListener>)>,
+    pub(super) attributes: HashMap<String, String>,
 }
 
-impl<G: 'static + GenericNode> HtmlBuilder<G> {
+impl HtmlBuilder {
     pub fn new(tag: &str) -> Self {
         Self {
             tag: tag.to_owned(),
             children: vec![],
             events: vec![],
-            // attributes: HashMap<String, >
+            attributes: HashMap::new(),
         }
     }
 
@@ -27,7 +25,11 @@ impl<G: 'static + GenericNode> HtmlBuilder<G> {
         self.events.push((name, listener))
     }
 
-    pub fn append_child(&mut self, child: ViewBuilder<G>) {
+    pub fn append_child(&mut self, child: ViewBuilder) {
         self.children.push(Box::new(child))
+    }
+
+    pub(crate) fn attribute(&mut self, key: &str, value: String) {
+        self.attributes.insert(key.to_owned(), value);
     }
 }

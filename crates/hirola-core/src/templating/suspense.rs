@@ -1,28 +1,51 @@
-use std::{cell::RefCell, future::Future, marker::PhantomData, pin::Pin, rc::Rc};
+use std::{cell::RefCell, future::Future, pin::Pin, rc::Rc};
+
+use futures::FutureExt;
 
 use crate::{
     builder::{component::Component, ViewBuilder},
-    generic_node::GenericNode,
+    generic_node::{GenericNode, DomType},
     render::Error,
-    view::View,
+    view::View, BoxedLocal,
 };
-pub type SuspenseResult<T, E> = Result<Option<T>, E>;
 
-pub struct Suspense<Res, G: GenericNode> {
-    pub template: Box<dyn Fn(Res) -> ViewBuilder<G>>,
+#[derive(Debug, Default)]
+pub enum SuspenseResult<Res> {
+    #[default]
+    Loading,
+    Ready(Res),
+}
+
+pub trait Suspend {
+    type Result;
+    fn suspense(self) -> BoxedLocal<SuspenseResult<Self::Result>>;
+}
+
+impl<F, Res> Suspend for F
+where
+    F: FutureExt<Output = Res> + 'static,
+{
+    type Result = Res;
+    fn suspense(self) -> BoxedLocal<SuspenseResult<Self::Result>> {
+        Box::pin(self.map(|res| SuspenseResult::Ready(res)))
+    }
+}
+
+pub struct Suspense<Res> {
+    pub template: Box<dyn Fn(Res) -> ViewBuilder>,
     pub future: Pin<Box<dyn Future<Output = Res>>>,
 }
 
-impl<Res: Default + 'static, G: GenericNode> Component<G> for Suspense<Res, G> {
-    fn render(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<Res: Default + 'static> Component for Suspense<Res> {
+    fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
         let template = self.template;
-        struct State<G: GenericNode> {
-            holder: G,
-            current: Option<View<G>>,
+        struct State{
+            holder: DomType,
+            current: Option<View>,
         }
 
-        impl<G: GenericNode> State<G> {
-            fn new(parent: G) -> Rc<RefCell<Self>> {
+        impl State {
+            fn new(parent: DomType) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
                     holder: parent,
                     current: None,
@@ -39,23 +62,13 @@ impl<Res: Default + 'static, G: GenericNode> Component<G> for Suspense<Res, G> {
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: ViewBuilder<G>) -> Result<(), Error> {
+            fn apply(&mut self, dom: ViewBuilder) -> Result<(), Error> {
+                self.clear();
                 let node = &mut self.holder;
-                if let Some(current) = &self.current {
-                    let children = current.children().take();
-                    for child in children {
-                        child.node().remove_self()
-                    }
-                }
-                let view = dom.mount(&G::fragment())?;
+                let view = dom.mount(&DomType::fragment())?;
                 node.append_child(&view.node());
                 self.current = Some(view);
                 Ok(())
-            }
-        }
-        impl<G: GenericNode> Drop for State<G> {
-            fn drop(&mut self) {
-                // self.clear();
             }
         }
 

@@ -1,17 +1,16 @@
 //! References to nodes in templates.
 
+use crate::generic_node::DomType;
+use std::any::Any;
 use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
 
-use crate::generic_node::GenericNode;
-use std::any::Any;
-
 /// A reference to a [`GenericNode`].
 #[derive(Clone, PartialEq, Eq)]
-pub struct NodeRef<G: GenericNode>(Rc<RefCell<Option<G>>>);
+pub struct NodeRef(Rc<RefCell<Option<DomType>>>);
 
-impl<G: GenericNode + Any> NodeRef<G> {
+impl NodeRef {
     /// Creates an empty [`NodeRef`].
     pub fn new() -> Self {
         Self(Rc::new(RefCell::new(None)))
@@ -23,7 +22,7 @@ impl<G: GenericNode + Any> NodeRef<G> {
     /// Panics if the [`NodeRef`] is not set yet or is the wrong type.
     ///
     /// For a non panicking version, see [`NodeRef::try_get`].
-    pub fn get<T: GenericNode>(&self) -> T {
+    pub fn get(&self) -> DomType {
         self.try_get().expect("NodeRef is not set")
     }
 
@@ -31,18 +30,18 @@ impl<G: GenericNode + Any> NodeRef<G> {
     /// the wrong type.
     ///
     /// For a panicking version, see [`NodeRef::get`].
-    pub fn try_get<T: GenericNode>(&self) -> Option<T> {
+    pub fn try_get(&self) -> Option<DomType> {
         let obj = self.0.borrow();
         (obj.as_ref()? as &dyn Any).downcast_ref().cloned()
     }
 
-    /// Gets the raw [`GenericNode`] stored inside the [`NodeRef`].
+    /// Gets the raw [`DomType`] stored inside the [`NodeRef`].
     ///
     /// # Panics
     /// Panics if the [`NodeRef`] is not set yet.
     ///
     /// For a non panicking version, see [`NodeRef::try_get_raw`].
-    pub fn get_raw(&self) -> G {
+    pub fn get_raw(&self) -> DomType {
         self.try_get().expect("NodeRef is not set")
     }
 
@@ -50,23 +49,23 @@ impl<G: GenericNode + Any> NodeRef<G> {
     /// not yet set.
     ///
     /// For a panicking version, see [`NodeRef::get`].
-    pub fn try_get_raw(&self) -> Option<G> {
+    pub fn try_get_raw(&self) -> Option<DomType> {
         self.0.borrow().clone()
     }
 
-    /// Sets the [`NodeRef`] with the specified [`GenericNode`].
-    pub fn set(&self, node: G) {
+    /// Sets the [`NodeRef`] with the specified [`DomType`].
+    pub fn set(&self, node: DomType) {
         *self.0.borrow_mut() = Some(node);
     }
 }
 
-impl<G: GenericNode> Default for NodeRef<G> {
+impl Default for NodeRef {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<G: GenericNode> fmt::Debug for NodeRef<G> {
+impl fmt::Debug for NodeRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("NodeRef").field(&self.0.borrow()).finish()
     }

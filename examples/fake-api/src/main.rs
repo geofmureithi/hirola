@@ -23,7 +23,7 @@ async fn fetcher() -> Result<Users, JsValue> {
     Ok(users)
 }
 
-fn fetch_users(_app: &HirolaApp) -> Dom {
+fn fetch_users(_app: &App<S, G>) -> Dom {
     let users: AsyncResult<Users> = use_async(fetcher());
 
     html! {
@@ -38,6 +38,6 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
+    let app = App<S, G>::new();
     app.mount(&body, fetch_users);
 }

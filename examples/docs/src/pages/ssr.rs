@@ -15,7 +15,7 @@ pub fn ssr_page(_app: &App) -> Dom {
             <h2>"Example"</h2>
             <CodePreview
                 code="fn main(){
-                    let app = HirolaApp::new();
+                    let app = App<S, G>::new();
                     let res = app.render_to_string(counter);
                     assert_eq!("<div><button>Increment</button><span>0</span></div>", &res);
                 }"

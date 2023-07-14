@@ -11,17 +11,18 @@
 //! ## Example
 //! ```rust,no_run
 //! use hirola::prelude::*;
+//! use hirola::signal::Mutable;
 //!
-//! fn counter(_: &HirolaApp) -> Dom {
-//!     let state = Signal::new(99);
-//!     let decerement = state.mut_callback(|count, _| *count - 1);
-//!     let incerement = state.mut_callback(|count, _| *count + 1);
+//! fn counter(_: &App<()>) -> ViewBuilder {
+//!     let state = Mutable::new(99);
+//!     let decrement = state.update_with(|count, _| count.set(count.get() - 1));
+//!     let increment = state.update_with(|count, _| count.set(count.get() - 1));
 //!
 //!     html! {
 //!         <div class="flex flex-row h-10">
-//!             <button on:click=decerement>"-"</button>
-//!             <input value=state.get() disabled/>
-//!             <button on:click=incerement>"+"</button>
+//!             <button on:click=decrement>"-"</button>
+//!             <span>{state}</span>
+//!             <button on:click=increment>"+"</button>
 //!         </div>
 //!     }
 //! }
@@ -31,8 +32,9 @@
 //!     let document = window.document().unwrap();
 //!     let body = document.body().unwrap();
 //!
-//!     let app = HirolaApp::new();
-//!     app.mount(&body, counter);
+//!     let mut app = App::new(());
+//!     app.route("/", counter);
+//!     app.mount(&body);
 //! }
 //! ```
 //!
@@ -43,11 +45,19 @@
     cfg_attr(doc, doc = ::document_features::document_features!())
 )]
 
-//! Hirola is derived from a fork of [maple reactivity core](https://github.com/lukechu10/maple).
 /// The defaults from core
 pub mod prelude {
-    pub use super::*;
     pub use hirola_core::prelude::*;
+}
+
+/// Exposing single item signal
+pub mod signal {
+    pub use hirola_core::prelude::signal::*;
+}
+
+/// Exposing vec signal
+pub mod signal_vec {
+    pub use hirola_core::prelude::signal_vec::*;
 }
 
 /// Include form mixins and utilities

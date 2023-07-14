@@ -1,14 +1,12 @@
-use hirola_core::ViewBuilder;
+use hirola::prelude::*;
 use hirola_macros::html;
 
 #[test]
-fn test() {
+fn it_works() {
     let world = "planet";
-
-    assert_eq!(
-        html! {
-            <p>{world}</p>
-        },
-        ViewBuilder::new()
-    );
+    let template = html! {
+        <p>{world}</p>
+    };
+    let result = render_to_string(template);
+    assert_eq!("<p>planet</p>", result);
 }

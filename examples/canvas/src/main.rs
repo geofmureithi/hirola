@@ -3,7 +3,7 @@ use tool::SignTool;
 
 mod tool;
 
-fn signature_pad(_app: &HirolaApp) -> Dom {
+fn signature_pad(_app: &App<S, G>) -> Dom {
     let canvas = NodeRef::new();
     let tool = SignTool::new(canvas.clone());
 
@@ -50,7 +50,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
+    let app = App<S, G>::new();
 
     app.mount(&body, signature_pad);
 }

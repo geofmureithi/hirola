@@ -19,7 +19,7 @@
 //!    Box::new(cb)
 //! }
 //!
-//! fn mixin_demo(_app: &HirolaApp) -> Dom {
+//! fn mixin_demo(_app: &App<S, G>) -> Dom {
 //!    let is_shown = Mutable::new(true);
 //!    let toggle = is_shown.mut_callback(|show, _e| !show);
 //!    html! {
@@ -40,7 +40,7 @@
 //!     let window = web_sys::window().unwrap();
 //!     let document = window.document().unwrap();
 //!     let body = document.body().unwrap();
-//!     let app = HirolaApp::new();
+//!     let app = App<S, G>::new();
 //!
 //!     app.mount(&body, mixin_demo);
 //! }
@@ -62,8 +62,8 @@ use crate::{generic_node::GenericNode, update::Identity, view::View};
 /// Note: This is a security risk if the string to be inserted might contain potentially malicious content.
 /// sanitize the content before it is inserted.
 /// See more: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-pub fn rhtml<'a, G: GenericNode>(text: &'a str) -> Box<dyn Fn(&View<G>) -> () + 'a> {
-    let cb = move |node: &View<G>| {
+pub fn rhtml<'a, G: GenericNode>(text: &'a str) -> Box<dyn Fn(&View) -> () + 'a> {
+    let cb = move |node: &View| {
         let element = node
             .inner_element()
             .as_ref()
@@ -75,8 +75,8 @@ pub fn rhtml<'a, G: GenericNode>(text: &'a str) -> Box<dyn Fn(&View<G>) -> () + 
 }
 
 /// A mixin that allows adding nonsignal text
-pub fn rtext<'a, D: Display, G: GenericNode>(text: &'a D) -> Box<dyn Fn(&View<G>) + 'a> {
-    let cb = move |view: &View<G>| {
+pub fn rtext<'a, D: Display, G: GenericNode>(text: &'a D) -> Box<dyn Fn(&View) + 'a> {
+    let cb = move |view: &View| {
         view.node().set_text_content(Some(&format!("{text}")));
     };
     Box::new(cb)

@@ -22,7 +22,7 @@ pub fn forms_page(_app: &App) -> Dom {
                     password: String
                 }
                 
-                fn form_demo(_app: &HirolaApp) -> Dom {
+                fn form_demo(_app: &App<S, G>) -> Dom {
                     let form = FormHandler::new(Login {
                         email: String::from_str("example@gmail.com").unwrap(),
                         password: String::new(),

@@ -47,7 +47,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let mut app = HirolaApp::new();
+    let mut app = App<S, G>::new();
     app.mount(&body, home);
 }
 

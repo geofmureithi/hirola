@@ -327,7 +327,7 @@ mod tests {
     #[test]
     fn inside_match_case() {
         let source = indoc! {r#"
-            use leptos::*;
+            use hirola::prelude::*;
 
             enum ExampleEnum {
                 ValueOneWithAReallyLongName,
@@ -335,7 +335,7 @@ mod tests {
             }
 
             #[component]
-            fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+            fn Component(val: ExampleEnum) -> Dom {
                 match val {
                     ExampleEnum::ValueOneWithAReallyLongName => 
                         html! {
@@ -354,7 +354,7 @@ mod tests {
 
         let result = format_file_source(source, Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
-        use leptos::*;
+        use hirola::prelude::*;
 
         enum ExampleEnum {
             ValueOneWithAReallyLongName,
@@ -362,7 +362,7 @@ mod tests {
         }
 
         #[component]
-        fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+        fn Component(val: ExampleEnum) -> Dom {
             match val {
                 ExampleEnum::ValueOneWithAReallyLongName => 
                     html! {

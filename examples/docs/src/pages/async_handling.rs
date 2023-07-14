@@ -31,7 +31,7 @@ pub fn async_page(_app: &App) -> Dom {
                     Ok(users)
                 }
                 
-                fn fetch_users(_app: &HirolaApp) -> Dom {
+                fn fetch_users(_app: &App<S, G>) -> Dom {
                     let users: AsyncResult<Users> = use_async(fetcher());
                     html! {
                         <div class="grid h-screen place-items-center">

@@ -6,7 +6,7 @@ use std::{fmt, mem};
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::Node;
 
-use crate::generic_node::{EventListener, GenericNode};
+use crate::generic_node::GenericNode;
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
 ///
@@ -109,7 +109,7 @@ impl AsRef<JsValue> for SsrNode {
 }
 
 impl From<SsrNode> for JsValue {
-    fn from(node: SsrNode) -> Self {
+    fn from(_: SsrNode) -> Self {
         JsValue::default()
     }
 }
@@ -119,11 +119,11 @@ impl JsCast for SsrNode {
         Node::instanceof(val)
     }
 
-    fn unchecked_from_js(val: JsValue) -> Self {
+    fn unchecked_from_js(_: JsValue) -> Self {
         unimplemented!()
     }
 
-    fn unchecked_from_js_ref(val: &JsValue) -> &Self {
+    fn unchecked_from_js_ref(_: &JsValue) -> &Self {
         unimplemented!()
     }
 }
@@ -266,6 +266,10 @@ impl GenericNode for SsrNode {
 
     fn update_inner_text(&self, text: &str) {
         self.unwrap_text().borrow_mut().0 = text.to_string();
+    }
+
+    fn replace_children_with(&self, _node: &Self) {
+        unimplemented!()
     }
 }
 

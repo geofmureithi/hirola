@@ -1,16 +1,16 @@
 use crate::{view::View, generic_node::GenericNode};
 use futures_signals::{signal::Mutable, signal_vec::MutableVec};
 pub trait Mixin<Target, Node> where Node: GenericNode {
-    fn mixin(&self, node: &View<Node>);
+    fn mixin(&self, node: &View);
 }
 
 pub struct Identity;
 
 impl<T, G: GenericNode> Mixin<Identity, G> for T
 where
-    T: Fn(&View<G>),
+    T: Fn(&View),
 {
-    fn mixin(&self, node: &View<G>) {
+    fn mixin(&self, node: &View) {
         (&self)(node);
     }
 }

@@ -55,7 +55,7 @@ pub fn home(_: &App) -> Dom {
             <CodePreview
                 code="use hirola::prelude::*;
                 
-                fn counter(_: &HirolaApp) -> Dom {
+                fn counter(_: &App<S, G>) -> Dom {
                   let state = Signal::new(99);
                   let decerement = state.mut_callback(|count, _| *count - 1);
                   let incerement = state.mut_callback(|count, _| *count + 1);
@@ -74,7 +74,7 @@ pub fn home(_: &App) -> Dom {
                   let document = window.document().unwrap();
                   let body = document.body().unwrap();
                 
-                  let app = HirolaApp::new();
+                  let app = App<S, G>::new();
                   app.mount(&body, counter);
                 }"
 

@@ -45,7 +45,7 @@ fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Muta
     }
 }
 
-fn todo_view(app: &HirolaApp) -> Dom {
+fn todo_view(app: &App<S, G>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let route = router.params().get();
     let param = route.params.get("id").unwrap_or(&"1".to_string()).clone();
@@ -69,7 +69,7 @@ fn todo_view(app: &HirolaApp) -> Dom {
     }
 }
 
-fn home(app: &HirolaApp) -> Dom {
+fn home(app: &App<S, G>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;
@@ -140,7 +140,7 @@ struct TodoStore {
     todos: Mutable<Vec<Mutable<Todo>>>,
 }
 
-fn index(app: &HirolaApp) -> Dom {
+fn index(app: &App<S, G>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let app = app.clone();
     html! {
@@ -169,7 +169,7 @@ fn main() {
     ];
     let todos = Mutable::new(todos);
 
-    let mut app = HirolaApp::new();
+    let mut app = App<S, G>::new();
 
     let mut router = Router::new();
     router.route("/", home);

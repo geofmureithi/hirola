@@ -1,5 +1,3 @@
-//! Abstraction over a rendering backend.
-
 #[cfg(feature = "dom")]
 pub mod dom_node;
 #[cfg(feature = "ssr")]
@@ -15,24 +13,14 @@ use std::fmt;
 
 use web_sys::Event;
 
-use crate::prelude::*;
-
 pub type EventListener = dyn Fn(Event);
 
-/// Abstraction over a rendering backend.
-///
-/// You would probably use this trait as a trait bound when you want to accept any rendering backend.
-/// For example, components are often generic over [`GenericNode`] to be able to render to different backends.
-///
-/// Note that components are **NOT** represented by [`GenericNode`]. Instead, components are _disappearing_, meaning
-/// that they are simply functions that generate [`GenericNode`]s inside a new reactive context. This means that there
-/// is no overhead whatsoever when using components.
-///
-/// Hirola ships with 2 rendering backends out of the box:
-/// * [`DomNode`] - Rendering in the browser (to real DOM nodes).
-/// * [`SsrNode`] - Render to a static string (often on the server side for Server Side Rendering, aka. SSR).
-///
-/// To implement your own rendering backend, you will need to create a new struct which implements [`GenericNode`].
+#[cfg(feature = "dom")]
+pub type DomType = dom_node::DomNode;
+
+#[cfg(not(feature = "dom"))]
+pub type DomType = ssr_node::SsrNode;
+
 pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Create a new element node.
     fn element(tag: &str) -> Self;
@@ -74,15 +62,16 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     fn next_sibling(&self) -> Option<Self>;
 
     /// Remove this node from the tree.
-    ///
-    /// TODO: Remove this node on Drop.
     fn remove_self(&self);
 
     /// Add a [`EventListener`] to the event `name`.
-    fn event(&self, name: &str, handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
+    fn event(&self, _name: &str, _handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
         None
     }
 
     /// Update inner text of the node. If the node has elements, all the elements are replaced with a new text node.
     fn update_inner_text(&self, text: &str);
+
+    /// Replace all the children in a node with a new node
+    fn replace_children_with(&self, node: &Self);
 }

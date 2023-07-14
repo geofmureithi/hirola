@@ -19,6 +19,10 @@ hirola-form = { path = "crates/hirola-form", version = "0.2.0", optional = true 
 [features]
 default = ["hirola-core/default"]
 
+
+## Enables dom based rendering
+dom = ["hirola-core/dom"]
+
 ## Enables serialization of state
 serde = ["hirola-core/serde"]
 
@@ -34,11 +38,12 @@ docsrs = ["document-features"]
 form = ["hirola-form"]
 
 
-
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
 wasm-bindgen = { version = "0.2.79" }
-hirola = { path = ".", default-features=false, features =["router", "ssr"]}
+hirola = { path = ".", default-features = false, features = ["router", "dom"] }
+futures-util = "0.3"
+web-sys = { version = "0.3", features = ["Document", "Node", "Element"] }
 
 [workspace]
 members = [
@@ -54,7 +59,7 @@ members = [
     "examples/x-for",
     "examples/mixin",
     "examples/form",
-    "examples/docs"
+    "examples/docs",
 ]
 
 [dependencies.document-features]
@@ -70,5 +75,11 @@ default-target = "wasm32-unknown-unknown"
 
 
 [profile.release]
+opt-level = "z"
+overflow-checks = false
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
 lto = true
-opt-level = 's'

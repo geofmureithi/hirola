@@ -1,65 +1,74 @@
 #![allow(unused_variables)]
-
 use hirola::prelude::*;
+use wasm_bindgen::{prelude::Closure, JsCast};
 use wasm_bindgen_test::*;
+use web_sys::{Element, Node};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-#[wasm_bindgen_test]
-fn app_renders() {
-    let app = HirolaApp::new();
-    fn test_app(app: &HirolaApp) -> Dom {
-        html! {
-            <span>"Test"</span>
-        }
-    }
-    let res = app.render_to_string(test_app);
-    assert_eq!("<span>Test</span>", &res);
+fn body() -> Node {
+    let doc = web_sys::window().unwrap().document().unwrap();
+    let element = doc.create_element("div").unwrap().into();
+    element
 }
 
-#[wasm_bindgen_test]
-fn router_renders() {
-    let mut app = HirolaApp::new();
-    let mut router = Router::new();
-    router.route("/", |_| {
-        html! {
-            <main>"Main"</main>
-        }
-    });
-    app.extend(router);
-
-    fn test_app(app: &HirolaApp) -> Dom {
-        let router: &Router = app.data().unwrap();
-        router.push("/");
-        router.render(app)
-    }
-    let res = app.render_to_string(test_app);
-    assert_eq!("<main>Main</main>", &res);
+fn inner_html(element: &Node) -> String {
+    let element = element.dyn_ref::<Element>().unwrap();
+    element.inner_html()
 }
 
 #[wasm_bindgen_test]
 fn router_pushes() {
-    let mut app = HirolaApp::new();
-    let mut router = Router::new();
-    router.route("/", |_| {
+    let mut app: App<()> = App::new(());
+    app.route("/", |_| {
         html! {
             <main>"Main"</main>
         }
     });
-    router.route("/page", |_| {
+    app.route("/page", |_| {
         html! {
             <main>"Page"</main>
         }
     });
+    let node = body();
+    app.mount(&node);
+    assert_eq!("<main>Main</main>", inner_html(&node));
+    app.router().push("/page");
+    next_tick(move || {
+        assert_eq!("<main>Page</main>", inner_html(&node));
+    });
+}
 
-    app.extend(router.clone());
+#[allow(dead_code)]
+fn next_tick<F: Fn() + 'static>(f: F) {
+    let a = Closure::<dyn Fn()>::new(move || f());
+    web_sys::window()
+        .unwrap()
+        .set_timeout_with_callback(a.as_ref().unchecked_ref())
+        .unwrap();
+}
 
-    fn test_app(app: &HirolaApp) -> Dom {
-        let router: &Router = app.data().unwrap();
-        router.push("/page");
-        router.render(app)
+#[wasm_bindgen_test]
+fn app_renders() {
+    let mut app: App<()> = App::new(());
+    fn test_app(app: &App<()>) -> ViewBuilder {
+        html! {
+            <span>"Test"</span>
+        }
     }
+    app.route("/", test_app);
+    app.mount(&body());
+    assert_eq!("<span>Test</span>", inner_html(&body()));
+}
 
-    let res = app.render_to_string(test_app);
-    assert_eq!("<main>Page</main>", &res);
+#[wasm_bindgen_test]
+fn router_renders() {
+    let mut app: App<()> = App::new(());
+    app.route("/", |_| {
+        html! {
+            <main>"Main"</main>
+        }
+    });
+    let view = app.mount(&body());
+    assert_eq!("<main>Main</main>", inner_html(&body()));
 }

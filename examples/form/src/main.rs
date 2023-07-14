@@ -37,7 +37,7 @@ fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
     }
 }
 
-fn form_demo(_app: &HirolaApp) -> Dom {
+fn form_demo(_app: &App<S, G>) -> Dom {
     let form = FormHandler::new(Login {
         email: "example@gmail.com".to_string(),
         password: String::new(),
@@ -121,6 +121,6 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
+    let app = App<S, G>::new();
     app.mount(&body, form_demo);
 }

@@ -1,30 +1,30 @@
+use self::{component::Component, fragment::Fragment, html::HtmlBuilder};
 use crate::{
-    generic_node::{GenericNode, EventListener},
+    generic_node::{DomType, EventListener, GenericNode},
     render::{Error, Render},
     view::View,
 };
-
-use self::{component::Component, fragment::Fragment, html::HtmlBuilder};
+use std::fmt::Display;
 
 pub mod component;
 pub mod fragment;
 pub mod html;
 
-pub enum ViewBuilder<G> {
+pub enum ViewBuilder {
     Text(String),
-    HtmlElement(HtmlBuilder<G>),
-    Fragment(Fragment<G>),
-    Component(Box<dyn Component<G>>),
+    HtmlElement(HtmlBuilder),
+    Fragment(Fragment),
+    Component(Box<dyn Component>),
 }
 
-impl<G: GenericNode> ViewBuilder<G> {
-    pub fn new() -> ViewBuilder<G> {
+impl ViewBuilder {
+    pub fn new() -> ViewBuilder {
         ViewBuilder::Fragment(Fragment {
             children: Vec::new(),
         })
     }
 
-    pub fn element(tag: &str) -> ViewBuilder<G> {
+    pub fn element(tag: &str) -> ViewBuilder {
         ViewBuilder::HtmlElement(HtmlBuilder::new(tag))
     }
 
@@ -37,13 +37,22 @@ impl<G: GenericNode> ViewBuilder<G> {
         }
     }
 
-    // pub fn new_with_node(node: G) -> ViewBuilder<G> {
+    pub fn attribute(&mut self, key: &str, value: impl Display) {
+        match self {
+            ViewBuilder::HtmlElement(element) => element.attribute(key, value.to_string()),
+            _ => {
+                unreachable!("Events are bound to html elements")
+            }
+        }
+    }
+
+    // pub fn new_with_node(node: G) -> ViewBuilder {
     //     ViewBuilder::HtmlElement(HtmlBuilder { tag: (), children: (), events: () })
     // }
 }
 
-impl<G: 'static + GenericNode> ViewBuilder<G> {
-    pub fn append_child(&mut self, child: ViewBuilder<G>) {
+impl ViewBuilder {
+    pub fn append_child(&mut self, child: ViewBuilder) {
         match self {
             ViewBuilder::Text(_) => unreachable!("You cant add children to text"),
             ViewBuilder::HtmlElement(inner) => inner.children.push(Box::new(child)),
@@ -52,27 +61,30 @@ impl<G: 'static + GenericNode> ViewBuilder<G> {
         }
     }
 
-    pub fn append_render(&mut self, render: impl Render<G> + 'static) {
+    pub fn append_render(&mut self, render: impl Render + 'static) {
         let mut fragment = Fragment::new();
         fragment.append_child(render);
         self.append_child(ViewBuilder::Fragment(fragment))
     }
 }
 
-impl<G: GenericNode> ViewBuilder<G> {
-    pub fn mount(self, node: &G) -> Result<View<G>, Error> {
+impl ViewBuilder {
+    pub fn mount(self, node: &DomType) -> Result<View, Error> {
         let view = View::new_from_node(node);
         Box::new(self).render_into(&view)?;
         Ok(view)
     }
 }
 
-impl<G: GenericNode> Render<G> for ViewBuilder<G> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl Render for ViewBuilder {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         match *self {
-            ViewBuilder::Text(text) => Render::<G>::render_into(Box::new(text.as_str()), view),
+            ViewBuilder::Text(text) => Render::render_into(Box::new(text.as_str()), view),
             ViewBuilder::HtmlElement(element) => {
-                let node = View::new_from_node(&G::element(&element.tag));
+                let node = View::new_from_node(&DomType::element(&element.tag));
+                for (key, value) in element.attributes {
+                    node.attribute(&key, &value);
+                }
                 for (event, handler) in element.events {
                     node.event(event, handler)
                 }

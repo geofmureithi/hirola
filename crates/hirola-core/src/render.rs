@@ -1,28 +1,16 @@
 //! Trait for describing how something should be rendered into DOM nodes.
-
-use std::{
-    fmt::{self, Display},
-    iter::Enumerate,
-    ops::Range,
-    pin::Pin,
-};
-
-use discard::DiscardOnDrop;
-use futures::stream::LocalBoxStream;
-use futures_signals::{
-    signal::{Mutable, ReadOnlyMutable, SignalExt},
-    signal_vec::{
-        Filter, FilterMap, Map, MutableSignalVec, MutableVec, SignalVec, SignalVecExt, VecDiff,
-    },
-};
-use wasm_bindgen::JsValue;
-
 use crate::{
     builder::ViewBuilder,
-    generic_node::{DomNode, GenericNode},
+    generic_node::{DomType, GenericNode},
     templating::flow::{Indexed, IndexedProps},
     view::View,
 };
+use futures_signals::{
+    signal::{Mutable, ReadOnlyMutable, SignalExt},
+    signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
+};
+use std::{fmt::Display, iter::Enumerate, pin::Pin};
+use wasm_bindgen::JsValue;
 
 #[derive(Debug)]
 pub enum Error {
@@ -30,55 +18,45 @@ pub enum Error {
 }
 
 /// Trait for describing how something should be rendered into nodes.
-pub trait Render<G: GenericNode> {
+pub trait Render {
     /// Called during the initial render when creating the nodes inside a view.
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error>;
-
-    // /// Called when the node should be updated with new state.
-    // /// The default implementation of this will replace the child node completely with the result of calling `render` again.
-    // /// Another implementation might be better suited to some specific types.
-    // /// For example, text nodes can simply replace the inner text instead of recreating a new node.
-    // ///
-    // /// Returns the new node. If the node is reused instead of replaced, the returned node is simply the node passed in.
-    // fn update_node(&self, parent: &G, node: &G) {
-
-    // }
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error>;
 }
 
 /// Does nothing
-impl<G: GenericNode> Render<G> for () {
-    fn render_into(self: Box<Self>, _view: &View<G>) -> Result<(), Error> {
+impl Render for () {
+    fn render_into(self: Box<Self>, _view: &View) -> Result<(), Error> {
         Ok(())
     }
 }
 
-impl<G: GenericNode> Render<G> for &str {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
-        let child = View::new_from_node(&G::text_node(*self));
-        view.append_child(child);
+impl Render for &str {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
+        let child = View::new_from_node(&DomType::text_node(*self));
+        view.append_child(child).map_err(Error::DomError)?;
         Ok(())
     }
 }
 
-impl<G: GenericNode> Render<G> for String {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
-        let child = View::new_from_node(&G::text_node(&self));
-        view.append_child(child);
+impl Render for String {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
+        let child = View::new_from_node(&DomType::text_node(&self));
+        view.append_child(child).map_err(Error::DomError)?;
         Ok(())
     }
 }
 
 /// Renders `A`, then `B`
-impl<A: Render<G>, B: Render<G>, G: GenericNode> Render<G> for (A, B) {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<A: Render, B: Render> Render for (A, B) {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         Box::new(self.0).render_into(view)?;
         Box::new(self.1).render_into(view)
     }
 }
 
 /// Renders `A`, then `B`, then `C`
-impl<A: Render<G>, B: Render<G>, C: Render<G>, G: GenericNode> Render<G> for (A, B, C) {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<A: Render, B: Render, C: Render> Render for (A, B, C) {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         Box::new(self.0).render_into(view)?;
         Box::new(self.1).render_into(view)?;
         Box::new(self.2).render_into(view)
@@ -86,8 +64,8 @@ impl<A: Render<G>, B: Render<G>, C: Render<G>, G: GenericNode> Render<G> for (A,
 }
 
 /// Renders `T` or nothing
-impl<T: Render<G>, G: GenericNode> Render<G> for Option<T> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<T: Render> Render for Option<T> {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         match *self {
             None => Ok(()),
             Some(x) => Box::new(x).render_into(view),
@@ -95,8 +73,8 @@ impl<T: Render<G>, G: GenericNode> Render<G> for Option<T> {
     }
 }
 
-impl<T: Render<G>, G: GenericNode> Render<G> for Vec<T> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<T: Render> Render for Vec<T> {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         for elem in *self {
             Box::new(elem).render_into(view)?;
         }
@@ -104,38 +82,36 @@ impl<T: Render<G>, G: GenericNode> Render<G> for Vec<T> {
     }
 }
 
-impl<T: Display + Clone + 'static, G: GenericNode> Render<G> for Mutable<T> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
-        let node = G::text_node(&self.get_cloned().to_string());
-        let v = View::new_from_node(&node);
-
+impl<T: Display + Clone + 'static> Render for Mutable<T> {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
+        let node = DomType::text_node(&self.get_cloned().to_string());
+        let child = View::new_from_node(&node);
         let fut = self.signal_ref(move |e| node.update_inner_text(&e.to_string()));
-        wasm_bindgen_futures::spawn_local(fut.to_future());
-        // view.effect(fut.to_future());
-        view.append_child(v).unwrap();
+        view.effect(fut.to_future());
+        view.append_child(child).unwrap();
         Ok(())
     }
 }
 
-pub struct Mapped<T, G> {
+pub struct Mapped<T> {
     pub iter: Pin<Box<dyn SignalVec<Item = T>>>,
-    callback: Box<dyn Fn(T) -> ViewBuilder<G>>,
+    callback: Box<dyn Fn(T) -> ViewBuilder>,
 }
 
-pub trait RenderMap<G> {
+pub trait RenderMap {
     type Item;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G>;
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item>;
 }
 
-impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for MutableSignalVec<T> {
+impl<T: Clone + 'static> RenderMap for MutableSignalVec<T> {
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G> {
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
             callback: Box::new(callback),
@@ -143,18 +119,14 @@ impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for MutableSignalVec<T> {
     }
 }
 
-impl<
-        T: Clone + 'static,
-        G: GenericNode,
-        I: SignalVec<Item = T> + 'static,
-        F: FnMut(&T) -> bool + 'static,
-    > RenderMap<G> for Filter<I, F>
+impl<T: Clone + 'static, I: SignalVec<Item = T> + 'static, F: FnMut(&T) -> bool + 'static> RenderMap
+    for Filter<I, F>
 {
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G> {
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
             callback: Box::new(callback),
@@ -162,12 +134,12 @@ impl<
     }
 }
 
-impl<T: Clone + 'static, G: GenericNode, I: Iterator<Item = T>> RenderMap<G> for Enumerate<I> {
+impl<T: Clone + 'static, I: Iterator<Item = T>> RenderMap for Enumerate<I> {
     type Item = (usize, T);
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G> {
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item> {
         let items = self.collect();
         Mapped {
             iter: Box::pin(MutableVec::new_with_values(items).signal_vec_cloned()),
@@ -176,14 +148,14 @@ impl<T: Clone + 'static, G: GenericNode, I: Iterator<Item = T>> RenderMap<G> for
     }
 }
 
-impl<T: Clone + 'static + PartialEq, G: GenericNode, I: SignalVec<Item = T> + Unpin + 'static>
-    RenderMap<G> for futures_signals::signal_vec::Enumerate<I>
+impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static> RenderMap
+    for futures_signals::signal_vec::Enumerate<I>
 {
     type Item = (ReadOnlyMutable<Option<usize>>, T);
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G> {
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self.to_signal_cloned().to_signal_vec()),
             callback: Box::new(callback),
@@ -191,12 +163,12 @@ impl<T: Clone + 'static + PartialEq, G: GenericNode, I: SignalVec<Item = T> + Un
     }
 }
 
-impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for Vec<T> {
+impl<T: Clone + 'static> RenderMap for Vec<T> {
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder<G> + 'static,
-    ) -> Mapped<Self::Item, G> {
+        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+    ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(MutableVec::new_with_values(self).signal_vec_cloned()),
             callback: Box::new(callback),
@@ -204,8 +176,8 @@ impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for Vec<T> {
     }
 }
 
-impl<T: 'static, G: GenericNode> Render<G> for Mapped<T, G> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<T: 'static + Clone> Render for Mapped<T> {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         let template = {
             let props = IndexedProps {
                 iterable: self.iter,
@@ -220,8 +192,8 @@ impl<T: 'static, G: GenericNode> Render<G> for Mapped<T, G> {
 }
 
 /// Renders `O` or `E`
-impl<O: Render<G>, E: Render<G>, G: GenericNode> Render<G> for std::result::Result<O, E> {
-    fn render_into(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+impl<O: Render, E: Render> Render for std::result::Result<O, E> {
+    fn render_into(self: Box<Self>, view: &View) -> Result<(), Error> {
         match *self {
             Ok(o) => Box::new(o).render_into(view),
             Err(e) => Box::new(e).render_into(view),

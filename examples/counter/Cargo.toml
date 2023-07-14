@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../", features = ["router"]}
+hirola = { path = "../../", features = ["router", "dom"]}
 wasm-bindgen = {version = "0.2", features = ["serde-serialize"]}
 futures = "0.3.28"
 discard = "1.0.4"
@@ -40,4 +40,4 @@ version = "0.3"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
-hirola = { path = "../../", default-features=false, features =["router", "ssr"]}
+hirola = { path = "../../", default-features=false, features =["router", "dom"]}

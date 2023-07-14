@@ -1,11 +1,10 @@
-use std::{
-    cell::RefCell, collections::HashMap, future::IntoFuture, marker::PhantomData, rc::Rc, sync::Arc,
-};
-
-use crate::{prelude::*, builder::{ViewBuilder, fragment::Fragment}, view::View};
-use discard::DiscardOnDrop;
+use crate::{builder::ViewBuilder, prelude::*, view::View};
+use futures_signals::signal::{Mutable, MutableSignalCloned, SignalExt};
+use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
+#[cfg(feature = "dom")]
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{window, Element, Event, HtmlLinkElement, Node};
+#[cfg(feature = "dom")]
+use web_sys::{Element, Event};
 
 #[derive(Clone, Debug)]
 pub struct RouterHandle {
@@ -13,7 +12,9 @@ pub struct RouterHandle {
 }
 impl RouterHandle {
     pub fn push(&self, path: &str) {
+        #[cfg(feature = "dom")]
         let window = web_sys::window().unwrap();
+        #[cfg(feature = "dom")]
         window
             .history()
             .unwrap()
@@ -22,32 +23,48 @@ impl RouterHandle {
         self.current.set(path.to_owned());
     }
 
-    pub fn link(&self) -> Box<dyn Fn(&View<DomNode>) -> () + '_> {
+    pub fn link(&self) -> Box<dyn Fn(&View) -> () + '_> {
+        #[cfg(feature = "dom")]
         let router: RouterHandle = self.clone();
-        let cb = move |node: &View<DomNode>| {
+        #[allow(unused_variables)]
+        let cb = move |node: &View| {
+            #[cfg(feature = "dom")]
             let router = router.clone();
+            #[cfg(feature = "dom")]
             let handle_click = Box::new(move |e: Event| {
                 e.prevent_default();
-
                 let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
-
                 let href = element.get_attribute("href").unwrap();
-
                 router.push(&href);
             }) as Box<dyn Fn(Event)>;
-
+            #[cfg(feature = "dom")]
             node.event("click", handle_click);
         };
         Box::new(cb)
+    }
+
+    pub fn signal(&self) -> MutableSignalCloned<String> {
+        self.current.signal_cloned()
     }
 }
 
 /// Represents a Single page router
 #[derive(Clone)]
 pub struct Router<A> {
-    pub (crate) handler: RouterHandle,
-    inner: matchit::Router<fn(&A) -> ViewBuilder<DomNode>>,
+    pub(crate) handler: RouterHandle,
+    inner: matchit::Router<fn(&A) -> ViewBuilder>,
     app: PhantomData<A>,
+    // on_not_found:
+}
+
+impl<A> Router<A> {
+    pub fn coerce<T>(&self) -> Router<T> {
+        Router {
+            handler: self.handler.clone(),
+            inner: Default::default(),
+            app: PhantomData,
+        }
+    }
 }
 
 impl<A> std::fmt::Debug for Router<A> {
@@ -59,8 +76,10 @@ impl<A> std::fmt::Debug for Router<A> {
 }
 
 impl<A: 'static + Clone> Router<A> {
-    pub fn new() -> Self {
+    pub fn new() -> Router<A> {
+        #[allow(unused_mut)]
         let mut path = String::from("/");
+        #[cfg(feature = "dom")]
         if let Some(window) = web_sys::window() {
             path = window.location().pathname().unwrap_or("/".to_string());
         }
@@ -86,40 +105,21 @@ impl<A: 'static + Clone> Router<A> {
         params
     }
 
-
     /// Add a new route
-    pub fn route(&mut self, path: &str, page: fn(&A) -> ViewBuilder<DomNode>) {
+    pub fn route(&mut self, path: &str, page: fn(&A) -> ViewBuilder) {
         self.inner.insert(path.to_string(), page).unwrap();
     }
 
-
+    #[cfg(feature = "dom")]
     fn get_fragment() -> String {
         return web_sys::window().unwrap().location().pathname().unwrap();
     }
 
-    pub fn link(&self) -> Box<dyn Fn(&View<DomNode>) -> () + '_> {
-        let router: RouterHandle = self.handler.clone();
-        let cb = move |node: &View<DomNode>| {
-            let router = router.clone();
-            let handle_click = Box::new(move |e: Event| {
-                e.prevent_default();
-
-                let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
-
-                let href = element.get_attribute("href").unwrap();
-
-                router.push(&href);
-            }) as Box<dyn Fn(Event)>;
-
-            node.event("click", handle_click);
-        };
-        Box::new(cb)
-    }
-
-    pub (crate) fn render(&self, app: &A, parent: &Node) {
+    pub(crate) fn render(&self, app: &A, parent: &DomType) -> View {
         let router = &self.inner;
+        #[cfg(feature = "dom")]
         let current = self.handler.current.clone();
-
+        #[cfg(feature = "dom")]
         //Hash routing forward in history and URL rewrite
         let handle_hash = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let l: String = web_sys::window()
@@ -139,14 +139,17 @@ impl<A: 'static + Clone> Router<A> {
 
             current.set(l.to_string());
         }) as Box<dyn Fn(_)>);
-
+        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onhashchange(Some(handle_hash.as_ref().unchecked_ref()));
+        #[cfg(feature = "dom")]
         handle_hash.forget();
 
+        #[cfg(feature = "dom")]
         let current = self.handler.current.clone();
         //Routing for navigating in history and escaping hash routes
+        #[cfg(feature = "dom")]
         let handle_pop = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let l = Self::get_fragment();
 
@@ -166,31 +169,46 @@ impl<A: 'static + Clone> Router<A> {
             log::debug!("pop handle : {l}");
         }) as Box<dyn Fn(_)>);
 
+        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onpopstate(Some(handle_pop.as_ref().unchecked_ref()));
 
+        #[cfg(feature = "dom")]
         handle_pop.forget();
         let route = (&self.handler).current.clone();
-        let router = router.clone();
-        let node = parent.clone().dyn_into::<web_sys::HtmlElement>().unwrap();
-        let app = app.clone();
-        let next = route
-        .signal_cloned().map(move|route_match| {
-            let match_result = router.at(&route_match).unwrap();
-            let page_fn = match_result.value;
 
-            let builder = page_fn(&app);
-            let view = builder.mount(&DomNode::fragment()).unwrap();
-            node.replace_children_with_node_1(&view.node().inner_element());
-            let window = web_sys::window().unwrap();
+        let path = route.get_cloned();
+        let current = self.inner.at(&path).unwrap();
+        let page_fn = current.value;
+        let builder = page_fn(&app);
+        let view = builder.mount(&parent).unwrap();
+
+        let router = router.clone();
+        let app = app.clone();
+        let node = parent.clone();
+        let wait_for_next_route = route
+            .signal_cloned()
+            .map(move |route_match| {
+                let match_result = router.at(&route_match).unwrap();
+                let page_fn = match_result.value;
+
+                let builder = page_fn(&app);
+                let view = builder.mount(&DomType::fragment()).unwrap();
+                node.replace_children_with(&view.node());
+                std::mem::forget(view);
+                #[cfg(feature = "dom")]
+                let window = web_sys::window().unwrap();
+                #[cfg(feature = "dom")]
                 window
                     .history()
                     .unwrap()
                     .push_state_with_url(&JsValue::default(), "", Some(&route_match))
                     .unwrap();
                 log::debug!("Router received new path: {route_match}");
-        }).to_future();
-        wasm_bindgen_futures::spawn_local(next);
+            })
+            .to_future();
+        view.effect(wait_for_next_route);
+        view
     }
 }

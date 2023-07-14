@@ -4,41 +4,41 @@ use futures_signals::signal::{Signal, SignalExt};
 
 use crate::{
     builder::{component::Component, ViewBuilder},
-    generic_node::GenericNode,
+    generic_node::{DomType, GenericNode},
     render::Error,
     view::View,
 };
 
-pub struct Switch<G, S: Signal<Item = bool>, F>
+pub struct Switch<S: Signal<Item = bool>, F>
 where
-    F: Fn(bool) -> ViewBuilder<G>,
+    F: Fn(bool) -> ViewBuilder,
 {
     pub signal: S,
     pub renderer: F,
 }
 
-impl<G: GenericNode, S, F> Component<G> for Switch<G, S, F>
+impl<S, F> Component for Switch<S, F>
 where
-    F: Fn(bool) -> ViewBuilder<G> + 'static,
+    F: Fn(bool) -> ViewBuilder + 'static,
     S: Signal<Item = bool> + 'static,
 {
-    fn render(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
-        let marker = G::marker();
+    fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
+        let marker = DomType::marker();
         view.node().append_child(&marker);
         let state = State::new(view.node().clone(), marker);
         let renderer = self.renderer;
-        struct State<G: GenericNode> {
-            holder: G,
-            marker: G,
-            current: Option<View<G>>,
+        struct State<DomType> {
+            holder: DomType,
+            marker: DomType,
+            current: Option<View>,
         }
 
-        impl<G: GenericNode> State<G> {
-            fn new(element: G, marker: G) -> Rc<RefCell<Self>> {
+        impl State<DomType> {
+            fn new(element: DomType, marker: DomType) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
                     holder: element,
                     current: None,
-                    marker
+                    marker,
                 }))
             }
 
@@ -52,17 +52,12 @@ where
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: ViewBuilder<G>) {
+            fn apply(&mut self, dom: ViewBuilder) {
                 self.clear();
                 let node = &self.holder;
-                let view = dom.mount(&G::fragment()).unwrap();
+                let view = dom.mount(&DomType::fragment()).unwrap();
                 node.insert_child_before(&view.node(), Some(&self.marker));
                 self.current = Some(view);
-            }
-        }
-        impl<G: GenericNode> Drop for State<G> {
-            fn drop(&mut self) {
-                // self.clear();
             }
         }
         let fut = self.signal.for_each(move |val| {
@@ -71,7 +66,7 @@ where
 
             async {}
         });
-        wasm_bindgen_futures::spawn_local(fut);
+        view.effect(fut);
         Ok(())
     }
 }

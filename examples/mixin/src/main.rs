@@ -9,7 +9,7 @@ fn x_html<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     Box::new(cb)
 }
 
-fn mixin_demo(_app: &HirolaApp) -> Dom {
+fn mixin_demo() -> Dom {
     let raw = "<strong>calebporzio</strong>";
     let is_shown = Mutable::new(true);
     let toggle = is_shown.update_with(|show, _e| !show);
@@ -68,6 +68,6 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
-    app.mount(&body, mixin_demo);
+    let app = App<S, G>::new();
+    render_to(mixin_demo,&body, );
 }

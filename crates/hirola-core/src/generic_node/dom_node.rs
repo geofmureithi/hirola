@@ -1,15 +1,11 @@
-use std::cell::RefCell;
-
-use ref_cast::RefCast;
-use wasm_bindgen::{prelude::*, JsCast};
-use web_sys::{window, Element, Event, Node, Text};
-
 use super::{EventListener, GenericNode};
+use wasm_bindgen::{prelude::*, JsCast};
+use web_sys::{Element, Event, Node, Text};
 
 /// Rendering backend for the DOM.
 ///
 /// _This API requires the following crate features to be activated: `dom`_
-#[derive(Debug, Clone, PartialEq, Eq, RefCast)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct DomNode {
     pub node: Node,
@@ -36,22 +32,6 @@ impl AsRef<JsValue> for DomNode {
 impl From<DomNode> for JsValue {
     fn from(node: DomNode) -> Self {
         node.node.into()
-    }
-}
-
-impl JsCast for DomNode {
-    fn instanceof(val: &JsValue) -> bool {
-        Node::instanceof(val)
-    }
-
-    fn unchecked_from_js(val: JsValue) -> Self {
-        DomNode {
-            node: Node::unchecked_from_js(val),
-        }
-    }
-
-    fn unchecked_from_js_ref(val: &JsValue) -> &Self {
-        DomNode::ref_cast(Node::unchecked_from_js_ref(val))
     }
 }
 
@@ -154,5 +134,9 @@ impl GenericNode for DomNode {
             .dyn_ref::<Text>()
             .unwrap()
             .set_text_content(Some(text));
+    }
+    fn replace_children_with(&self, node: &Self) {
+        let element = self.node.unchecked_ref::<Element>();
+        element.replace_children_with_node_1(&node.inner_element())
     }
 }

@@ -26,5 +26,5 @@ proc-macro-hack = "0.5"
 paste = { version = "1" }
 
 [dev-dependencies]
-hirola-core = { path = "../hirola-core" }
+hirola = { path = "../../", features=["ssr"] }
 trybuild = "1.0"

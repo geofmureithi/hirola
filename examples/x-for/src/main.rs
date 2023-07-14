@@ -48,7 +48,7 @@ fn Page<'a, Children: Render<DomType>>(title: &'a str, children: Children) {
     }
 }
 
-fn colors(_app: &HirolaApp) -> Dom {
+fn colors(_app: &App<S, G>) -> Dom {
     let colors = Mutable::new(
         vec!["Red", "Green", "Blue"]
             .iter()
@@ -75,6 +75,6 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
+    let app = App<S, G>::new();
     app.mount(&body, colors);
 }

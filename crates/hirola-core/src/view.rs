@@ -1,45 +1,46 @@
-use std::{cell::RefCell, future::Future};
-
-use discard::Discard;
-use futures_signals::CancelableFutureHandle;
-use wasm_bindgen::{prelude::Closure, JsValue};
 use crate::{
-    generic_node::{EventListener, GenericNode}, BoxedLocal,
+    generic_node::{DomType, EventListener, GenericNode},
+    spawn, BoxedLocal,
 };
-
+use discard::{Discard, DiscardOnDrop};
+use futures_signals::CancelableFutureHandle;
+use std::{cell::RefCell, future::Future, rc::Rc};
+use wasm_bindgen::{prelude::Closure, JsValue};
 
 pub enum DomSideEffect {
     UnMounted(BoxedLocal<()>),
     Mounted(CancelableFutureHandle),
 }
-pub struct View<G: GenericNode> {
-    node: G,
-    side_effects: RefCell<Vec<DomSideEffect>>,
-    event_handlers: RefCell<Vec<Closure<EventListener>>>,
-    children: RefCell<Vec<View<G>>>,
+
+#[derive(Clone)]
+pub struct View {
+    node: DomType,
+    pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
+    event_handlers: Rc<RefCell<Vec<Closure<EventListener>>>>,
+    children: RefCell<Vec<View>>,
 }
 
-impl<G: GenericNode> View<G> {
-    pub fn append_child(&self, child: View<G>) -> Result<(), JsValue> {
-        let new_node = self.node.append_child(&child.node);
+impl View {
+    pub fn append_child(&self, child: View) -> Result<(), JsValue> {
+        self.node.append_child(&child.node);
         self.children.borrow_mut().push(child);
         Ok(())
     }
 
-    pub fn children(&self) -> &RefCell<Vec<View<G>>> {
+    pub fn children(&self) -> &RefCell<Vec<View>> {
         &self.children
     }
 
-    pub fn node(&self) -> &G {
+    pub fn node(&self) -> &DomType {
         &self.node
     }
 
-    pub fn new_from_node(node: &G) -> View<G> {
+    pub fn new_from_node(node: &DomType) -> View {
         Self {
             node: node.clone(),
-            children: RefCell::new(Vec::new()),
-            event_handlers: RefCell::new(Vec::new()),
-            side_effects: RefCell::new(Vec::new()),
+            children: Default::default(),
+            event_handlers: Default::default(),
+            side_effects: Default::default(),
         }
     }
 
@@ -50,23 +51,30 @@ impl<G: GenericNode> View<G> {
             self.event_handlers.borrow_mut().push(closure);
         }
     }
+
     #[inline]
-    pub fn effect(&self, fut: impl Future<Output = ()> + 'static) {
+    pub fn attribute(&self, name: &str, value: &str) {
+        self.node.set_attribute(name, value);
+    }
+    #[inline]
+    pub fn effect(&self, future: impl Future<Output = ()> + 'static) {
         self.side_effects
             .borrow_mut()
-            .push(DomSideEffect::UnMounted(Box::pin(fut)))
+            .push(DomSideEffect::Mounted(DiscardOnDrop::leak(spawn(future))));
     }
 
     #[inline]
     pub fn discard(&mut self) {
-        let _cleanup: Vec<()> = std::mem::take(&mut self.event_handlers)
-            .into_inner()
+        let _cleanup: Vec<()> = self
+            .event_handlers
+            .take()
             .into_iter()
             .map(|c| c.forget())
             .collect();
-        let effects = std::mem::take(&mut self.side_effects);
-        let _cleanup: Vec<()> = effects
-            .into_inner()
+
+        let _cleanup: Vec<()> = self
+            .side_effects
+            .take()
             .into_iter()
             .map(|e| match e {
                 DomSideEffect::Mounted(e) => e.discard(),
@@ -78,7 +86,7 @@ impl<G: GenericNode> View<G> {
     }
 }
 
-impl<G: GenericNode> Drop for View<G> {
+impl Drop for View {
     fn drop(&mut self) {
         self.discard()
     }

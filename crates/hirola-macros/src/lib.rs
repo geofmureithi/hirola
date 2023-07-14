@@ -31,12 +31,10 @@ fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
     let children_tokens = children_to_tokens(nodes);
     tokens.extend(quote! {
             {
-
-                let template =  ::hirola::prelude::ViewBuilder::fragment();
+                let mut template =  ::hirola::prelude::ViewBuilder::new();
                 #children_tokens
                 template
             }
-
     });
     tokens
 }
@@ -54,7 +52,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
 
                 tokens.extend(quote! {
                 {
-                    let mut template: ::hirola::prelude::ViewBuilder<::hirola::prelude::DomNode> = ::hirola::prelude::ViewBuilder::element(#name);
+                    let mut template: ::hirola::prelude::ViewBuilder = ::hirola::prelude::ViewBuilder::element(#name);
                     #children_tokens
                     #(#attributes)*
                     template
@@ -72,18 +70,17 @@ fn node_to_tokens(node: Node) -> TokenStream {
                     let children_tokens = children_to_tokens(node.children);
                     attributes.extend(vec![quote! {
                         children: {
-
-                            let template = ::hirola::prelude::ViewBuilder::new();
-                            #children_tokens
-                            template
+                            Box::new(#children_tokens)
                          }
                     }]);
                 }
 
                 let quoted = if attributes.is_empty() {
-                    quote!({#fnname })
+                    quote!({ 
+                        ::hirola::prelude::ViewBuilder::Component(Box::new(#fnname))
+                    })
                 } else {
-                    quote!({ #fnname {#(#attributes),*} })
+                    quote!({ ::hirola::prelude::ViewBuilder::Component(Box::new(#fnname {#(#attributes),*} ))})
                 };
                 tokens.extend(quote! {
                     {
@@ -148,8 +145,8 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
         } else {
             let attribute_name = convert_name(&name);
             quote! {
-                ::hirola::prelude::GenericNode::set_attribute(
-                    template.node(),
+                ::hirola::prelude::ViewBuilder::attribute(
+                    &mut template,
                     #attribute_name,
                     &::std::format!("{}", #value),
                 );
@@ -169,7 +166,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 Node::Element(_) => {
                     let node = node_to_tokens(child);
                     append_children.extend(quote! {
-                        ::hirola::prelude::ViewBuilder::append_child(&mut template, { #node });
+                        ::hirola::prelude::ViewBuilder::append_child(&mut template, #node );
                     });
                 }
                 Node::Text(text) => {
@@ -182,17 +179,15 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         );
                     });
                 }
-                Node::Comment(_) => {
-                    // let s = child
-                    //     .value_as_string()
-                    //     .expect("expecting a string on a text node");
-                    // append_children.extend(quote! {
-                    //     ::hirola::prelude::ViewBuilder::append_child(
-                    //         &mut template,
-                    //         #[allow(unused_braces)]
-                    //         ::hirola::prelude::ViewBuilder::new_from_node(::hirola::prelude::GenericNode::comment(#s)),
-                    //     );
-                    // });
+                Node::Comment(comment) => {
+                    let s = comment.value;
+                    append_children.extend(quote! {
+                        ::hirola::prelude::ViewBuilder::append_child(
+                            &mut template,
+                            #[allow(unused_braces)]
+                            ::hirola::prelude::ViewBuilder::new_from_node(::hirola::prelude::GenericNode::comment(#s)),
+                        );
+                    });
                 }
                 Node::Doctype(_) => {}
                 Node::Block(block) => match block {
@@ -327,6 +322,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     append_children.extend(quote! {
                                         ::hirola::prelude::ViewBuilder::append_render(
                                             &mut template,
+                                            #[allow(unused_braces)]
                                             #block,
                                         );
                                     });
@@ -363,6 +359,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         append_children.extend(quote! {
                                             ::hirola::prelude::ViewBuilder::append_render(
                                                 &mut template,
+                                                #[allow(unused_braces)]
                                                 #block,
                                             );
                                         });
@@ -373,6 +370,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 append_children.extend(quote! {
                                     ::hirola::prelude::ViewBuilder::append_render(
                                         &mut template,
+                                        #[allow(unused_braces)]
                                         #block,
                                     );
                                 });
@@ -380,10 +378,8 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         }
                         
                     },
-                    NodeBlock::Invalid { brace, body } => {
-                        return quote! {
-                            compile_error!("Unexpected missing block for NodeType::Block")
-                        }
+                    NodeBlock::Invalid { body, .. } => {
+                        return syn::Error::new(body.span(),"Invalid block").to_compile_error()
                     },
                     
                 },

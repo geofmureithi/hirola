@@ -1,34 +1,24 @@
-//! Iteration utility components for [`dom`](crate::html).
+//! Iteration utility components for [`dom`](crate::generic_node::dom_node).
 //!
 //! Iteration can be either _"keyed"_ or _"non keyed"_.
 //! Use the [`Keyed`] and [`Indexed`] utility components respectively.
-
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
-use std::future::ready;
-use std::hash::Hash;
-use std::marker::PhantomData;
-use std::mem;
-use std::rc::Rc;
-
-use discard::{Discard, DiscardOnDrop};
-use futures_signals::signal_vec::{MutableSignalVec, MutableVec, SignalVec, SignalVecExt, VecDiff};
-use futures_signals::CancelableFutureHandle;
-use wasm_bindgen::UnwrapThrowExt;
-use web_sys::window;
-
 use crate::builder::component::Component;
 use crate::builder::ViewBuilder;
-use crate::generic_node::GenericNode;
-use crate::prelude::*;
-use crate::render::{Error, Render};
+use crate::generic_node::{DomType, GenericNode};
+use crate::render::Error;
 use crate::view::View;
-// Props for [`Indexed`].
+use futures_signals::signal_vec::{SignalVec, SignalVecExt, VecDiff};
+use std::cell::RefCell;
+use std::future::ready;
+use std::rc::Rc;
+use wasm_bindgen::UnwrapThrowExt;
+
+/// Props for [`Indexed`].
 ///
-//#[derive(Debug)]
-pub struct IndexedProps<T, G: GenericNode, I: SignalVec<Item = T> + Unpin, F>
+#[derive(Debug)]
+pub struct IndexedProps<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> ViewBuilder<G>,
+    F: Fn(T) -> ViewBuilder,
 {
     pub iterable: I,
     pub template: F,
@@ -58,41 +48,40 @@ where
 /// # let _ : Dom = res;
 /// ```
 // #[component]
-pub struct Indexed<T, I: SignalVec<Item = T> + Unpin, F, G: GenericNode>
+pub struct Indexed<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> ViewBuilder<G>,
+    F: Fn(T) -> ViewBuilder,
 {
-    pub props: IndexedProps<T, G, I, F>,
+    pub props: IndexedProps<T, I, F>,
 }
 
-impl<T, F, I, G: GenericNode> Component<G> for Indexed<T, I, F, G>
+impl<T, F, I> Component for Indexed<T, I, F>
 where
-    T: 'static,
-    I: 'static + SignalVec<Item = T> + Unpin,
-    F: Fn(T) -> ViewBuilder<G> + 'static,
+    T: 'static + Clone,
+    I: 'static + SignalVecExt<Item = T> + Unpin,
+    F: Fn(T) -> ViewBuilder + 'static,
 {
-    fn render(self: Box<Self>, view: &View<G>) -> Result<(), Error> {
+    fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
         let props = self.props;
         let template = props.template;
+
         let iterable = SignalVecExt::map(props.iterable, move |item| {
-            template(item).mount(&G::fragment()).unwrap()
+            template(item).mount(&DomType::fragment()).unwrap()
         });
 
-        let marker = G::marker();
+        let marker = DomType::marker();
 
-        struct State<G: GenericNode> {
-            element: G,
-            marker: G,
-            is_inserted: bool,
-            children: Vec<View<G>>,
+        struct State {
+            element: DomType,
+            marker: DomType,
+            children: Vec<View>,
         }
 
-        impl<G: GenericNode> State<G> {
-            fn new(element: G, marker: G) -> Rc<RefCell<Self>> {
+        impl State {
+            fn new(element: DomType, marker: DomType) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
                     element,
                     marker,
-                    is_inserted: false,
                     children: vec![],
                 }))
             }
@@ -104,7 +93,7 @@ where
                 }
             }
 
-            fn insert_at(&self, new_index: usize, child: &G) {
+            fn insert_at(&self, new_index: usize, child: &DomType) {
                 if let Some(dom) = self.children.get(new_index) {
                     self.element.insert_child_before(child, Some(&dom.node()));
                 } else {
@@ -113,16 +102,11 @@ where
             }
 
             // TODO verify that this will drop `children`
-            fn process_change(&mut self, change: VecDiff<View<G>>) {
+            fn process_change(&mut self, change: VecDiff<View>) {
                 match change {
                     VecDiff::Replace { values } => {
                         self.clear();
-
                         self.children = values;
-
-                        let is_inserted = self.is_inserted;
-
-                        // TODO use createDocumentFragment ?
                         for dom in self.children.iter_mut() {
                             self.element
                                 .insert_child_before(&dom.node(), Some(&self.marker));
@@ -160,7 +144,6 @@ where
 
                     VecDiff::RemoveAt { index } => {
                         let dom = self.children.remove(index);
-                        // self.element.remove_child(&dom.node());
                         let children = dom.children().take();
                         for child in children {
                             child.node().remove_self()
@@ -170,7 +153,6 @@ where
 
                     VecDiff::Pop {} => {
                         let dom = self.children.pop().unwrap_throw();
-                        // self.element.remove_child(&dom.node());
                         let children = dom.children().take();
                         for child in children {
                             child.node().remove_self()
@@ -190,19 +172,12 @@ where
 
         let state = State::new(view.node().clone(), marker);
 
-        impl<G: GenericNode> Drop for State<G> {
-            fn drop(&mut self) {
-                self.clear();
-            }
-        }
-
         let fut = iterable.for_each(move |change| {
             let mut state = state.borrow_mut();
             state.process_change(change);
             ready(())
         });
-        wasm_bindgen_futures::spawn_local(fut);
-        // view.effect(fut);
+        view.effect(fut);
         Ok(())
     }
 }

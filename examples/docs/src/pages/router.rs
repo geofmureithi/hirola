@@ -19,7 +19,7 @@ pub fn router_page(_app: &App) -> Dom {
                 let document = window.document().unwrap();
                 let body = document.body().unwrap();
                 
-                let mut app = HirolaApp::new();
+                let mut app = App<S, G>::new();
                 
                 let mut router = Router::new();
                 router.add("/", home);

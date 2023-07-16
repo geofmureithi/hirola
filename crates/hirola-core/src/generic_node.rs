@@ -18,7 +18,7 @@ pub type EventListener = dyn Fn(Event);
 #[cfg(feature = "dom")]
 pub type DomType = dom_node::DomNode;
 
-#[cfg(not(feature = "dom"))]
+#[cfg(all(not(feature = "dom"), feature = "ssr"))]
 pub type DomType = ssr_node::SsrNode;
 
 pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {

@@ -7,7 +7,6 @@ pub fn async_page(_app: &App) -> Dom {
     html! {
         <div>
             <SeoTitle title="Async handling | Hirola"/>
-
             <h1>"Async handling"</h1>
             <p>
                 "Hirola allows some async handling via " <code class="one-liner">"async"</code>

@@ -47,9 +47,9 @@ web-sys = { version = "0.3", features = ["DomTokenList", "Element", "Window"] }
 
 
 [features]
-default = ["web-sys"]
+default = ["web-sys", "dom"]
 dom = []
-ssr = ["html-escape", "web-sys/Event"]
+ssr = ["html-escape"]
 app = [
   "matchit",
   "web-sys/History",

@@ -16,7 +16,7 @@ pub enum SuspenseResult<Res> {
 
 pub trait Suspend {
     type Result;
-    fn suspense(self) -> BoxedLocal<SuspenseResult<Self::Result>>;
+    fn suspend(self) -> BoxedLocal<SuspenseResult<Self::Result>>;
 }
 
 impl<F, Res> Suspend for F
@@ -24,7 +24,7 @@ where
     F: FutureExt<Output = Res> + 'static,
 {
     type Result = Res;
-    fn suspense(self) -> BoxedLocal<SuspenseResult<Self::Result>> {
+    fn suspend(self) -> BoxedLocal<SuspenseResult<Self::Result>> {
         Box::pin(self.map(|res| SuspenseResult::Ready(res)))
     }
 }

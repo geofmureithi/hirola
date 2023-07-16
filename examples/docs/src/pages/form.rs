@@ -1,4 +1,4 @@
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -14,7 +14,7 @@ pub fn forms_page(_app: &App) -> Dom {
                 <code class="one-liner">"form"</code>
             </p>
             <h2>"Getting started"</h2>
-            <CodePreview
+            <CodePredom
                 code=r#"struct Login {
                     #[validate(length(min = 1, message = "Email is required"))]
                     email: String,

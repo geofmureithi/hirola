@@ -1,5 +1,6 @@
 use crate::{
     generic_node::{DomType, EventListener, GenericNode},
+    render::{Error, Render},
     spawn, BoxedLocal,
 };
 use discard::{Discard, DiscardOnDrop};
@@ -13,21 +14,33 @@ pub enum DomSideEffect {
 }
 
 #[derive(Clone)]
-pub struct View {
+pub struct Dom {
     node: DomType,
     pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
     event_handlers: Rc<RefCell<Vec<Closure<EventListener>>>>,
-    children: RefCell<Vec<View>>,
+    children: RefCell<Vec<Dom>>,
 }
 
-impl View {
-    pub fn append_child(&self, child: View) -> Result<(), JsValue> {
+impl Dom {
+    pub fn new() -> Dom {
+        Dom::new_from_node(&DomType::fragment())
+    }
+
+    pub fn element(tag: &str) -> Dom {
+        Dom::new_from_node(&DomType::element(tag))
+    }
+
+    pub fn text(tag: &str) -> Dom {
+        Dom::new_from_node(&DomType::text_node(tag))
+    }
+
+    pub fn append_child(&self, child: Dom) -> Result<(), JsValue> {
         self.node.append_child(&child.node);
         self.children.borrow_mut().push(child);
         Ok(())
     }
 
-    pub fn children(&self) -> &RefCell<Vec<View>> {
+    pub fn children(&self) -> &RefCell<Vec<Dom>> {
         &self.children
     }
 
@@ -35,7 +48,7 @@ impl View {
         &self.node
     }
 
-    pub fn new_from_node(node: &DomType) -> View {
+    pub fn new_from_node(node: &DomType) -> Dom {
         Self {
             node: node.clone(),
             children: Default::default(),
@@ -63,6 +76,10 @@ impl View {
             .push(DomSideEffect::Mounted(DiscardOnDrop::leak(spawn(future))));
     }
 
+    pub fn append_render(&self, render: impl Render + 'static) {
+        Box::new(render).render_into(&self).unwrap();
+    }
+
     #[inline]
     pub fn discard(&mut self) {
         let _cleanup: Vec<()> = self
@@ -84,10 +101,23 @@ impl View {
             })
             .collect();
     }
+
+    pub fn mount(self, node: &DomType) -> Result<Dom, Error> {
+        let dom = Dom::new_from_node(node);
+        Box::new(self).render_into(&dom)?;
+        Ok(dom)
+    }
 }
 
-impl Drop for View {
+impl Drop for Dom {
     fn drop(&mut self) {
-        self.discard()
+        // self.discard()
+    }
+}
+
+impl Render for Dom {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        parent.append_child(*self).map_err(Error::DomError)?;
+        Ok(())
     }
 }

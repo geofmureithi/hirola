@@ -51,7 +51,7 @@ fn next_tick<F: Fn() + 'static>(f: F) {
 #[wasm_bindgen_test]
 fn app_renders() {
     let mut app: App<()> = App::new(());
-    fn test_app(app: &App<()>) -> DomBuilder {
+    fn test_app(app: &App<()>) -> Dom {
         html! {
             <span>"Test"</span>
         }
@@ -69,6 +69,6 @@ fn router_renders() {
             <main>"Main"</main>
         }
     });
-    let view = app.mount(&body());
+    let dom = app.mount(&body());
     assert_eq!("<main>Main</main>", inner_html(&body()));
 }

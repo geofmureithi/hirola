@@ -1,4 +1,4 @@
-name: GitHub Actions Vercel Preview Deployment
+name: GitHub Actions Vercel Predom Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -7,7 +7,7 @@ on:
     branches-ignore:
       - main
 jobs:
-  Deploy-Preview:
+  Deploy-Predom:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -35,6 +35,6 @@ jobs:
         run: cp ./vercel.json ./public/vercel.json
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=predom --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel --token=${{ secrets.VERCEL_TOKEN }} --confirm

@@ -1,7 +1,7 @@
 use hirola::{prelude::*, signal_vec::{MutableVec, SignalVecExt}};
 use web_sys::Event;
 
-fn colors() -> DomBuilder {
+fn colors() -> Dom {
     let colors = MutableVec::new_with_values(vec!["Red", "Green", "Blue", "Violet"]);
     let add_new = colors.update_with(move |colors, _e: Event| {
         colors.lock_mut().push("Violet-Dark");
@@ -42,7 +42,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let view = render_to(colors(), &body).unwrap();
+    let dom = render_to(colors(), &body).unwrap();
 
-    std::mem::forget(view);
+    std::mem::forget(dom);
 }

@@ -46,12 +46,12 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
         #vis struct #struct_name #impl_generics #inputs_block
 
         impl #impl_generics ::hirola::prelude::Component for #struct_name #ty_generics #where_clause {
-            fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
+            fn render(self: Box<Self>, dom: &Dom) -> Result<(), Error> {
                 let result = {
                     #inputs_reading
                     #block
                 };
-                Box::new(result).render_into(&view)?;
+                Box::new(result).render_into(&dom)?;
                 Ok(())
             }
         }

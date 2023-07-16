@@ -6,7 +6,7 @@ use hirola_core::prelude::*;
 pub fn bench(c: &mut Criterion) {
     c.bench_function("ssr_small", |b| {
         b.iter(|| {
-            fn App() -> DomBuilder {
+            fn App() -> Dom {
                 html! {
                     <div class="my-container">
                         <p>"Hello World!"</p>
@@ -20,7 +20,7 @@ pub fn bench(c: &mut Criterion) {
 
     // c.bench_function("ssr_medium", |b| {
     //     b.iter(|| {
-    //         fn ListItem<G: GenericNode>(value: i32) -> DomBuilder<G> {
+    //         fn ListItem<G: GenericNode>(value: i32) -> Dom<G> {
     //             template! {
     //                 p {
     //                     span(class="placeholder")
@@ -32,7 +32,7 @@ pub fn bench(c: &mut Criterion) {
     //             }
     //         }
 
-    //         fn App<G: GenericNode>() -> DomBuilder<G> {
+    //         fn App<G: GenericNode>() -> Dom<G> {
     //             let values = Signal::new((0i32..=10).collect::<Vec<_>>());
 
     //             template! {

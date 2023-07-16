@@ -42,13 +42,13 @@ fn format_source<'a>(
     let mut rope: Rope = source.parse().unwrap();
     let mut edits = Vec::new();
 
-    for view_mac in macros {
-        let mac = view_mac.inner();
+    for dom_mac in macros {
+        let mac = dom_mac.inner();
         let start = mac.path.span().start();
         let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(&rope, start);
         let end_byte = line_column_to_byte(&rope, end);
-        let new_text = format_macro(&view_mac, &settings, Some(source));
+        let new_text = format_macro(&dom_mac, &settings, Some(source));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -135,7 +135,7 @@ mod tests {
     #[test]
     fn with_comments() {
         let source = indoc! {r#"
-            // comment outside view macro
+            // comment outside dom macro
             fn main() {
                 html! {  
                     // Top level comment
@@ -162,12 +162,12 @@ mod tests {
                     </div>  }; 
             }
 
-            // comment after view macro
+            // comment after dom macro
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
-        // comment outside view macro
+        // comment outside dom macro
         fn main() {
             html! {
                 // Top level comment
@@ -199,7 +199,7 @@ mod tests {
             }; 
         }
 
-        // comment after view macro
+        // comment after dom macro
         "###);
     }
 

@@ -1,10 +1,9 @@
 use std::{cell::RefCell, future::Future, pin::Pin, rc::Rc};
 use futures_util::future::FutureExt;
 use crate::{
-    builder::{component::Component, DomBuilder},
     generic_node::{GenericNode, DomType},
-    render::Error,
-    view::View, BoxedLocal,
+    render::{Error, Render},
+    dom::Dom, BoxedLocal,
 };
 
 #[derive(Debug, Default)]
@@ -30,16 +29,16 @@ where
 }
 
 pub struct Suspense<Res> {
-    pub template: Box<dyn Fn(Res) -> DomBuilder>,
+    pub template: Box<dyn Fn(Res) -> Dom>,
     pub future: Pin<Box<dyn Future<Output = Res>>>,
 }
 
-impl<Res: Default + 'static> Component for Suspense<Res> {
-    fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
+impl<Res: Default + 'static> Render for Suspense<Res> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let template = self.template;
         struct State{
             holder: DomType,
-            current: Option<View>,
+            current: Option<Dom>,
         }
 
         impl State {
@@ -60,17 +59,17 @@ impl<Res: Default + 'static> Component for Suspense<Res> {
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: DomBuilder) -> Result<(), Error> {
+            fn apply(&mut self, dom: Dom) -> Result<(), Error> {
                 self.clear();
                 let node = &mut self.holder;
-                let view = dom.mount(&DomType::fragment())?;
-                node.append_child(&view.node());
-                self.current = Some(view);
+                let dom = dom.mount(&DomType::fragment())?;
+                node.append_child(&dom.node());
+                self.current = Some(dom);
                 Ok(())
             }
         }
 
-        let state = State::new(view.node().clone());
+        let state = State::new(parent.node().clone());
         let binding = state.clone();
         let mut binding = binding.borrow_mut();
         // Apply loading
@@ -78,11 +77,10 @@ impl<Res: Default + 'static> Component for Suspense<Res> {
         let future = self.future;
         let fut = async move {
             let mut state = state.borrow_mut();
-
             let new_dom = template(future.await);
             state.apply(new_dom).unwrap();
         };
-        view.effect(fut);
+        parent.effect(fut);
         Ok(())
     }
 }

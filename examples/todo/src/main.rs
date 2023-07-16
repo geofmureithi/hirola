@@ -34,7 +34,7 @@ fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Muta
                 class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green hover:bg-green"
                 mixin:route=&router.link()
                 >
-                "View"
+                "Dom"
             </a>
             <button
                 on:click=on_remove
@@ -45,7 +45,7 @@ fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Muta
     }
 }
 
-fn todo_view(app: &App<S, G>) -> Dom {
+fn todo_dom(app: &App<S, G>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let route = router.params().get();
     let param = route.params.get("id").unwrap_or(&"1".to_string()).clone();
@@ -173,7 +173,7 @@ fn main() {
 
     let mut router = Router::new();
     router.route("/", home);
-    router.route("/todo/:id", todo_view);
+    router.route("/todo/:id", todo_dom);
 
     app.extend(TodoStore { todos });
     app.extend(router);

@@ -2,11 +2,9 @@
 //!
 //! Iteration can be either _"keyed"_ or _"non keyed"_.
 //! Use the [`Keyed`] and [`Indexed`] utility components respectively.
-use crate::builder::component::Component;
-use crate::builder::DomBuilder;
 use crate::generic_node::{DomType, GenericNode};
-use crate::render::Error;
-use crate::view::View;
+use crate::render::{Error, Render};
+use crate::dom::Dom;
 use futures_signals::signal_vec::{SignalVec, SignalVecExt, VecDiff};
 use std::cell::RefCell;
 use std::future::ready;
@@ -18,13 +16,13 @@ use wasm_bindgen::UnwrapThrowExt;
 #[derive(Debug)]
 pub struct IndexedProps<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> DomBuilder,
+    F: Fn(T) -> Dom,
 {
     pub iterable: I,
     pub template: F,
 }
 
-/// Non keyed iteration (or keyed by index). Use this instead of directly rendering an array of [`DomBuilder`]s.
+/// Non keyed iteration (or keyed by index). Use this instead of directly rendering an array of [`Dom`]s.
 /// Using this will minimize re-renders instead of re-rendering every single node on every state change.
 ///
 /// For keyed iteration, see [`Keyed`].
@@ -50,18 +48,18 @@ where
 // #[component]
 pub struct Indexed<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> DomBuilder,
+    F: Fn(T) -> Dom,
 {
     pub props: IndexedProps<T, I, F>,
 }
 
-impl<T, F, I> Component for Indexed<T, I, F>
+impl<T, F, I> Render for Indexed<T, I, F>
 where
     T: 'static + Clone,
     I: 'static + SignalVecExt<Item = T> + Unpin,
-    F: Fn(T) -> DomBuilder + 'static,
+    F: Fn(T) -> Dom + 'static,
 {
-    fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let props = self.props;
         let template = props.template;
 
@@ -74,7 +72,7 @@ where
         struct State {
             element: DomType,
             marker: DomType,
-            children: Vec<View>,
+            children: Vec<Dom>,
         }
 
         impl State {
@@ -102,7 +100,7 @@ where
             }
 
             // TODO verify that this will drop `children`
-            fn process_change(&mut self, change: VecDiff<View>) {
+            fn process_change(&mut self, change: VecDiff<Dom>) {
                 match change {
                     VecDiff::Replace { values } => {
                         self.clear();
@@ -167,17 +165,17 @@ where
             }
         }
 
-        view.append_child(View::new_from_node(&marker.clone()))
+        parent.append_child(Dom::new_from_node(&marker.clone()))
             .unwrap();
 
-        let state = State::new(view.node().clone(), marker);
+        let state = State::new(parent.node().clone(), marker);
 
         let fut = iterable.for_each(move |change| {
             let mut state = state.borrow_mut();
             state.process_change(change);
             ready(())
         });
-        view.effect(fut);
+        parent.effect(fut);
         Ok(())
     }
 }

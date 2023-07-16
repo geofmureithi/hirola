@@ -7,34 +7,32 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 //! # Hirola API Documentation
 //! **Hirola** is an un-opinionated and extensible web framework for that is focused on simplicity and predictability.
+//! Hirola uses frp-signals under the hood and has no vdom meaning fine-tuned reactivity.
+//! 
 //!
 //! ## Example
 //! ```rust,no_run
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
-//!
-//! fn counter(_: &App<()>) -> DomBuilder {
-//!     let state = Mutable::new(99);
-//!     let decrement = state.update_with(|count, _| count.set(count.get() - 1));
-//!     let increment = state.update_with(|count, _| count.set(count.get() - 1));
-//!
+//! 
+//! fn counter(app: &App<Mutable<i32>>) -> Dom {
+//!     let state = app.state();
+//!     let decrement = |_| state.replace_with(|c| c--);
+//!     let increment = |_| state.replace_with(|c| c++); 
 //!     html! {
-//!         <div class="flex flex-row h-10">
-//!             <button on:click=decrement>"-"</button>
-//!             <span>{state}</span>
-//!             <button on:click=increment>"+"</button>
-//!         </div>
-//!     }
+//!         <>
+//!            <button on:click=decrement>"-"</button>
+//!            <span>{state}</span>
+//!            <button on:click=increment>"+"</button>
+//!         </>
+//!    }
 //! }
 //!
 //! fn main() {
-//!     let window = web_sys::window().unwrap();
-//!     let document = window.document().unwrap();
-//!     let body = document.body().unwrap();
-//!
-//!     let mut app = App::new(());
-//!     app.route("/", counter);
-//!     app.mount(&body);
+//!    let state = Mutable::new(99);
+//!    let mut app = App::new(state);
+//!    app.route("/", counter);
+//!    app.mount();
 //! }
 //! ```
 //!

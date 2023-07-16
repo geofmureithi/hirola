@@ -1,4 +1,4 @@
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -21,7 +21,7 @@ pub fn reactivity_page(_app: &App) -> Dom {
                 </p>
             </blockquote>
             <h2>"Reactive Signal"</h2>
-            <CodePreview
+            <CodePredom
                 code="use hirola_core::prelude::*;
                 let state = Signal::new(0);
                 assert_eq!(state.get(), 0);
@@ -35,7 +35,7 @@ pub fn reactivity_page(_app: &App) -> Dom {
             <p>"Signal is pretty similar to useState in react or Alpine.reactive"</p>
             <h2>"Subscribing"</h2>
             <p>"Subscribing is done via create_effect"</p>
-            <CodePreview
+            <CodePredom
                 code="use hirola_core::prelude::*;
                 let state = Signal::new(0);
                 assert_eq!(state.get(), 0);

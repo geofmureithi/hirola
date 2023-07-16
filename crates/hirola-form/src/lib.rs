@@ -1,21 +1,32 @@
-use std::{marker::PhantomData, rc::Rc};
-
-use hirola_core::{
-    update::MixinError,
-    cloned,
-    prelude::{create_effect, Mutable, ReadOnlyMutable},
-    prelude::{DomNode, DomType, GenericNode, Mixin, NodeRef, State},
+use hirola_core::prelude::{
+    signal::{Mutable, MutableSignalRef, ReadOnlyMutable, SignalExt},
+    Dom, DomType, GenericNode, Mixin, NodeRef,
 };
 use json_dotpath::DotPaths;
 use serde::{de::DeserializeOwned, Serialize};
-use validator::{Validate, ValidationErrors};
+use std::{collections::HashMap, marker::PhantomData, rc::Rc};
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement, HtmlSelectElement};
+
+#[derive(Debug)]
+pub enum Error {
+    Json(serde_json::Error),
+    InvalidSetter(json_dotpath::Error),
+    InvalidGetter(json_dotpath::Error),
+}
+
+pub trait Validate: Sized {
+    type Error;
+    fn validate(&self) -> Result<(), Self::Error>;
+    fn errors(&self) -> HashMap<&'static str, String>;
+}
+
+pub struct Form;
 
 /// Form plugin for hirola
 #[derive(Clone, Debug)]
 pub struct FormHandler<T: 'static> {
-    node_ref: NodeRef<DomType>,
+    node_ref: NodeRef,
     value: Mutable<T>,
 }
 
@@ -35,22 +46,20 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
 
     /// Update a specific field using the dot notation.
     /// Eg you can update person.email
-    pub fn update_field<S: Serialize>(&self, name: &str, value: S) {
+    pub fn update_field<S: Serialize>(&self, name: &str, value: S) -> Result<(), Error> {
         let current_value = self.value.clone();
-        let mut json = serde_json::to_value(&current_value).unwrap();
-        json.dot_set(&name, value).unwrap();
-        let ser: T = serde_json::from_value(json).unwrap();
+        let mut json = serde_json::to_value(&current_value).map_err(Error::Json)?;
+        json.dot_set(&name, value).map_err(Error::InvalidSetter)?;
+        let ser: T = serde_json::from_value(json).map_err(Error::Json)?;
         current_value.set(ser);
+        Ok(())
     }
 
     /// Get and cast a field value
-    pub fn get_value_by_field<S: DeserializeOwned>(
-        &self,
-        name: &str,
-    ) -> Result<Option<S>, json_dotpath::Error> {
+    pub fn get_value_by_field<S: DeserializeOwned>(&self, name: &str) -> Result<Option<S>, Error> {
         let current_value = self.value.clone();
-        let json = serde_json::to_value(&current_value)?;
-        json.dot_get(name)
+        let json = serde_json::to_value(&current_value).map_err(Error::Json)?;
+        json.dot_get(name).map_err(Error::InvalidGetter)
     }
 
     // Get form value
@@ -66,15 +75,8 @@ pub struct Register<T: 'static, E> {
     element_type: PhantomData<E>,
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputElement> {
-    fn mixin(&self, ns: &str, node: DomNode) -> Result<(), MixinError> {
-        if ns != "form" {
-            return Err(MixinError::InvalidNamespace {
-                expected: "form".to_string(),
-                found: ns.to_string(),
-            });
-        }
-
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlInputElement> {
+    fn mixin(&self, dom: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -85,31 +87,21 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlInputEle
             let name = input.name();
 
             let new_value = input.value();
-            form.update_field(&name, new_value);
+            form.update_field(&name, new_value).unwrap();
         });
-        node.event("input", handler);
+        dom.event("input", handler);
         let input = {
-            let node = node.clone();
-            node.dyn_into::<HtmlInputElement>()
-                .map_err(MixinError::NodeError)?
+            let node = dom.node().clone();
+            node.dyn_into::<HtmlInputElement>().unwrap()
         };
         let name = input.name();
         let value: String = self.form.get_value_by_field(&name).unwrap().unwrap();
-        node.set_attribute("value", &value);
-        Ok(())
+        dom.node().set_attribute("value", &value);
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectElement> {
-    fn mixin(&self, ns: &str, node: DomNode) -> Result<(), MixinError> {
-        if ns != "form" {
-            // compile_error!("This will never work");
-            return Err(MixinError::InvalidNamespace {
-                expected: "form".to_string(),
-                found: ns.to_string(),
-            });
-        }
-
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlSelectElement> {
+    fn mixin(&self, node: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -120,10 +112,9 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin for Register<T, HtmlSelectEl
             let name = input.name();
 
             let new_value = input.value();
-            form.update_field(&name, new_value);
+            form.update_field(&name, new_value).unwrap();
         });
         node.event("change", handler);
-        Ok(())
     }
 }
 
@@ -133,12 +124,12 @@ pub struct Bind<B: 'static, F: 'static>(&'static str, FormHandler<F>, PhantomDat
 
 impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> Bind<B, F> {
     /// Manually set the value of the bound field
-    pub fn set_value(&self, value: B) {
-        self.1.update_field(self.0, value);
+    pub fn set_value(&self, value: B) -> Result<(), Error> {
+        self.1.update_field(self.0, value)
     }
 
     /// Get value of bound field
-    pub fn get_value(&self) -> Mutable<B> {
+    pub fn get_value(&self) -> MutableSignalRef<F, impl FnMut(&F) -> B> {
         let current_value = self.1.value.clone();
         let name = self.0;
         fn read_inner_value<F, B>(value: &F, name: &str) -> B
@@ -149,44 +140,25 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> B
             let json = serde_json::to_value(value).unwrap();
             json.dot_get(name).unwrap().unwrap()
         }
-        let signal = Mutable::new(read_inner_value::<F, B>(&current_value.get_cloned(), name));
-        let signal_ret = signal.clone();
-        create_effect(current_value, move |value| {
-            signal.set(read_inner_value(&value, name))
-        });
-        signal_ret
+        current_value.signal_ref(|value| read_inner_value::<F, B>(&value, name))
     }
 }
 
-impl<B: Clone, F: Clone> State for Bind<B, F> {}
-
 impl<T: Validate + Clone> FormHandler<T> {
     /// Perform validation
-    pub fn validate(&self) -> Result<(), ValidationErrors> {
+    pub fn validate(&self) -> Result<(), <T as Validate>::Error> {
         self.value.get_cloned().validate()
     }
 
     /// Get error specific field
-    pub fn error_for(&self, name: &'static str) -> Mutable<String> {
-        let signal = Mutable::new(String::new());
-        let value = self.value.clone();
-        let ret_signal = signal.clone();
-        create_effect(value.clone(), move |v| {
-            let res = value.get_cloned().validate();
-            if ValidationErrors::has_error(&res, name) {
-                let err = res.err().unwrap();
-                let err = err.field_errors();
-                let value = err.get(name).unwrap().first();
-                if let Some(v) = value {
-                    signal.set(format!("{}", v.message.clone().unwrap()))
-                } else {
-                    signal.set(String::new())
-                }
-            } else {
-                signal.set(String::new())
+    pub fn error_for(&self, name: &'static str) -> MutableSignalRef<T, impl FnMut(&T) -> String> {
+        self.value.signal_ref(|value: &T| {
+            let errors = value.errors();
+            if let Some(err) = errors.get(name) {
+                return err.clone();
             }
-        });
-        ret_signal
+            "String::new()".to_owned()
+        })
     }
 }
 
@@ -205,7 +177,7 @@ impl<T: Clone + Serialize + DeserializeOwned> FormHandler<T> {
     }
 
     /// Get the reference for the form
-    pub fn node_ref(&self) -> NodeRef<DomType> {
+    pub fn node_ref(&self) -> NodeRef {
         self.node_ref.clone()
     }
 }

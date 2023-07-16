@@ -1,4 +1,4 @@
-use crate::{builder::DomBuilder, prelude::*, view::View};
+use crate::{builder::Dom, prelude::*, dom::Dom};
 use futures_signals::signal::{Mutable, MutableSignalCloned, SignalExt};
 use std::{collections::HashMap};
 #[cfg(feature = "dom")]
@@ -9,7 +9,7 @@ use web_sys::{Element, Event};
 #[derive(Clone)]
 pub struct Router<S> {
     current: Mutable<String>,
-    pub (crate) handler: matchit::Router<fn(&App<S>) -> DomBuilder>,
+    pub (crate) handler: matchit::Router<fn(&App<S>) -> Dom>,
 }
 impl<S> Router<S> {
     pub fn new() -> Self {
@@ -48,11 +48,11 @@ impl<S> Router<S> {
         self.current.set(path.to_owned());
     }
 
-    pub fn link(&self) -> Box<dyn Fn(&View) -> () + '_> {
+    pub fn link(&self) -> Box<dyn Fn(&Dom) -> () + '_> {
         #[cfg(feature = "dom")]
         let router = self.clone();
         #[allow(unused_variables)]
-        let cb = move |node: &View| {
+        let cb = move |node: &Dom| {
             #[cfg(feature = "dom")]
             let router = router.clone();
             #[cfg(feature = "dom")]
@@ -72,7 +72,7 @@ impl<S> Router<S> {
         self.current.signal_cloned()
     }
 
-    pub(crate) fn render(&self, app: &'static App<S>, parent: &DomType) -> View {
+    pub(crate) fn render(&self, app: &'static App<S>, parent: &DomType) -> Dom {
         let router = &self.handler;
         #[cfg(feature = "dom")]
         let current = self.current.clone();
@@ -139,7 +139,7 @@ impl<S> Router<S> {
         let current_page = self.handler.at(&path).unwrap();
         let page_fn = current_page.value;
         let builder = page_fn(&app);
-        let view = builder.mount(&parent).unwrap();
+        let dom = builder.mount(&parent).unwrap();
 
         let router = router.clone();
         let app = app.clone();
@@ -151,9 +151,9 @@ impl<S> Router<S> {
                 let page_fn = match_result.value;
 
                 let builder = page_fn(&app);
-                let view = builder.mount(&DomType::fragment()).unwrap();
-                node.replace_children_with(&view.node());
-                std::mem::forget(view);
+                let dom = builder.mount(&DomType::fragment()).unwrap();
+                node.replace_children_with(&dom.node());
+                std::mem::forget(dom);
                 #[cfg(feature = "dom")]
                 let window = web_sys::window().unwrap();
                 #[cfg(feature = "dom")]
@@ -165,7 +165,7 @@ impl<S> Router<S> {
                 log::debug!("Router received new path: {route_match}");
             })
             .to_future();
-        view.effect(wait_for_next_route);
-        view
+        dom.effect(wait_for_next_route);
+        dom
     }
 }

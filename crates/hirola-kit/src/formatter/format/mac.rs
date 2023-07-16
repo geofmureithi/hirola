@@ -33,13 +33,13 @@ impl<'a> HtmlMacro<'a> {
 }
 
 impl Formatter<'_> {
-    pub fn html_macro(&mut self, view_mac: &HtmlMacro) {
+    pub fn html_macro(&mut self, dom_mac: &HtmlMacro) {
         let HtmlMacro {
             parent_ident,
             nodes,
             span,
             ..
-        } = view_mac;
+        } = dom_mac;
 
         self.start_line_offset = Some(span.start().line - 1);
 
@@ -50,12 +50,12 @@ impl Formatter<'_> {
         self.printer.cbox(indent as isize);
 
         self.printer.word("html! {");
-        self.view_macro_nodes(nodes);
+        self.dom_macro_nodes(nodes);
         self.printer.word("}");
         self.printer.end();
     }
 
-    fn view_macro_nodes(&mut self, nodes: &[Node]) {
+    fn dom_macro_nodes(&mut self, nodes: &[Node]) {
         self.printer.cbox_indent();
         self.printer.space();
 
@@ -91,7 +91,7 @@ mod tests {
     use quote::quote;
     use syn::Macro;
 
-    macro_rules! view_macro {
+    macro_rules! dom_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
             format_macro(&HtmlMacro::try_parse(None, &mac).unwrap(), &Default::default(), None)
@@ -100,13 +100,13 @@ mod tests {
 
     #[test]
     fn one_liner() {
-        let formatted = view_macro!(html! { <div>"hi"</div> });
+        let formatted = dom_macro!(html! { <div>"hi"</div> });
         insta::assert_snapshot!(formatted, @r###"html! { <div>"hi"</div> }"###);
     }
 
     #[test]
     fn with_nested_nodes() {
-        let formatted = view_macro!(html! { <div><span>"hi"</span></div> });
+        let formatted = dom_macro!(html! { <div><span>"hi"</span></div> });
         insta::assert_snapshot!(formatted, @r###"
         html! {
             <div>

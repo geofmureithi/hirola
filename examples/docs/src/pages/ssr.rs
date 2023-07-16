@@ -1,4 +1,4 @@
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -13,7 +13,7 @@ pub fn ssr_page(_app: &App) -> Dom {
                 <code class="one-liner">"ssr"</code> "."
             </p>
             <h2>"Example"</h2>
-            <CodePreview
+            <CodePredom
                 code="fn main(){
                     let app = App<S, G>::new();
                     let res = app.render_to_string(counter);

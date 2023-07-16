@@ -50,6 +50,6 @@ fn check_effects() {
         </ul>
     };
 
-    let view = render_to_string(node);
-    assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", view);
+    let dom = render_to_string(node);
+    assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", dom);
 }

@@ -2,31 +2,32 @@ use std::str::FromStr;
 
 use hirola::prelude::mixins::{model::input, rhtml, show, text};
 use hirola::prelude::*;
+use hirola::signal::{Mutable, SignalExt};
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Event, HtmlInputElement};
 
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 
-fn opacity<'a>(signal: &'a Mutable<bool>) -> Box<dyn Fn(&Dom) -> () + 'a> {
+fn opacity(signal: &Mutable<bool>) -> Box<dyn Fn(&Dom) -> ()> {
     let signal = signal.clone();
-    let cb = move |node: &Dom| {
-        let element = node
+    let cb = move |dom: &Dom| {
+        let element = dom
             .inner_element()
             .as_ref()
             .clone()
             .unchecked_into::<Element>();
-        let signal = signal.clone();
-        create_effect(signal, move |val| {
-            if val {
-                element.class_list().add_1("opacity-100").unwrap();
-                element.class_list().remove_1("opacity-0").unwrap();
-            } else {
-                element.class_list().add_1("opacity-0").unwrap();
-                element.class_list().remove_1("opacity-100").unwrap();
-            }
-        })
+        let effect = signal.signal_ref(|val| if val {
+            element.class_list().add_1("opacity-100").unwrap();
+            element.class_list().remove_1("opacity-0").unwrap();
+        } else {
+            element.class_list().add_1("opacity-0").unwrap();
+            element.class_list().remove_1("opacity-100").unwrap();
+        }).to_future();
+
+        dom.effect(effect);
+        
     };
     Box::new(cb)
 }
@@ -44,8 +45,8 @@ pub fn mixins_page(_app: &App) -> Dom {
                 "Mixins can be very powerful in applying DRY techniques. Lets start simple and create a mixin that controls tailwinds opacity."
             </p>
             <h2>"Example"</h2>
-            <CodePreview
-                code="use web_sys::Element;
+            <CodePredom
+                code=r#"use web_sys::Element;
                 /// Mixin that controls tailwind opacity based on a bool signal
                 fn opacity<'a>(signal: &'a Signal<bool>) -> Box<dyn Fn(DomNode) -> () + 'a> {
                   let signal = signal.clone();
@@ -78,7 +79,7 @@ pub fn mixins_page(_app: &App) -> Dom {
                         <button on:click={toggle}>"Toggle"</button>
                     </div>
                 }
-                "
+                "#
                 /// Mixin that controls tailwind opacity based on a bool signal
 
                 file="main.rs"
@@ -86,7 +87,7 @@ pub fn mixins_page(_app: &App) -> Dom {
             <div class="demo">
                 {
                     let is_shown = Mutable::new(true);
-                    let toggle = is_shown.update_with(|show, _e| !show);
+                    let toggle = is_shown.update_with(|show, _e| show.set(!show.get()));
                     html! {
                         <div class="transition ease-in-out">
 
@@ -106,8 +107,8 @@ pub fn mixins_page(_app: &App) -> Dom {
     }
 }
 
-pub fn inner_mixins(app: &App) -> Dom {
-    let router: &Router<App> = &app.router;
+pub fn inner_mixins(app: &App<()>) -> Dom {
+    let router: &Router<()> = &app.router();
     let param = router.param("mixin").unwrap_or(format!("404"));
     let mixin = InbuiltMixin::from_str(&param).unwrap();
     let title = format!("Mixin - mixin:{} | Hirola", param);
@@ -121,14 +122,14 @@ pub fn inner_mixins(app: &App) -> Dom {
                         <div>
                             <p>"A css-powered mixin that toggles display based on a signal"</p>
                             <h2>"Example"</h2>
-                            <CodePreview
-                                code="let shown = Signal::new(true);
+                            <CodePredom
+                                code=r#"let shown = Signal::new(true);
                                   html! {
                                     <div>
                                       <button on:click=shown.mut_callback(|c, _| !c)>"Toggle"</button>
                                       <span class="ml-1" mixin:show=&show(&shown)>"I am shown"</span>
                                     </div>
-                                  }"
+                                  }"#
                                 file="main.rs"
                             />
                             <div class="demo transition-all">
@@ -153,8 +154,8 @@ pub fn inner_mixins(app: &App) -> Dom {
                         <div>
                             <p>"A text mixin that binds a signal to an element's textContent"</p>
                             <h2>"Example"</h2>
-                            <CodePreview
-                                code="let message = Signal::new(format!("Hello Hirola"));
+                            <CodePredom
+                                code=r#"let message = Signal::new(format!("Hello Hirola"));
                                 let handle_change = message.mut_callback(|cur, e: Event| {
                                     let input = e
                                         .current_target()
@@ -168,7 +169,7 @@ pub fn inner_mixins(app: &App) -> Dom {
                                       <span class="block" mixin:text=&text(&message) />
                                       <input on:keyup=handle_change value=&message.get()/>
                                     </div>
-                                }"
+                                }"#
                                 file="main.rs"
                             />
                             <div class="demo transition-all">
@@ -199,13 +200,13 @@ pub fn inner_mixins(app: &App) -> Dom {
                         <div>
                             <p>"A mixin that allows setting raw html"</p>
                             <h2>"Example"</h2>
-                            <CodePreview
-                                code="let message = "<strong>Hello Hirola</strong>";
+                            <CodePredom
+                                code=r#"let message = "<strong>Hello Hirola</strong>";
                                 html! {
                                   <div>
                                     <span mixin:rhtml=&rhtml(message)></span>
                                   </div>
-                                }"
+                                }"#
                                 file="main.rs"
                             />
                             <div class="demo">
@@ -226,7 +227,7 @@ pub fn inner_mixins(app: &App) -> Dom {
                         <div>
                             <p>"A mixin that makes two-way binding on a signal and form element"</p>
                             <h2>"Example"</h2>
-                            <CodePreview
+                            <CodePredom
                                 code="let message = Signal::new(format!("Hello Hirola"));
                                 html! {
                                     <div>

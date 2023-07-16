@@ -1,4 +1,4 @@
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -19,7 +19,7 @@ pub fn event_handling_page(_app: &App) -> Dom {
                 </p>
             </blockquote>
             <h2>"Example"</h2>
-            <CodePreview
+            <CodePredom
                 code="html! {
                 <button
                 on:click=|e| {

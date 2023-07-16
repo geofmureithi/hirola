@@ -3,7 +3,7 @@ use tool::SignTool;
 
 mod tool;
 
-fn signature_pad(_app: &App<S, G>) -> DomBuilder {
+fn signature_pad(_app: &App<S, G>) -> Dom {
     let canvas = NodeRef::new();
     let tool = SignTool::new(canvas.clone());
 

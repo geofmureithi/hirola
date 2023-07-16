@@ -9,12 +9,12 @@ use super::format::HtmlMacro;
 
 
 #[derive(Default)]
-struct ViewMacroVisitor<'ast> {
+struct DomMacroVisitor<'ast> {
     indent_stack: Vec<LineColumn>,
     macros: Vec<HtmlMacro<'ast>>,
 }
 
-impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
+impl<'ast> Visit<'ast> for DomMacroVisitor<'ast> {
     fn visit_stmt(&mut self, i: &'ast syn::Stmt) {
         self.indent_stack.push(i.span().start());
         visit::visit_stmt(self, i);
@@ -52,8 +52,8 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
                         .unwrap_or(0),
                 );
 
-            if let Some(view_mac) = HtmlMacro::try_parse(Some(indent), node) {
-                self.macros.push(view_mac);
+            if let Some(dom_mac) = HtmlMacro::try_parse(Some(indent), node) {
+                self.macros.push(dom_mac);
             }
         }
 
@@ -62,7 +62,7 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
 }
 
 pub fn collect_macros_in_file(file: &File) -> Vec<HtmlMacro> {
-    let mut visitor = ViewMacroVisitor::default();
+    let mut visitor = DomMacroVisitor::default();
     visitor.visit_file(file);
     visitor.macros
 }

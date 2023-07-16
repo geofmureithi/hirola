@@ -1,5 +1,5 @@
 pub mod router;
-use crate::builder::DomBuilder;
+use crate::builder::Dom;
 use router::Router;
 
 #[derive(Debug, Clone)]
@@ -25,7 +25,7 @@ impl<S: Clone + 'static> App<S> {
     }
 
     /// Add a new route
-    pub fn route(&mut self, path: &str, page: fn(&Self) -> DomBuilder) {
+    pub fn route(&mut self, path: &str, page: fn(&Self) -> Dom) {
         self.router.handler.insert(path.to_string(), page).unwrap();
     }
 
@@ -41,13 +41,13 @@ impl<S: Clone + 'static> App<S> {
 impl<S: Clone + 'static> App<S> {
     pub fn mount(&mut self, parent: &web_sys::Node) {
         let router = self.router.clone();
-        let view = router.render(
+        let dom = router.render(
             self,
             &crate::generic_node::DomNode {
                 node: parent.clone(),
             },
         );
-        std::mem::forget(view);
+        std::mem::forget(dom);
     }
 }
 

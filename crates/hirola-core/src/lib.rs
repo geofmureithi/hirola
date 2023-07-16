@@ -11,70 +11,62 @@
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
 
-use crate::prelude::DomBuilder;
 use discard::DiscardOnDrop;
 use futures_signals::{cancelable_future, CancelableFutureHandle};
 use std::{future::Future, pin::Pin};
-
+use crate::dom::*;
 pub use hirola_macros::html;
 
 pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
 
 #[cfg(feature = "app")]
 pub mod app;
+pub mod dom;
+pub mod effect;
 pub mod generic_node;
+pub mod mixins;
 pub mod render;
+pub mod templating;
 pub mod update;
-
-// pub mod mixins;
-
-mod builder;
-mod effect;
-mod templating;
-mod view;
 
 #[cfg(feature = "dom")]
 use crate::generic_node::DomNode;
 
-/// Render a [`DomBuilder`] into the DOM.
+/// Render a [`Dom`] into the DOM.
 /// Alias for [`render_to`] with `parent` being the `<body>` tag.
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render(builder: DomBuilder) -> Result<view::View, render::Error> {
+pub fn render(root: Dom) -> Result<Dom, render::Error> {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
 
-    render_to(builder, &document.body().unwrap())
+    render_to(root, &document.body().unwrap())
 }
 
-/// Render a [`DomBuilder`] under a `parent` node.
+/// Render a [`Dom`] under a `parent` node.
 /// For rendering under the `<body>` tag, use [`render()`] instead.
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render_to(
-    builder: DomBuilder,
-    parent: &web_sys::Node,
-) -> Result<view::View, render::Error> {
-    builder.mount(&DomNode {
+pub fn render_to(dom: dom::Dom, parent: &web_sys::Node) -> Result<dom::Dom, render::Error> {
+    dom.mount(&DomNode {
         node: parent.clone(),
     })
 }
 
-/// Render a [`DomBuilder`] into a static [`String`]. Useful for rendering to a string on the server side.
+/// Render a [`Dom`] into a static [`String`]. Useful for rendering to a string on the server side.
 ///
 /// _This API requires the following crate features to be activated: `ssr`_
 #[cfg(feature = "ssr")]
-pub fn render_to_string(builder: DomBuilder) -> String {
+pub fn render_to_string(root: Dom) -> String {
     use crate::generic_node::GenericNode;
     use crate::generic_node::SsrNode;
     use crate::render::Render;
-    use crate::view::View;
     let node = SsrNode::fragment();
-    let view = View::new_from_node(&node);
-    Render::render_into(Box::new(builder), &view).unwrap();
-    format!("{}", view.node())
+    let dom = Dom::new_from_node(&node);
+    Render::render_into(Box::new(root), &dom).unwrap();
+    format!("{}", dom.node())
 }
 
 #[inline]
@@ -112,27 +104,16 @@ pub mod prelude {
 
     #[cfg(feature = "ssr")]
     pub use crate::render_to_string;
-    pub use crate::update::Identity;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
 
-    pub use crate::update::Mixin;
-
+    pub use crate::dom::Dom;
     pub use crate::update::Update;
-
-    pub use crate::builder::DomBuilder;
-    pub use crate::view::View;
-
-    pub use crate::builder::html::HtmlBuilder;
 
     #[cfg(feature = "app")]
     pub use crate::app::*;
     pub use crate::render::*;
     pub use crate::BoxedLocal;
 
-    pub use crate::builder::component::Component;
-
-    // pub use crate::templating::styled::*;
-
-    // pub use crate::mixins;
+    pub use crate::mixins::*;
 }

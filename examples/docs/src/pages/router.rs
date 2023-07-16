@@ -1,4 +1,4 @@
-use crate::components::code_preview::CodePreview;
+use crate::components::code_predom::CodePredom;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -14,7 +14,7 @@ pub fn router_page(_app: &App) -> Dom {
                 <code class="one-liner">"router"</code>
             </p>
             <h2>"Getting started"</h2>
-            <CodePreview
+            <CodePredom
                 code="let window = web_sys::window().unwrap();
                 let document = window.document().unwrap();
                 let body = document.body().unwrap();
@@ -23,7 +23,7 @@ pub fn router_page(_app: &App) -> Dom {
                 
                 let mut router = Router::new();
                 router.add("/", home);
-                router.add("/todo/:id", todo_view);
+                router.add("/todo/:id", todo_dom);
                 
                 app.mount(&body, |app| router.render(app));"
 

@@ -624,8 +624,6 @@ dependencies = [
  "json_dotpath",
  "serde",
  "serde_json",
- "validator",
- "validator_derive",
  "wasm-bindgen",
  "web-sys",
 ]

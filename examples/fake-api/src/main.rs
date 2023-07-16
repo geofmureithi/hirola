@@ -23,7 +23,7 @@ async fn user_fetcher() -> Result<Users, JsValue> {
     Ok(users)
 }
 
-fn fetch_users() -> DomBuilder {
+fn fetch_users() -> Dom {
     html! {
         <div class="grid h-screen place-items-center">
             <h1>"Users"</h1>
@@ -53,7 +53,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let view = render_to(fetch_users(), &body).unwrap();
+    let dom = render_to(fetch_users(), &body).unwrap();
 
-    std::mem::forget(view);
+    std::mem::forget(dom);
 }

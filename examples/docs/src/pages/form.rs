@@ -15,7 +15,7 @@ pub fn forms_page(_app: &App) -> Dom {
             </p>
             <h2>"Getting started"</h2>
             <CodePreview
-                code="struct Login {
+                code=r#"struct Login {
                     #[validate(length(min = 1, message = "Email is required"))]
                     email: String,
                     #[validate(length(min = 1, message = "Password is required"))]
@@ -46,7 +46,7 @@ pub fn forms_page(_app: &App) -> Dom {
                             </div>
                             ......
                 
-                }"
+                }"#
 
                 file="src/main.rs"
             />

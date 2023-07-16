@@ -1,9 +1,7 @@
 use std::{cell::RefCell, future::Future, pin::Pin, rc::Rc};
-
-use futures::FutureExt;
-
+use futures_util::future::FutureExt;
 use crate::{
-    builder::{component::Component, ViewBuilder},
+    builder::{component::Component, DomBuilder},
     generic_node::{GenericNode, DomType},
     render::Error,
     view::View, BoxedLocal,
@@ -32,7 +30,7 @@ where
 }
 
 pub struct Suspense<Res> {
-    pub template: Box<dyn Fn(Res) -> ViewBuilder>,
+    pub template: Box<dyn Fn(Res) -> DomBuilder>,
     pub future: Pin<Box<dyn Future<Output = Res>>>,
 }
 
@@ -62,7 +60,7 @@ impl<Res: Default + 'static> Component for Suspense<Res> {
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: ViewBuilder) -> Result<(), Error> {
+            fn apply(&mut self, dom: DomBuilder) -> Result<(), Error> {
                 self.clear();
                 let node = &mut self.holder;
                 let view = dom.mount(&DomType::fragment())?;
@@ -84,8 +82,7 @@ impl<Res: Default + 'static> Component for Suspense<Res> {
             let new_dom = template(future.await);
             state.apply(new_dom).unwrap();
         };
-        // view.effect(fut);
-        wasm_bindgen_futures::spawn_local(fut);
+        view.effect(fut);
         Ok(())
     }
 }

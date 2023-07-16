@@ -51,7 +51,7 @@ fn next_tick<F: Fn() + 'static>(f: F) {
 #[wasm_bindgen_test]
 fn app_renders() {
     let mut app: App<()> = App::new(());
-    fn test_app(app: &App<()>) -> ViewBuilder {
+    fn test_app(app: &App<()>) -> DomBuilder {
         html! {
             <span>"Test"</span>
         }

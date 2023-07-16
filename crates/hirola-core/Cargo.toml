@@ -14,38 +14,26 @@ keywords = ["wasm", "html", "dom", "web"]
 
 
 [dependencies]
-chrono = { version = "0.4", features = ["wasmbind"] }
 html-escape = { version = "0.2.7", optional = true }
 hirola-macros = { path = "../hirola-macros", version = "0.2.0" }
-ref-cast = "1.0"
-serde = { version = "1.0", optional = true }
-wasm-bindgen = { version = "0.2", optional = true }
-regex = "1"
+wasm-bindgen = { version = "0.2" }
 matchit = { version = "0.7", optional = true }
 wasm-bindgen-futures = { version = "0.4.29" }
 futures-signals = "0.3.32"
-futures = "0.3"
+futures-util = "0.3"
 discard = "1"
 log = "0.4.6"
-tokio = { version = "1", features = ["full"], optional = true }
 
 [dependencies.web-sys]
 features = [
-  "console",
   "Comment",
   "Document",
   "DocumentFragment",
   "Element",
   "Event",
   "HtmlElement",
-  "HtmlInputElement",
   "Node",
   "Text",
-  "HtmlCollection",
-  "HtmlStyleElement",
-  "CssRuleList",
-  "CssStyleSheet",
-  "CssStyleDeclaration",
   "Window",
 ]
 optional = true
@@ -59,10 +47,10 @@ web-sys = { version = "0.3", features = ["DomTokenList", "Element", "Window"] }
 
 
 [features]
-default = ["wasm-bindgen", "web-sys", "router"]
+default = ["web-sys"]
 dom = []
-ssr = ["html-escape", "web-sys/Event", "tokio"]
-router = [
+ssr = ["html-escape", "web-sys/Event"]
+app = [
   "matchit",
   "web-sys/History",
   "web-sys/Location",
@@ -74,9 +62,9 @@ router = [
 harness = false
 name = "reactivity"
 
-# [[bench]]
-# harness = false
-# name = "ssr"
+[[bench]]
+harness = false
+name = "ssr"
 
 [[test]]
 name = "ssr"

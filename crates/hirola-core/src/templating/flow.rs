@@ -3,7 +3,7 @@
 //! Iteration can be either _"keyed"_ or _"non keyed"_.
 //! Use the [`Keyed`] and [`Indexed`] utility components respectively.
 use crate::builder::component::Component;
-use crate::builder::ViewBuilder;
+use crate::builder::DomBuilder;
 use crate::generic_node::{DomType, GenericNode};
 use crate::render::Error;
 use crate::view::View;
@@ -18,13 +18,13 @@ use wasm_bindgen::UnwrapThrowExt;
 #[derive(Debug)]
 pub struct IndexedProps<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> ViewBuilder,
+    F: Fn(T) -> DomBuilder,
 {
     pub iterable: I,
     pub template: F,
 }
 
-/// Non keyed iteration (or keyed by index). Use this instead of directly rendering an array of [`TemplateResult`]s.
+/// Non keyed iteration (or keyed by index). Use this instead of directly rendering an array of [`DomBuilder`]s.
 /// Using this will minimize re-renders instead of re-rendering every single node on every state change.
 ///
 /// For keyed iteration, see [`Keyed`].
@@ -50,7 +50,7 @@ where
 // #[component]
 pub struct Indexed<T, I: SignalVec<Item = T> + Unpin, F>
 where
-    F: Fn(T) -> ViewBuilder,
+    F: Fn(T) -> DomBuilder,
 {
     pub props: IndexedProps<T, I, F>,
 }
@@ -59,7 +59,7 @@ impl<T, F, I> Component for Indexed<T, I, F>
 where
     T: 'static + Clone,
     I: 'static + SignalVecExt<Item = T> + Unpin,
-    F: Fn(T) -> ViewBuilder + 'static,
+    F: Fn(T) -> DomBuilder + 'static,
 {
     fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
         let props = self.props;

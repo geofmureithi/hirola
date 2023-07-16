@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{generic_node::EventListener, render::Render};
 
-use super::ViewBuilder;
+use super::DomBuilder;
 
 pub struct HtmlBuilder {
     pub(super) tag: String,
@@ -25,7 +25,7 @@ impl HtmlBuilder {
         self.events.push((name, listener))
     }
 
-    pub fn append_child(&mut self, child: ViewBuilder) {
+    pub fn append_child(&mut self, child: DomBuilder) {
         self.children.push(Box::new(child))
     }
 

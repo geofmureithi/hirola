@@ -23,7 +23,7 @@ async fn fetcher() -> Result<Users, JsValue> {
     Ok(users)
 }
 
-fn fetch_users(_app: &App<S, G>) -> Dom {
+fn fetch_users() -> DomBuilder {
     let users: AsyncResult<Users> = use_async(fetcher());
 
     html! {

@@ -1,6 +1,6 @@
 //! Trait for describing how something should be rendered into DOM nodes.
 use crate::{
-    builder::ViewBuilder,
+    builder::DomBuilder,
     generic_node::{DomType, GenericNode},
     templating::flow::{Indexed, IndexedProps},
     view::View,
@@ -95,14 +95,14 @@ impl<T: Display + Clone + 'static> Render for Mutable<T> {
 
 pub struct Mapped<T> {
     pub iter: Pin<Box<dyn SignalVec<Item = T>>>,
-    callback: Box<dyn Fn(T) -> ViewBuilder>,
+    callback: Box<dyn Fn(T) -> DomBuilder>,
 }
 
 pub trait RenderMap {
     type Item;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item>;
 }
 
@@ -110,7 +110,7 @@ impl<T: Clone + 'static> RenderMap for MutableSignalVec<T> {
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
@@ -125,7 +125,7 @@ impl<T: Clone + 'static, I: SignalVec<Item = T> + 'static, F: FnMut(&T) -> bool 
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
@@ -138,7 +138,7 @@ impl<T: Clone + 'static, I: Iterator<Item = T>> RenderMap for Enumerate<I> {
     type Item = (usize, T);
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item> {
         let items = self.collect();
         Mapped {
@@ -154,7 +154,7 @@ impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static> R
     type Item = (ReadOnlyMutable<Option<usize>>, T);
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self.to_signal_cloned().to_signal_vec()),
@@ -167,7 +167,7 @@ impl<T: Clone + 'static> RenderMap for Vec<T> {
     type Item = T;
     fn render_map(
         self,
-        callback: impl Fn(Self::Item) -> ViewBuilder + 'static,
+        callback: impl Fn(Self::Item) -> DomBuilder + 'static,
     ) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(MutableVec::new_with_values(self).signal_vec_cloned()),
@@ -184,7 +184,7 @@ impl<T: 'static + Clone> Render for Mapped<T> {
                 template: self.callback,
             };
             let indexed = Indexed { props };
-            ViewBuilder::Component(Box::new(indexed))
+            DomBuilder::Component(Box::new(indexed))
         };
         Box::new(template).render_into(view)?;
         Ok(())

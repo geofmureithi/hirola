@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use futures_signals::signal::{Signal, SignalExt};
 
 use crate::{
-    builder::{component::Component, ViewBuilder},
+    builder::{component::Component, DomBuilder},
     generic_node::{DomType, GenericNode},
     render::Error,
     view::View,
@@ -11,7 +11,7 @@ use crate::{
 
 pub struct Switch<S: Signal<Item = bool>, F>
 where
-    F: Fn(bool) -> ViewBuilder,
+    F: Fn(bool) -> DomBuilder,
 {
     pub signal: S,
     pub renderer: F,
@@ -19,7 +19,7 @@ where
 
 impl<S, F> Component for Switch<S, F>
 where
-    F: Fn(bool) -> ViewBuilder + 'static,
+    F: Fn(bool) -> DomBuilder + 'static,
     S: Signal<Item = bool> + 'static,
 {
     fn render(self: Box<Self>, view: &View) -> Result<(), Error> {
@@ -52,7 +52,7 @@ where
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: ViewBuilder) {
+            fn apply(&mut self, dom: DomBuilder) {
                 self.clear();
                 let node = &self.holder;
                 let view = dom.mount(&DomType::fragment()).unwrap();

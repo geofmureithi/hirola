@@ -15,7 +15,8 @@ pub fn async_page(_app: &App) -> Dom {
             </p>
             <h2>"Example"</h2>
             <CodePreview
-                code="async fn fetcher() -> Result<Users, JsValue> {
+                code={ r#"
+                async fn fetcher() -> Result<Users, JsValue> {
                     let window = web_sys::window().unwrap();
                 
                     let mut opts = RequestInit::new();
@@ -40,9 +41,7 @@ pub fn async_page(_app: &App) -> Dom {
                                     <div class="h-10 w-32">"Loading..."</div>
                                 }
                             }  else {
-                    ......"
-
-                //jsonplaceholder.typicode.com/users");
+                    ......"#
 
                 file="main.rs"
             />

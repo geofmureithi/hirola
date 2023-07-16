@@ -13,7 +13,7 @@
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
 //!
-//! fn counter(_: &App<()>) -> ViewBuilder {
+//! fn counter(_: &App<()>) -> DomBuilder {
 //!     let state = Mutable::new(99);
 //!     let decrement = state.update_with(|count, _| count.set(count.get() - 1));
 //!     let increment = state.update_with(|count, _| count.set(count.get() - 1));

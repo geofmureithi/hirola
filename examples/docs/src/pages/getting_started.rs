@@ -27,7 +27,7 @@ pub fn getting_started_page(_app: &App) -> Dom {
             <ul class="ml-4">
                 <li>"Rust"</li>
                 <li>"Cargo"</li>
-                <li>"Trunk"</li>
+                <li>"Hirola-Toolkit"</li>
             </ul>
             <h1>"Getting Started"</h1>
             <p>"We are going to create a simple counter program."</p>

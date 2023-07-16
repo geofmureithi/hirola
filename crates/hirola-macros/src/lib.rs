@@ -31,7 +31,7 @@ fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
     let children_tokens = children_to_tokens(nodes);
     tokens.extend(quote! {
             {
-                let mut template =  ::hirola::prelude::ViewBuilder::new();
+                let mut template =  ::hirola::prelude::DomBuilder::new();
                 #children_tokens
                 template
             }
@@ -52,7 +52,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
 
                 tokens.extend(quote! {
                 {
-                    let mut template: ::hirola::prelude::ViewBuilder = ::hirola::prelude::ViewBuilder::element(#name);
+                    let mut template: ::hirola::prelude::DomBuilder = ::hirola::prelude::DomBuilder::element(#name);
                     #children_tokens
                     #(#attributes)*
                     template
@@ -77,10 +77,10 @@ fn node_to_tokens(node: Node) -> TokenStream {
 
                 let quoted = if attributes.is_empty() {
                     quote!({ 
-                        ::hirola::prelude::ViewBuilder::Component(Box::new(#fnname))
+                        ::hirola::prelude::DomBuilder::Component(Box::new(#fnname))
                     })
                 } else {
-                    quote!({ ::hirola::prelude::ViewBuilder::Component(Box::new(#fnname {#(#attributes),*} ))})
+                    quote!({ ::hirola::prelude::DomBuilder::Component(Box::new(#fnname {#(#attributes),*} ))})
                 };
                 tokens.extend(quote! {
                     {
@@ -121,7 +121,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
         if name.starts_with("on:") {
             let name = name.replace("on:", "");
             quote! {
-                ::hirola::prelude::ViewBuilder::event(
+                ::hirola::prelude::DomBuilder::event(
                     &mut template,
                     #name,
                     ::std::boxed::Box::new(#value),
@@ -145,7 +145,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
         } else {
             let attribute_name = convert_name(&name);
             quote! {
-                ::hirola::prelude::ViewBuilder::attribute(
+                ::hirola::prelude::DomBuilder::attribute(
                     &mut template,
                     #attribute_name,
                     &::std::format!("{}", #value),
@@ -166,26 +166,26 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 Node::Element(_) => {
                     let node = node_to_tokens(child);
                     append_children.extend(quote! {
-                        ::hirola::prelude::ViewBuilder::append_child(&mut template, #node );
+                        ::hirola::prelude::DomBuilder::append_child(&mut template, #node );
                     });
                 }
                 Node::Text(text) => {
                     
                     append_children.extend(quote! {
-                        ::hirola::prelude::ViewBuilder::append_child(
+                        ::hirola::prelude::DomBuilder::append_child(
                             &mut template,
                             #[allow(unused_braces)]
-                            ::hirola::prelude::ViewBuilder::Text(String::from(#text)),
+                            ::hirola::prelude::DomBuilder::Text(String::from(#text)),
                         );
                     });
                 }
                 Node::Comment(comment) => {
                     let s = comment.value;
                     append_children.extend(quote! {
-                        ::hirola::prelude::ViewBuilder::append_child(
+                        ::hirola::prelude::DomBuilder::append_child(
                             &mut template,
                             #[allow(unused_braces)]
-                            ::hirola::prelude::ViewBuilder::new_from_node(::hirola::prelude::GenericNode::comment(#s)),
+                            ::hirola::prelude::DomBuilder::new_from_node(::hirola::prelude::GenericNode::comment(#s)),
                         );
                     });
                 }
@@ -210,7 +210,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                     let indexed = ::hirola::prelude::Indexed {
                                                         props
                                                     };
-                                                    ::hirola::prelude::ViewBuilder::Component(Box::new(indexed))
+                                                    ::hirola::prelude::DomBuilder::Component(Box::new(indexed))
                                                 };
                                             });
                                         }
@@ -228,7 +228,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                         let indexed = ::hirola::prelude::Indexed {
                                                             props
                                                         };
-                                                        ::hirola::prelude::ViewBuilder::Component(Box::new(indexed))
+                                                        ::hirola::prelude::DomBuilder::Component(Box::new(indexed))
                                                     };
                                                 });
                                             } else {
@@ -251,7 +251,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 } else {
                                     append_children.extend(quote! {
                                         for #pat in #expr {
-                                            ::hirola::prelude::ViewBuilder::append_child(
+                                            ::hirola::prelude::DomBuilder::append_child(
                                                 &mut template,
                                                 #body,
                                             );
@@ -279,7 +279,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                             }
                                                         }
                                                     };
-                                                    ::hirola::prelude::ViewBuilder::Component(Box::new(switch))
+                                                    ::hirola::prelude::DomBuilder::Component(Box::new(switch))
                                                 };
                                             });
                                         }
@@ -298,7 +298,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                                 }
                                                             }
                                                         };
-                                                        ::hirola::prelude::ViewBuilder::Component(Box::new(switch))
+                                                        ::hirola::prelude::DomBuilder::Component(Box::new(switch))
                                                     };
                                                 });
                                             } else {
@@ -320,7 +320,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     }
                                 } else {
                                     append_children.extend(quote! {
-                                        ::hirola::prelude::ViewBuilder::append_render(
+                                        ::hirola::prelude::DomBuilder::append_render(
                                             &mut template,
                                             #[allow(unused_braces)]
                                             #block,
@@ -346,9 +346,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                         }
                                                     })
                                                 };
-                                                ::hirola::prelude::ViewBuilder::Component(Box::new(suspense))
+                                                ::hirola::prelude::DomBuilder::Component(Box::new(suspense))
                                             };
-                                            ::hirola::prelude::ViewBuilder::append_render(
+                                            ::hirola::prelude::DomBuilder::append_render(
                                                 &mut template,
                                                 suspense
                                             );
@@ -357,7 +357,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     },
                                     _ => {
                                         append_children.extend(quote! {
-                                            ::hirola::prelude::ViewBuilder::append_render(
+                                            ::hirola::prelude::DomBuilder::append_render(
                                                 &mut template,
                                                 #[allow(unused_braces)]
                                                 #block,
@@ -368,7 +368,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             }
                             _ => {
                                 append_children.extend(quote! {
-                                    ::hirola::prelude::ViewBuilder::append_render(
+                                    ::hirola::prelude::DomBuilder::append_render(
                                         &mut template,
                                         #[allow(unused_braces)]
                                         #block,
@@ -440,7 +440,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = to_token_stream(input);
 
     let quoted = quote! {
-        ::hirola::prelude::ViewBuilder::from(#output)
+        ::hirola::prelude::DomBuilder::from(#output)
     };
     quoted.into()
 }

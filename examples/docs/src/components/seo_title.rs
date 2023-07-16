@@ -3,11 +3,11 @@ use std::fmt::Display;
 use hirola::prelude::*;
 
 #[component]
-pub fn SeoTitle<'a, T: Display + ?Sized>(title: &'a T) -> Dom {
+pub fn SeoTitle<'a, T: Display + ?Sized>(title: &'a T) -> DomBuilder {
     web_sys::window()
         .unwrap()
         .document()
         .unwrap()
         .set_title(&format!("{title}"));
-    TemplateResult::empty()
+    DomBuilder::new()
 }

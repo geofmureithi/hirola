@@ -23,14 +23,14 @@ default = ["hirola-core/default"]
 ## Enables dom based rendering
 dom = ["hirola-core/dom"]
 
-## Enables serialization of state
-serde = ["hirola-core/serde"]
+# ## Enables serialization of state
+# serde = ["hirola-core/serde"]
 
 ## Enables server side reendering
 ssr = ["hirola-core/ssr"]
 
-## Enables Isomorphic Routing
-router = ["hirola-core/router"]
+## Enables app features like isomorphic routing
+app = ["hirola-core/app"]
 
 docsrs = ["document-features"]
 
@@ -41,7 +41,7 @@ form = ["hirola-form"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
 wasm-bindgen = { version = "0.2.79" }
-hirola = { path = ".", default-features = false, features = ["router", "dom"] }
+hirola = { path = ".", default-features = false, features = ["app", "dom"] }
 futures-util = "0.3"
 web-sys = { version = "0.3", features = ["Document", "Node", "Element"] }
 

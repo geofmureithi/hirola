@@ -1,5 +1,5 @@
 use crate::components::seo_title::SeoTitle;
-use crate::pages::CodePredom;
+use crate::pages::CodePreview;
 use crate::App;
 use hirola::prelude::*;
 
@@ -20,7 +20,7 @@ pub fn templating_page(_app: &App) -> Dom {
                 "If you are iterating over a non-signal iterator, you can use the normal for-loop"
             </p>
             <h3>"Example"</h3>
-            <CodePredom
+            <CodePreview
                 code="{for i in 0..5 {
                   html! {
                       <ul>
@@ -44,7 +44,7 @@ pub fn templating_page(_app: &App) -> Dom {
                 "Sometimes, you are working with a signal and want to react to changes on the ui. You can use Keyed and Indexed"
             </p>
             <h3>"Keyed"</h3>
-            <CodePredom
+            <CodePreview
                 code="<Keyed
                   props={
                       KeyedProps {
@@ -63,7 +63,7 @@ pub fn templating_page(_app: &App) -> Dom {
                 file="src/main.rs"
             />
             <h3>"Indexed"</h3>
-            <CodePredom
+            <CodePreview
                 code="<Indexed
                   props={
                   IndexedProps {
@@ -84,7 +84,7 @@ pub fn templating_page(_app: &App) -> Dom {
             <p>
                 "One can write components as functions starting with uppercase and include a derive macro"
             </p>
-            <CodePredom
+            <CodePreview
                 code="#[component]
                 fn Todo(router: Router) -> Dom {}
                 html! {

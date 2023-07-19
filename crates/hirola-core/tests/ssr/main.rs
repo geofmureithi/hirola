@@ -15,21 +15,17 @@ fn reactive_text() {
     let count = Mutable::new(0);
 
     assert_eq!(
-        render_to_string(
-            html! {
-                <p>{count.clone()}</p>
-            }
-        ),
+        render_to_string(html! {
+            <p>{count.clone()}</p>
+        }),
         "<p>0</p>"
     );
 
     count.set(1);
     assert_eq!(
-        render_to_string(
-            html! {
-                <p>{count}</p>
-            }
-        ),
+        render_to_string(html! {
+            <p>{count}</p>
+        }),
         "<p>1</p>"
     );
 }

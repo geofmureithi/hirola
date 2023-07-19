@@ -1,4 +1,4 @@
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -19,8 +19,8 @@ pub fn event_handling_page(_app: &App) -> Dom {
                 </p>
             </blockquote>
             <h2>"Example"</h2>
-            <CodePredom
-                code="html! {
+            <CodePreview
+                code=r##"html! {
                 <button
                 on:click=|e| {
                 let window = web_sys::window().unwrap();
@@ -28,7 +28,7 @@ pub fn event_handling_page(_app: &App) -> Dom {
                 }>
                 "Click Me"
                 </button>
-                }"
+                }"##
                 file="src/main.rs"
             />
 

@@ -1,10 +1,11 @@
-use std::{cell::RefCell, future::Future, pin::Pin, rc::Rc};
-use futures_util::future::FutureExt;
 use crate::{
-    generic_node::{GenericNode, DomType},
+    dom::Dom,
+    generic_node::{DomType, GenericNode},
     render::{Error, Render},
-    dom::Dom, BoxedLocal,
+    BoxedLocal,
 };
+use futures_util::future::FutureExt;
+use std::{cell::RefCell, future::Future, pin::Pin, rc::Rc};
 
 #[derive(Debug, Default)]
 pub enum SuspenseResult<Res> {
@@ -36,7 +37,7 @@ pub struct Suspense<Res> {
 impl<Res: Default + 'static> Render for Suspense<Res> {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let template = self.template;
-        struct State{
+        struct State {
             holder: DomType,
             current: Option<Dom>,
         }

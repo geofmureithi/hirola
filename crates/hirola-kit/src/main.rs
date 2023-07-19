@@ -21,7 +21,7 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// Format hirola html! macro code 
+    /// Format hirola html! macro code
     #[command(arg_required_else_help = true)]
     Format(Format),
 }

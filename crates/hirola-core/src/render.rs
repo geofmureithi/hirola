@@ -1,8 +1,8 @@
 //! Trait for describing how something should be rendered into DOM nodes.
 use crate::{
+    dom::Dom,
     generic_node::{DomType, GenericNode},
     templating::flow::{Indexed, IndexedProps},
-    dom::Dom,
 };
 use futures_signals::{
     signal::{Mutable, ReadOnlyMutable, SignalExt},
@@ -99,18 +99,12 @@ pub struct Mapped<T> {
 
 pub trait RenderMap {
     type Item;
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item>;
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item>;
 }
 
 impl<T: Clone + 'static> RenderMap for MutableSignalVec<T> {
     type Item = T;
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item> {
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
             callback: Box::new(callback),
@@ -122,10 +116,7 @@ impl<T: Clone + 'static, I: SignalVec<Item = T> + 'static, F: FnMut(&T) -> bool 
     for Filter<I, F>
 {
     type Item = T;
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item> {
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self),
             callback: Box::new(callback),
@@ -135,10 +126,7 @@ impl<T: Clone + 'static, I: SignalVec<Item = T> + 'static, F: FnMut(&T) -> bool 
 
 impl<T: Clone + 'static, I: Iterator<Item = T>> RenderMap for Enumerate<I> {
     type Item = (usize, T);
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item> {
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
         let items = self.collect();
         Mapped {
             iter: Box::pin(MutableVec::new_with_values(items).signal_vec_cloned()),
@@ -151,10 +139,7 @@ impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static> R
     for futures_signals::signal_vec::Enumerate<I>
 {
     type Item = (ReadOnlyMutable<Option<usize>>, T);
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item> {
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(self.to_signal_cloned().to_signal_vec()),
             callback: Box::new(callback),
@@ -164,10 +149,7 @@ impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static> R
 
 impl<T: Clone + 'static> RenderMap for Vec<T> {
     type Item = T;
-    fn render_map(
-        self,
-        callback: impl Fn(Self::Item) -> Dom + 'static,
-    ) -> Mapped<Self::Item> {
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
         Mapped {
             iter: Box::pin(MutableVec::new_with_values(self).signal_vec_cloned()),
             callback: Box::new(callback),

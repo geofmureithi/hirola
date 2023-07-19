@@ -3,9 +3,9 @@ use std::{cell::RefCell, rc::Rc};
 use futures_signals::signal::{Signal, SignalExt};
 
 use crate::{
+    dom::Dom,
     generic_node::{DomType, GenericNode},
     render::{Error, Render},
-    dom::Dom,
 };
 
 pub struct Switch<S: Signal<Item = bool>, F>

@@ -23,7 +23,7 @@ fn highlight_code<'a>(_example_name: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
 }
 
 #[component]
-pub fn CodePredom<T: AsRef<str>>(code: T, file: T) -> Dom {
+pub fn CodePreview<T: AsRef<str>>(code: T, file: T) -> Dom {
     let file = file.as_ref();
     let code = code.as_ref().to_owned();
     html! {

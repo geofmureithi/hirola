@@ -1,4 +1,4 @@
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -20,7 +20,7 @@ pub fn testing_page(_app: &App) -> Dom {
             </blockquote>
             <h2>"Example"</h2>
             <p>"A testing example can be seen in the counter example"</p>
-            <CodePredom code=include_str!("../../../counter/src/main.rs") file="src/main.rs"/>
+            <CodePreview code=include_str!("../../../counter/src/main.rs") file="src/main.rs"/>
             <p>"Tests can be run with wasmpack"</p>
             <code class="block one-liner my-1 py-1">"wasm-pack test --node"</code>
             <p>"Testing is still a work in progress"</p>

@@ -1,8 +1,31 @@
-//! # Hirola API Documentation
+//! # hirola-core
 //!
+//! ## Example
+//! ```rust,no_run
+//! use hirola::prelude::*;
+//! use hirola::signal::Mutable;
+//!
+//! fn counter() -> Dom {
+//!     let count = Mutable::new(0i32);
+//!     let decrement = count.callback(|s| *s.lock_mut() -= 1);
+//!     let increment = count.callback(|s| *s.lock_mut() += 1);
+//!     html! {
+//!          <>
+//!             <button on:click=decrement>"-"</button>
+//!             <span>{count}</span>
+//!             <button on:click=increment>"+"</button>
+//!          </>
+//!     }
+//! }
+//!
+//! fn main() {
+//!     let root = render(counter()).unwrap();
+//!     std::mem::forget(root);
+//! }
+//! ```
 //! ## Features
 //! - `dom` (_default_) - Enables rendering templates to DOM nodes. Only useful on `wasm32-unknown-unknown` target.
-//! - `ssr` - Enables rendering templates to static strings (useful for Server Side Rendering / Pre-rendering).
+//! - `ssr` - Enables rendering templates to static strings (useful for Server Side Rendering / Server side Generation).
 //! - `serde` - Enables serializing and deserializing `Signal`s and other wrapper types using `serde`.
 
 #![allow(non_snake_case)]
@@ -11,23 +34,23 @@
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
 
+use crate::dom::*;
 use discard::DiscardOnDrop;
 use futures_signals::{cancelable_future, CancelableFutureHandle};
-use std::{future::Future, pin::Pin};
-use crate::dom::*;
 pub use hirola_macros::html;
+use std::{future::Future, pin::Pin};
 
 pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
 
 #[cfg(feature = "app")]
 pub mod app;
+pub mod callback;
 pub mod dom;
 pub mod effect;
 pub mod generic_node;
 pub mod mixins;
 pub mod render;
 pub mod templating;
-pub mod update;
 
 #[cfg(feature = "dom")]
 use crate::generic_node::DomNode;
@@ -37,11 +60,11 @@ use crate::generic_node::DomNode;
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render(root: Dom) -> Result<Dom, render::Error> {
+pub fn render(dom: Dom) -> Result<Dom, render::Error> {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
 
-    render_to(root, &document.body().unwrap())
+    render_to(dom, &document.body().unwrap())
 }
 
 /// Render a [`Dom`] under a `parent` node.
@@ -59,14 +82,14 @@ pub fn render_to(dom: dom::Dom, parent: &web_sys::Node) -> Result<dom::Dom, rend
 ///
 /// _This API requires the following crate features to be activated: `ssr`_
 #[cfg(feature = "ssr")]
-pub fn render_to_string(root: Dom) -> String {
+pub fn render_to_string(dom: Dom) -> String {
     use crate::generic_node::GenericNode;
     use crate::generic_node::SsrNode;
     use crate::render::Render;
     let node = SsrNode::fragment();
-    let dom = Dom::new_from_node(&node);
-    Render::render_into(Box::new(root), &dom).unwrap();
-    format!("{}", dom.node())
+    let root = Dom::new_from_node(&node);
+    Render::render_into(Box::new(dom), &root).unwrap();
+    format!("{}", root.node())
 }
 
 #[inline]
@@ -107,8 +130,8 @@ pub mod prelude {
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
 
+    pub use crate::callback::Callback;
     pub use crate::dom::Dom;
-    pub use crate::update::Update;
 
     #[cfg(feature = "app")]
     pub use crate::app::*;

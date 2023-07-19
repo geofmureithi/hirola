@@ -27,7 +27,7 @@ pub use state::state_page;
 pub use templating::templating_page;
 pub use testing::testing_page;
 
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::App;
 
 pub fn home(_: &App) -> Dom {
@@ -52,7 +52,7 @@ pub fn home(_: &App) -> Dom {
                 <li>"Familiality. Uses rsx which is very similar to JSX."</li>
             </ul>
             <h2>"Example"</h2>
-            <CodePredom
+            <CodePreview
                 code="use hirola::prelude::*;
                 
                 fn counter(_: &App<S, G>) -> Dom {

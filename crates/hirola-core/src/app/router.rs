@@ -1,17 +1,31 @@
-use crate::{builder::Dom, prelude::*, dom::Dom};
+use crate::{dom::Dom, prelude::*};
 use futures_signals::signal::{Mutable, MutableSignalCloned, SignalExt};
-use std::{collections::HashMap};
+use std::collections::HashMap;
+use std::fmt;
 #[cfg(feature = "dom")]
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 #[cfg(feature = "dom")]
 use web_sys::{Element, Event};
 
 #[derive(Clone)]
-pub struct Router<S> {
+pub struct Router<S: 'static> {
     current: Mutable<String>,
-    pub (crate) handler: matchit::Router<fn(&App<S>) -> Dom>,
+    pub(crate) handler: matchit::Router<fn(&App<S>) -> Dom>,
+    pub(crate) not_found: Box<fn(&App<S>) -> Dom>,
 }
-impl<S> Router<S> {
+
+impl<S> fmt::Debug for Router<S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Router")
+            .field("current", &self.current)
+            .field(
+                "handler",
+                &format_args!("matchit::Router<fn(&App<S>) -> Dom>"),
+            )
+            .finish()
+    }
+}
+impl<S: Clone + 'static> Router<S> {
     pub fn new() -> Self {
         #[allow(unused_mut)]
         let mut path = String::from("/");
@@ -20,8 +34,11 @@ impl<S> Router<S> {
             path = window.location().pathname().unwrap_or("/".to_string());
         }
         Router {
-            current: path,
+            current: Mutable::new(path),
             handler: Default::default(),
+            not_found: Box::new(|_| {
+                Dom::text("Not Found")
+            }),
         }
     }
     pub fn current_params(&self) -> HashMap<String, String> {
@@ -72,7 +89,7 @@ impl<S> Router<S> {
         self.current.signal_cloned()
     }
 
-    pub(crate) fn render(&self, app: &'static App<S>, parent: &DomType) -> Dom {
+    pub(crate) fn render(self, app: &App<S>, parent: &DomType) -> Dom {
         let router = &self.handler;
         #[cfg(feature = "dom")]
         let current = self.current.clone();
@@ -108,7 +125,7 @@ impl<S> Router<S> {
         //Routing for navigating in history and escaping hash routes
         #[cfg(feature = "dom")]
         let handle_pop = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
-            let l = Self::get_fragment();
+            let path_name = web_sys::window().unwrap().location().pathname().unwrap();
 
             if web_sys::window()
                 .unwrap()
@@ -122,8 +139,8 @@ impl<S> Router<S> {
                 log::debug!("hash detected");
                 return ();
             }
-            current.set(l.to_string());
-            log::debug!("pop handle : {l}");
+            current.set(path_name.to_string());
+            log::debug!("pop handle : {path_name}");
         }) as Box<dyn Fn(_)>);
 
         #[cfg(feature = "dom")]

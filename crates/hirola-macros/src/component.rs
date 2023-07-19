@@ -1,4 +1,3 @@
-
 use proc_macro::TokenStream;
 use proc_macro_error::emit_error;
 use quote::quote;
@@ -37,7 +36,7 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
             })
             .collect();
         quote!(
-            let #struct_name { #(#input_names),* } = self;
+            let #struct_name { #(#input_names),* } = *self;
         )
     };
 
@@ -45,8 +44,8 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
         // #[derive(Debug)]
         #vis struct #struct_name #impl_generics #inputs_block
 
-        impl #impl_generics ::hirola::prelude::Component for #struct_name #ty_generics #where_clause {
-            fn render(self: Box<Self>, dom: &Dom) -> Result<(), Error> {
+        impl #impl_generics ::hirola::prelude::Render for #struct_name #ty_generics #where_clause {
+            fn render_into(self: Box<Self>, dom: &Dom) -> Result<(), Error> {
                 let result = {
                     #inputs_reading
                     #block

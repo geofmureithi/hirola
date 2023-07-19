@@ -1,26 +1,21 @@
 mod model;
-
 use hirola::prelude::*;
 use model::Users;
-use wasm_bindgen::JsCast;
-use wasm_bindgen::JsValue;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{Request, RequestInit, Response};
+use reqwasm::http::Request;
+use anyhow::bail;
 
-async fn user_fetcher() -> Result<Users, JsValue> {
-    use wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
-    let window = web_sys::window().unwrap();
-    let mut opts = RequestInit::new();
-    opts.method("GET");
-    let url = format!("https://jsonplaceholder.typicode.com/users");
-    let request = Request::new_with_str_and_init(&url, &opts)?;
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
-    let resp: Response = resp_value.dyn_into()?;
-    let json = resp.json()?;
-    let json = JsFuture::from(json).await?;
-    let users: Users = json.into_serde().unwrap();
-    Ok(users)
+async fn user_fetcher() -> anyhow::Result<Users> {
+    let request = Request::get("https://jsonplaceholder.typicode.com/users");
+    let response = request.send().await?;
+    if response.status() == 200 {
+        return Ok(response.json().await?);
+    } else {
+        bail!(
+            "Failed with status {}, {}",
+            response.status(),
+            response.text().await?
+        )
+    }
 }
 
 fn fetch_users() -> Dom {
@@ -28,6 +23,9 @@ fn fetch_users() -> Dom {
         <div class="grid h-screen place-items-center">
             <h1>"Users"</h1>
             {match user_fetcher().suspend().await {
+                Loading => {
+                    html! { <div>"Loading..."</div> }
+                }
                 Ready(Ok(users)) => {
                     html! {
                         <ul>
@@ -38,10 +36,7 @@ fn fetch_users() -> Dom {
                     }
                 }
                 Ready(Err(err)) => {
-                    html! { <div>"An error occurred"</div> }
-                }
-                _ => {
-                    html! { <div>"Loading..."</div> }
+                    html! { <div>"An error occurred: " {err.to_string()}</div> }
                 }
             }}
         </div>

@@ -1,4 +1,4 @@
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -13,7 +13,7 @@ pub fn state_page(_app: &App) -> Dom {
                 "Hirola is un-opinionated in state management. It should be pretty easy to roll out your own."
             </p>
             <h2>"Getting started"</h2>
-            <CodePredom
+            <CodePreview
                 code="let window = web_sys::window().unwrap();
                 let document = window.document().unwrap();
                 let body = document.body().unwrap();

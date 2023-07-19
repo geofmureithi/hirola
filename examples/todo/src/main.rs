@@ -1,4 +1,5 @@
 use hirola::prelude::*;
+use hirola::signal::Mutable;
 use wasm_bindgen::JsCast;
 use web_sys::window;
 use web_sys::HtmlInputElement;
@@ -45,7 +46,7 @@ fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Muta
     }
 }
 
-fn todo_dom(app: &App<S, G>) -> Dom {
+fn todo_dom(app: &App<TodoStore>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let route = router.params().get();
     let param = route.params.get("id").unwrap_or(&"1".to_string()).clone();
@@ -69,7 +70,7 @@ fn todo_dom(app: &App<S, G>) -> Dom {
     }
 }
 
-fn home(app: &App<S, G>) -> Dom {
+fn home(app: &App<TodoStore>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;
@@ -137,11 +138,11 @@ fn home(app: &App<S, G>) -> Dom {
 
 #[derive(Clone)]
 struct TodoStore {
-    todos: Mutable<Vec<Mutable<Todo>>>,
+    todos: MutableVec<Mutable<Todo>>,
 }
 
-fn index(app: &App<S, G>) -> Dom {
-    let router = app.data::<Router>().unwrap().clone();
+fn index(app: &App<TodoStore>) -> Dom {
+    let router = app.router();
     let app = app.clone();
     html! {
         <div>
@@ -155,7 +156,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let todos = vec![
+    let todos = MutableVec::new_with_values(vec![
         Mutable::new(Todo {
             id: String::from("1"),
             title: String::from("Add another component to Tailwind Components"),
@@ -166,19 +167,13 @@ fn main() {
             title: String::from("Submit Todo App Component to Tailwind Components"),
             complete: true,
         }),
-    ];
-    let todos = Mutable::new(todos);
+    ]);
+    let todos = Mutable::new(TodoStore { todos });
 
-    let mut app = App<S, G>::new();
-
-    let mut router = Router::new();
-    router.route("/", home);
-    router.route("/todo/:id", todo_dom);
-
-    app.extend(TodoStore { todos });
-    app.extend(router);
-
-    app.mount(&body, index);
+    let mut app = App::new(todos);
+    app.route("/", home);
+    app.route("/todo/:id", todo_dom);
+    app.mount(index, &body);
 }
 
 #[cfg(test)]

@@ -7,8 +7,8 @@ use thiserror::Error;
 
 use crate::{
     formatter::collect::collect_macros_in_file,
-    formatter::{format_macro, FormatterSettings},
     formatter::HtmlMacro,
+    formatter::{format_macro, FormatterSettings},
 };
 
 #[derive(Error, Debug)]

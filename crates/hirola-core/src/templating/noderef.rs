@@ -1,5 +1,4 @@
 //! References to nodes in templates.
-
 use crate::generic_node::DomType;
 use std::any::Any;
 use std::cell::RefCell;
@@ -45,7 +44,7 @@ impl NodeRef {
         self.try_get().expect("NodeRef is not set")
     }
 
-    /// Tries to get the raw [`GenericNode`] stored inside the [`NodeRef`] or `None` if it is
+    /// Tries to get the raw [`DomType`] stored inside the [`NodeRef`] or `None` if it is
     /// not yet set.
     ///
     /// For a panicking version, see [`NodeRef::get`].

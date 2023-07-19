@@ -5,45 +5,14 @@
     unreachable_pub
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-//! # Hirola API Documentation
-//! **Hirola** is an un-opinionated and extensible web framework for that is focused on simplicity and predictability.
-//! Hirola uses frp-signals under the hood and has no vdom meaning fine-tuned reactivity.
-//! 
-//!
-//! ## Example
-//! ```rust,no_run
-//! use hirola::prelude::*;
-//! use hirola::signal::Mutable;
-//! 
-//! fn counter(app: &App<Mutable<i32>>) -> Dom {
-//!     let state = app.state();
-//!     let decrement = |_| state.replace_with(|c| c--);
-//!     let increment = |_| state.replace_with(|c| c++); 
-//!     html! {
-//!         <>
-//!            <button on:click=decrement>"-"</button>
-//!            <span>{state}</span>
-//!            <button on:click=increment>"+"</button>
-//!         </>
-//!    }
-//! }
-//!
-//! fn main() {
-//!    let state = Mutable::new(99);
-//!    let mut app = App::new(state);
-//!    app.route("/", counter);
-//!    app.mount();
-//! }
-//! ```
-//!
-//!
+#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 //! ## Features
 #![cfg_attr(
     feature = "docsrs",
     cfg_attr(doc, doc = ::document_features::document_features!())
 )]
 
-/// The defaults from core
+/// The defaults imports
 pub mod prelude {
     pub use hirola_core::prelude::*;
 }
@@ -56,6 +25,13 @@ pub mod signal {
 /// Exposing vec signal
 pub mod signal_vec {
     pub use hirola_core::prelude::signal_vec::*;
+}
+
+/// App introduces state and routing management.
+/// Use if you need to store data shared between routes or just routing.
+#[cfg(feature = "app")]
+pub mod app {
+    pub use hirola_core::app::*;
 }
 
 /// Include form mixins and utilities

@@ -1,4 +1,4 @@
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
@@ -13,8 +13,8 @@ pub fn async_page(_app: &App) -> Dom {
                 " feature."
             </p>
             <h2>"Example"</h2>
-            <CodePredom
-                code={ r#"
+            <CodePreview
+                code= r###"
                 async fn fetcher() -> Result<Users, JsValue> {
                     let window = web_sys::window().unwrap();
                 
@@ -40,7 +40,7 @@ pub fn async_page(_app: &App) -> Dom {
                                     <div class="h-10 w-32">"Loading..."</div>
                                 }
                             }  else {
-                    ......"#
+                    ......"###
 
                 file="main.rs"
             />

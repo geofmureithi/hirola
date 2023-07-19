@@ -10,8 +10,8 @@ mod source_file;
 #[cfg(test)]
 mod test_helpers;
 
-pub use collect::collect_macros_in_file;
 pub use self::format::*;
+pub use collect::collect_macros_in_file;
 
 pub fn format_file(path: &Path, settings: FormatterSettings) -> Result<String, FormatError> {
     let file = std::fs::read_to_string(path)?;

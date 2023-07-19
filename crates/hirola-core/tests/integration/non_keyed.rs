@@ -169,7 +169,8 @@ pub fn next_tick<F: Fn() + 'static>(f: F) {
     let a = Closure::<dyn Fn()>::new(move || f());
     web_sys::window()
         .unwrap()
-        .set_timeout_with_callback(a.as_ref().unchecked_ref()).unwrap();
+        .set_timeout_with_callback(a.as_ref().unchecked_ref())
+        .unwrap();
 }
 
 pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
@@ -178,7 +179,8 @@ pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'stat
     let a = Closure::<dyn Fn()>::new(f);
     web_sys::window()
         .unwrap()
-        .set_timeout_with_callback(a.as_ref().unchecked_ref()).unwrap();
+        .set_timeout_with_callback(a.as_ref().unchecked_ref())
+        .unwrap();
 }
 
 #[wasm_bindgen_test]

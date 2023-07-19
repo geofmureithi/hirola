@@ -1,9 +1,11 @@
 pub mod router;
-use crate::builder::Dom;
 use router::Router;
+use std::fmt::Debug;
+
+use crate::dom::Dom;
 
 #[derive(Debug, Clone)]
-pub struct App<S> {
+pub struct App<S: 'static> {
     router: Router<S>,
     state: S,
 }
@@ -29,20 +31,39 @@ impl<S: Clone + 'static> App<S> {
         self.router.handler.insert(path.to_string(), page).unwrap();
     }
 
-    pub fn middleware<NT>(self, f: impl Fn(Self) -> NT) -> App<NT> {
-        App {
-            state: f(self),
-            router: self.router,
-        }
+    pub fn set_not_found(&mut self, page: fn(&Self) -> Dom) {
+        self.router.not_found = Box::new(page);
     }
+
+    // pub fn middleware<NT>(self, f: impl Fn(Self) -> NT) -> App<NT> {
+    //     App {
+    //         state: f(self),
+    //         router: self.router,
+    //     }
+    // }
 }
 
 #[cfg(feature = "dom")]
 impl<S: Clone + 'static> App<S> {
-    pub fn mount(&mut self, parent: &web_sys::Node) {
+    pub fn mount(self) {
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
         let router = self.router.clone();
+        let app: &'static App<S> = Box::leak(Box::new(self));
         let dom = router.render(
-            self,
+            app,
+            &crate::generic_node::DomNode {
+                node: document.body().unwrap().into(),
+            },
+        );
+        std::mem::forget(dom);
+    }
+
+    pub fn mount_to(self, parent: &web_sys::Node) {
+        let router = self.router.clone();
+        let app: &'static App<S> = Box::leak(Box::new(self));
+        let dom = router.render(
+            app,
             &crate::generic_node::DomNode {
                 node: parent.clone(),
             },
@@ -56,9 +77,9 @@ impl<S: Clone + 'static> App<S> {
     pub fn render_to_string(&self, path: &str) -> String {
         use crate::generic_node::GenericNode;
         let fragment = crate::generic_node::SsrNode::fragment();
-        let router = self.handler.clone();
+        let router = self.router();
         // Set the path
-        router.handler.push(path);
+        router.push(path);
         // Render path to fragment
         router.render(self, &fragment);
         format!("{fragment}")

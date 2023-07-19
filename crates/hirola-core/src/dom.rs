@@ -111,7 +111,7 @@ impl Dom {
 
 impl Drop for Dom {
     fn drop(&mut self) {
-        // self.discard()
+        self.discard()
     }
 }
 

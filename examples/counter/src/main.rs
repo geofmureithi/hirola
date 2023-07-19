@@ -1,23 +1,28 @@
-use hirola::{prelude::*, signal::Mutable};
+use std::fmt::Display;
+use hirola::prelude::*;
+use hirola::signal::Mutable;
+
+#[component]
+pub fn Menu<R: Render>(title: &'static str, children: R) -> Dom {
+    Dom::new()
+}
+
 
 fn counter() -> Dom {
-    let counter = Mutable::new(99);
-    let decrement = counter.update_with(|c, _| {
-        *c.lock_mut() -= 1;
-    });
-    let increment = counter.update_with(|c, _| {
-        *c.lock_mut() += 1;
-    });
+    let count = Mutable::new(0i32);
+    let decrement = count.callback(|s| *s.lock_mut() -= 1);
+    let increment = count.callback(|s| *s.lock_mut() += 1);
     html! {
-        <div>
+        <>
             <button on:click=decrement>"-"</button>
-            <span>{counter}</span>
-            <span mixin:identity=&rhtml("<b>Test</b>") />
+            <span>{count}</span>
             <button on:click=increment>"+"</button>
-        </div>
+            <Menu title="Test" children={"Child"}/>
+        </>
     }
 }
+
 fn main() {
-    let dom = render(counter()).unwrap();
-    std::mem::forget(dom);
+    let root = render(counter()).unwrap();
+    std::mem::forget(root);
 }

@@ -1,7 +1,7 @@
 use hirola::prelude::mixins::text;
 use hirola::prelude::*;
 
-use crate::components::code_predom::CodePredom;
+use crate::components::code_preview::CodePreview;
 use crate::components::seo_title::SeoTitle;
 use crate::App;
 
@@ -40,9 +40,9 @@ pub fn getting_started_page(_app: &App) -> Dom {
                 "Create an " <b>"index.html"</b> " in the root of counter. Add the contents below"
             </p>
 
-            <CodePredom code=INDEX file="index.html"/>
+            <CodePreview code=INDEX file="index.html"/>
             <p>"Lets add some code to " <b>"src/main.rs"</b></p>
-            <CodePredom code=include_str!("../../../counter/src/main.rs") file="src/main.rs"/>
+            <CodePreview code=include_str!("../../../counter/src/main.rs") file="src/main.rs"/>
             <p>"Now lets run our project"</p>
             <code class="block one-liner my-1 py-1">"trunk serve"</code>
             <p>"You should be able to get counter running."</p>

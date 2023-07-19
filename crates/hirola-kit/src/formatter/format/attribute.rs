@@ -1,7 +1,7 @@
 use rstml::node::{KeyedAttribute, NodeAttribute};
 use syn::{spanned::Spanned, Expr};
 
-use crate::{formatter::Formatter, formatter::AttributeValueBraceStyle as Braces};
+use crate::{formatter::AttributeValueBraceStyle as Braces, formatter::Formatter};
 
 impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
@@ -41,12 +41,10 @@ impl Formatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    use insta::assert_snapshot;
     use crate::formatter::test_helpers::*;
+    use insta::assert_snapshot;
 
-    use crate::{
-        formatter::{AttributeValueBraceStyle, FormatterSettings},
-    };
+    use crate::formatter::{AttributeValueBraceStyle, FormatterSettings};
 
     macro_rules! format_attribute {
         ($($tt:tt)*) => {{

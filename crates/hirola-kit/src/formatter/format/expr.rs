@@ -131,8 +131,8 @@ impl Formatter<'_> {
 mod tests {
     use rstml::node::Node;
 
-    use crate::formatter::*;
     use crate::formatter::test_helpers::{element_from_string, format_with};
+    use crate::formatter::*;
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{

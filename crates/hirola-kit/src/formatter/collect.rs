@@ -7,7 +7,6 @@ use syn::{
 
 use super::format::HtmlMacro;
 
-
 #[derive(Default)]
 struct DomMacroVisitor<'ast> {
     indent_stack: Vec<LineColumn>,

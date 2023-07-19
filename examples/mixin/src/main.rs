@@ -67,7 +67,5 @@ fn main() {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
-
-    let app = App<S, G>::new();
-    render_to(mixin_demo,&body, );
+    render_to(mixin_demo, &body);
 }

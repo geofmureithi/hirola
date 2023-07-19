@@ -176,35 +176,31 @@ impl App {
     }
 }
 
-#[derive(Clone)]
-pub struct App {
-    router: Router<Self>,
-}
-
 fn main() {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let mut router = Router::new();
-    router.route("/", home);
-    router.route("/basics/getting-started", getting_started_page);
-    router.route("/basics/reactivity", reactivity_page);
-    router.route("/basics/templating", templating_page);
-    router.route("/basics/mixins", mixins_page);
-    router.route("/basics/events", event_handling_page);
+    let mut app = App::new(());
+    app.route("/", home);
+    app.route("/basics/getting-started", getting_started_page);
+    app.route("/basics/reactivity", reactivity_page);
+    app.route("/basics/templating", templating_page);
+    app.route("/basics/mixins", mixins_page);
+    app.route("/basics/events", event_handling_page);
 
-    router.route("/mixins/:mixin", inner_mixins);
+    app.route("/mixins/:mixin", inner_mixins);
 
-    router.route("/advanced/testing", testing_page);
-    router.route("/advanced/ssr", ssr_page);
-    router.route("/advanced/async", async_page);
-    router.route("/advanced/extending", extending_page);
+    app.route("/advanced/testing", testing_page);
+    app.route("/advanced/ssr", ssr_page);
+    app.route("/advanced/async", async_page);
+    app.route("/advanced/extending", extending_page);
 
-    router.route("/plugins/form", forms_page);
-    router.route("/plugins/router", router_page);
-    router.route("/plugins/state", state_page);
+    app.route("/plugins/form", forms_page);
+    app.route("/plugins/router", router_page);
+    app.route("/plugins/state", state_page);
+    
 
-    let app = App::new(router);
+    let app = App::new(app);
     app.mount(&body);
 }

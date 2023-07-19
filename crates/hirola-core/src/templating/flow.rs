@@ -2,9 +2,9 @@
 //!
 //! Iteration can be either _"keyed"_ or _"non keyed"_.
 //! Use the [`Keyed`] and [`Indexed`] utility components respectively.
+use crate::dom::Dom;
 use crate::generic_node::{DomType, GenericNode};
 use crate::render::{Error, Render};
-use crate::dom::Dom;
 use futures_signals::signal_vec::{SignalVec, SignalVecExt, VecDiff};
 use std::cell::RefCell;
 use std::future::ready;
@@ -165,7 +165,8 @@ where
             }
         }
 
-        parent.append_child(Dom::new_from_node(&marker.clone()))
+        parent
+            .append_child(Dom::new_from_node(&marker.clone()))
             .unwrap();
 
         let state = State::new(parent.node().clone(), marker);

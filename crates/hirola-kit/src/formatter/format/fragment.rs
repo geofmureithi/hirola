@@ -13,8 +13,8 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::FormatterSettings,
         formatter::test_helpers::{format_with, fragment},
+        formatter::FormatterSettings,
     };
 
     macro_rules! format_fragment {

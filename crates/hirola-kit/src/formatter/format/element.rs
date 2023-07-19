@@ -132,8 +132,8 @@ mod tests {
     use indoc::indoc;
 
     use crate::{
-        formatter::FormatterSettings,
         formatter::test_helpers::{element, element_from_string, format_with, format_with_source},
+        formatter::FormatterSettings,
     };
 
     macro_rules! format_element {

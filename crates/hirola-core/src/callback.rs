@@ -1,60 +1,61 @@
 use futures_signals::{signal::Mutable, signal_vec::MutableVec};
+use web_sys::Event;
 
-pub trait Update<T> {
+pub trait Callback<T> {
     /// Pass a callback that allows interacting with the inner value and the dom event
     /// This method returns the new value and this updates the signal.
-    fn update_with<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event)>
     where
-        F: Fn(&Self, E) + 'static;
+        F: Fn(&Self, Event) + 'static;
     /// Pass a callback that allows interacting with self and the dom event
-    fn update<F>(&self, f: F) -> Box<dyn Fn()>
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event)>
     where
         F: Fn(&Self) + 'static,
         Self: Sized;
 }
 
-impl<T: Clone + 'static> Update<T> for Mutable<T> {
-    fn update<F>(&self, f: F) -> Box<dyn Fn() + 'static>
+impl<T: Clone + 'static> Callback<T> for Mutable<T> {
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
     where
         F: Fn(&Self) + 'static,
     {
         let state = self.clone();
-        let cb = move || {
+        let cb = move |_| {
             f(&state);
         };
         Box::new(cb)
     }
 
-    fn update_with<F, E>(&self, f: F) -> Box<dyn Fn(E) + 'static>
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
     where
-        F: Fn(&Self, E) + 'static,
+        F: Fn(&Self, Event) + 'static,
     {
         let state = self.clone();
-        let cb = move |e: E| {
+        let cb = move |e| {
             f(&state, e);
         };
         Box::new(cb)
     }
 }
 
-impl<T: Clone + 'static> Update<T> for MutableVec<T> {
-    fn update<F>(&self, f: F) -> Box<dyn Fn() + 'static>
+impl<T: Clone + 'static> Callback<T> for MutableVec<T> {
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
     where
         F: Fn(&Self) + 'static,
     {
         let state = self.clone();
-        let cb = move || {
+        let cb = move |_| {
             (f(&state));
         };
         Box::new(cb)
     }
 
-    fn update_with<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event)>
     where
-        F: Fn(&Self, E) + 'static,
+        F: Fn(&Self, Event) + 'static,
     {
         let state = self.clone();
-        let cb = move |e: E| {
+        let cb = move |e: Event| {
             f(&state, e);
         };
         Box::new(cb)

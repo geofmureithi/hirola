@@ -61,8 +61,8 @@ impl Formatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::formatter::*;
     use crate::formatter::test_helpers::{comment, doctype, format_with};
+    use crate::formatter::*;
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{

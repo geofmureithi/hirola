@@ -621,7 +621,7 @@ checksum = "443144c8cdadd93ebf52ddb4056d257f5b52c04d3c804e657d19eb73fc33668b"
 
 [[package]]
 name = "hirola"
-version = "0.2.0"
+version = "0.3.0-alpha.0"
 dependencies = [
  "document-features",
  "futures-util",
@@ -636,7 +636,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-core"
-version = "0.2.0"
+version = "0.3.0-alpha.0"
 dependencies = [
  "criterion",
  "discard",
@@ -655,7 +655,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-form"
-version = "0.2.0"
+version = "0.3.0-alpha.0"
 dependencies = [
  "hirola-core",
  "json_dotpath",
@@ -689,7 +689,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-macros"
-version = "0.2.0"
+version = "0.3.0-alpha.0"
 dependencies = [
  "hirola",
  "paste",

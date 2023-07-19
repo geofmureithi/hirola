@@ -1,6 +1,6 @@
 [package]
 name = "hirola-core"
-version = "0.2.0"
+version = "0.3.0-alpha.0"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 edition = "2021"
 description = "An html library for building client side webapps"
@@ -15,7 +15,7 @@ keywords = ["wasm", "html", "dom", "web"]
 
 [dependencies]
 html-escape = { version = "0.2.7", optional = true }
-hirola-macros = { path = "../hirola-macros", version = "0.2.0" }
+hirola-macros = { path = "../hirola-macros", version = "0.3.0-alpha.0" }
 wasm-bindgen = { version = "0.2" }
 matchit = { version = "0.7", optional = true }
 wasm-bindgen-futures = { version = "0.4.29" }

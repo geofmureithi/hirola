@@ -2,6 +2,9 @@
 name = "hirola-kit"
 version = "0.1.0"
 edition = "2021"
+documentation = "https://docs.rs/hirola"
+readme = "../../README.md"
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -14,6 +17,7 @@ proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
 thiserror = "1.0.40"
 crop = "0.3.0"
 serde = { version = "1.0.163", features = [ "derive" ] }
+
 
 # Deps for cli
 clap = { version = "4.1.11", features = ["derive"] }

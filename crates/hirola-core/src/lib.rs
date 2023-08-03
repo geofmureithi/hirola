@@ -126,22 +126,45 @@ pub mod prelude {
     pub use futures_signals::*;
     pub use hirola_macros::{component, html};
 
+    #[cfg(feature = "dom")]
+    pub use crate::callback::Callback;
+    pub use crate::dom::Dom;
     #[cfg(feature = "ssr")]
     pub use crate::render_to_string;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
-    #[cfg(feature = "dom")]
-    pub use crate::callback::Callback;
-    pub use crate::dom::Dom;
 
     #[cfg(feature = "app")]
     pub use crate::app::*;
-    pub use crate::render::*;
-    pub use crate::BoxedLocal;
     #[cfg(feature = "dom")]
     pub use crate::mixins::*;
+    pub use crate::render::*;
+    pub use crate::BoxedLocal;
 
     pub use futures_signals::signal::Mutable;
-    pub use futures_signals::signal_vec::MutableVec;
     pub use futures_signals::signal_map::MutableBTreeMap;
+    pub use futures_signals::signal_vec::MutableVec;
+}
+
+#[cfg(feature = "dom")]
+pub mod dom_test_utils {
+    use wasm_bindgen::{prelude::Closure, JsCast};
+
+    pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
+        let with = with.clone();
+        let f: Box<dyn Fn() -> ()> = Box::new(move || f(&with));
+        let a = Closure::<dyn Fn()>::new(f);
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
+
+    pub fn next_tick<F: Fn() + 'static>(f: F) {
+        let a = Closure::<dyn Fn()>::new(move || f());
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
 }

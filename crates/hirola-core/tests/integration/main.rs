@@ -3,6 +3,7 @@ pub mod non_keyed;
 
 use futures_signals::signal::Mutable;
 use hirola::prelude::*;
+use hirola_core::dom_test_utils::next_tick_with;
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -109,7 +110,7 @@ fn reactive_text() {
     assert_eq!(p.text_content().unwrap(), "0");
 
     count.set(1);
-    non_keyed::next_tick_with(&p, |p| {
+    next_tick_with(&p, |p| {
         assert_eq!(p.text_content().unwrap(), "1");
     });
 }

@@ -1,5 +1,5 @@
 use futures_signals::{signal::Mutable, signal_vec::MutableVec};
-use wasm_bindgen::{prelude::Closure, JsCast};
+use hirola_core::dom_test_utils::{next_tick, next_tick_with};
 
 use super::*;
 
@@ -162,25 +162,6 @@ fn insert_front() {
         let p = document().query_selector("ul").unwrap().unwrap();
         assert_eq!(p.text_content().unwrap(), "4123");
     });
-}
-
-#[allow(dead_code)]
-pub fn next_tick<F: Fn() + 'static>(f: F) {
-    let a = Closure::<dyn Fn()>::new(move || f());
-    web_sys::window()
-        .unwrap()
-        .set_timeout_with_callback(a.as_ref().unchecked_ref())
-        .unwrap();
-}
-
-pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
-    let with = with.clone();
-    let f: Box<dyn Fn() -> ()> = Box::new(move || f(&with));
-    let a = Closure::<dyn Fn()>::new(f);
-    web_sys::window()
-        .unwrap()
-        .set_timeout_with_callback(a.as_ref().unchecked_ref())
-        .unwrap();
 }
 
 #[wasm_bindgen_test]

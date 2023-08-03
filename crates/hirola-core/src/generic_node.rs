@@ -7,18 +7,24 @@ pub mod ssr_node;
 pub use dom_node::*;
 #[cfg(feature = "ssr")]
 pub use ssr_node::*;
+
+#[cfg(feature = "dom")]
 use wasm_bindgen::prelude::Closure;
 
 use std::fmt;
 
+#[cfg(feature = "dom")]
 use web_sys::Event;
+
+#[cfg(feature = "ssr")]
+pub type Event = ();
 
 pub type EventListener = dyn Fn(Event);
 
 #[cfg(feature = "dom")]
 pub type DomType = dom_node::DomNode;
 
-#[cfg(all(not(feature = "dom"), feature = "ssr"))]
+#[cfg(feature = "ssr")]
 pub type DomType = ssr_node::SsrNode;
 
 pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
@@ -64,6 +70,7 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Remove this node from the tree.
     fn remove_self(&self);
 
+    #[cfg(feature = "dom")]
     /// Add a [`EventListener`] to the event `name`.
     fn event(&self, _name: &str, _handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
         None

@@ -3,9 +3,6 @@ use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::{fmt, mem};
 
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::Node;
-
 use crate::generic_node::GenericNode;
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
@@ -99,32 +96,6 @@ impl SsrNode {
             SsrNodeType::Fragment(f) => f.borrow_mut().0 = children,
             _ => panic!("node type cannot have children"),
         };
-    }
-}
-
-impl AsRef<JsValue> for SsrNode {
-    fn as_ref(&self) -> &JsValue {
-        unimplemented!()
-    }
-}
-
-impl From<SsrNode> for JsValue {
-    fn from(_: SsrNode) -> Self {
-        JsValue::default()
-    }
-}
-
-impl JsCast for SsrNode {
-    fn instanceof(val: &JsValue) -> bool {
-        Node::instanceof(val)
-    }
-
-    fn unchecked_from_js(_: JsValue) -> Self {
-        unimplemented!()
-    }
-
-    fn unchecked_from_js_ref(_: &JsValue) -> &Self {
-        unimplemented!()
     }
 }
 

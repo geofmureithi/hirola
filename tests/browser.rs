@@ -31,7 +31,7 @@ fn router_pushes() {
         }
     });
     let node = body();
-    app.mount(&node);
+    app.mount_to(&node);
     assert_eq!("<main>Main</main>", inner_html(&node));
     app.router().push("/page");
     next_tick(move || {

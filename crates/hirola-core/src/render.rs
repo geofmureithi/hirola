@@ -8,12 +8,11 @@ use futures_signals::{
     signal::{Mutable, ReadOnlyMutable, SignalExt},
     signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
 };
-use std::{fmt::Display, iter::Enumerate, pin::Pin};
-use wasm_bindgen::JsValue;
+use std::{fmt::{Display, Debug}, iter::Enumerate, pin::Pin};
 
 #[derive(Debug)]
 pub enum Error {
-    DomError(JsValue),
+    DomError(Box<dyn Debug>),
 }
 
 /// Trait for describing how something should be rendered into nodes.
@@ -32,7 +31,7 @@ impl Render for () {
 impl Render for &str {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let child = Dom::new_from_node(&DomType::text_node(*self));
-        parent.append_child(child).map_err(Error::DomError)?;
+        parent.append_child(child)?;
         Ok(())
     }
 }
@@ -40,7 +39,7 @@ impl Render for &str {
 impl Render for String {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let child = Dom::new_from_node(&DomType::text_node(&self));
-        parent.append_child(child).map_err(Error::DomError)?;
+        parent.append_child(child)?;
         Ok(())
     }
 }

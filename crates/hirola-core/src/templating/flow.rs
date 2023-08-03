@@ -9,6 +9,7 @@ use futures_signals::signal_vec::{SignalVec, SignalVecExt, VecDiff};
 use std::cell::RefCell;
 use std::future::ready;
 use std::rc::Rc;
+#[cfg(feature = "dom")]
 use wasm_bindgen::UnwrapThrowExt;
 
 /// Props for [`Indexed`].
@@ -150,7 +151,8 @@ where
                     }
 
                     VecDiff::Pop {} => {
-                        let dom = self.children.pop().unwrap_throw();
+                        // TODO: change to unwrap_throw
+                        let dom = self.children.pop().unwrap();
                         let children = dom.children().take();
                         for child in children {
                             child.node().remove_self()

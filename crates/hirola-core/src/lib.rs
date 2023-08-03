@@ -33,7 +33,6 @@
 #![warn(clippy::rc_buffer)]
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
-
 use crate::dom::*;
 use discard::DiscardOnDrop;
 use futures_signals::{cancelable_future, CancelableFutureHandle};
@@ -44,10 +43,12 @@ pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
 
 #[cfg(feature = "app")]
 pub mod app;
+#[cfg(feature = "dom")]
 pub mod callback;
 pub mod dom;
 pub mod effect;
 pub mod generic_node;
+#[cfg(feature = "dom")]
 pub mod mixins;
 pub mod render;
 pub mod templating;
@@ -129,7 +130,7 @@ pub mod prelude {
     pub use crate::render_to_string;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
-
+    #[cfg(feature = "dom")]
     pub use crate::callback::Callback;
     pub use crate::dom::Dom;
 
@@ -137,6 +138,6 @@ pub mod prelude {
     pub use crate::app::*;
     pub use crate::render::*;
     pub use crate::BoxedLocal;
-
+    #[cfg(feature = "dom")]
     pub use crate::mixins::*;
 }

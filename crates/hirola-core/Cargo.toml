@@ -16,9 +16,9 @@ keywords = ["wasm", "html", "dom", "web"]
 [dependencies]
 html-escape = { version = "0.2.7", optional = true }
 hirola-macros = { path = "../hirola-macros", version = "0.3.0-alpha.0" }
-wasm-bindgen = { version = "0.2" }
+wasm-bindgen = { version = "0.2", optional = true  }
 matchit = { version = "0.7", optional = true }
-wasm-bindgen-futures = { version = "0.4.29" }
+wasm-bindgen-futures = { optional = true , version = "0.4.29" }
 futures-signals = "0.3.32"
 futures-util = "0.3"
 discard = "1"
@@ -47,8 +47,8 @@ web-sys = { version = "0.3", features = ["DomTokenList", "Element", "Window"] }
 
 
 [features]
-default = ["web-sys", "dom"]
-dom = []
+default = []
+dom = ["web-sys", "wasm-bindgen", "wasm-bindgen-futures"]
 ssr = ["html-escape"]
 app = [
   "matchit",

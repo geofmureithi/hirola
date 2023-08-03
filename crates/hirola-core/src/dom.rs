@@ -1,12 +1,17 @@
 use crate::{
-    generic_node::{DomType, EventListener, GenericNode},
+    generic_node::{DomType, GenericNode},
     render::{Error, Render},
     spawn, BoxedLocal,
 };
 use discard::{Discard, DiscardOnDrop};
 use futures_signals::CancelableFutureHandle;
 use std::{cell::RefCell, future::Future, rc::Rc};
+
+#[cfg(feature = "dom")]
 use wasm_bindgen::{prelude::Closure, JsValue};
+
+#[cfg(feature = "dom")]
+use crate::generic_node::EventListener;
 
 pub enum DomSideEffect {
     UnMounted(BoxedLocal<()>),
@@ -17,6 +22,7 @@ pub enum DomSideEffect {
 pub struct Dom {
     node: DomType,
     pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
+    #[cfg(feature = "dom")]
     event_handlers: Rc<RefCell<Vec<Closure<EventListener>>>>,
     children: RefCell<Vec<Dom>>,
 }
@@ -34,7 +40,7 @@ impl Dom {
         Dom::new_from_node(&DomType::text_node(tag))
     }
 
-    pub fn append_child(&self, child: Dom) -> Result<(), JsValue> {
+    pub fn append_child(&self, child: Dom) -> Result<(), Error> {
         self.node.append_child(&child.node);
         self.children.borrow_mut().push(child);
         Ok(())
@@ -52,11 +58,13 @@ impl Dom {
         Self {
             node: node.clone(),
             children: Default::default(),
+            #[cfg(feature = "dom")]
             event_handlers: Default::default(),
             side_effects: Default::default(),
         }
     }
 
+    #[cfg(feature = "dom")]
     #[inline]
     pub fn event(&self, name: &str, handler: Box<EventListener>) {
         let closure = self.node.event(name, handler);
@@ -82,13 +90,15 @@ impl Dom {
 
     #[inline]
     pub fn discard(&mut self) {
-        let _cleanup: Vec<()> = self
-            .event_handlers
-            .take()
-            .into_iter()
-            .map(|c| c.forget())
-            .collect();
-
+        #[cfg(feature = "dom")]
+        {
+            let _cleanup: Vec<()> = self
+                .event_handlers
+                .take()
+                .into_iter()
+                .map(|c| c.forget())
+                .collect();
+        }
         let _cleanup: Vec<()> = self
             .side_effects
             .take()
@@ -117,7 +127,7 @@ impl Drop for Dom {
 
 impl Render for Dom {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
-        parent.append_child(*self).map_err(Error::DomError)?;
+        parent.append_child(*self)?;
         Ok(())
     }
 }

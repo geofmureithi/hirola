@@ -4,7 +4,12 @@ use web_sys::{Element, Event, Node, Text};
 
 /// Rendering backend for the DOM.
 ///
+/// The `DomNode` struct represents a node in the Document Object Model (DOM) and serves as the
+/// rendering backend for the frontend application. It allows interacting with DOM nodes directly
+/// and provides utility methods for type conversion and cloning.
+///
 /// _This API requires the following crate features to be activated: `dom`_
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct DomNode {
@@ -12,12 +17,47 @@ pub struct DomNode {
 }
 
 impl DomNode {
+    /// Retrieves the inner DOM node contained within the `DomNode`.
+    ///
+    /// # Returns
+    ///
+    /// The underlying DOM node represented by this `DomNode`.
     pub fn inner_element(&self) -> Node {
         self.node.clone()
     }
+    /// Converts the `DomNode` into a specified type using unchecked casting.
+    ///
+    /// This method allows converting the `DomNode` into a specific type, without performing a
+    /// runtime type check. It can be used when you are confident about the type of the DOM node,
+    /// and it avoids the overhead of dynamic type checking.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `T` - The target type to convert the `DomNode` into. It should implement the `JsCast`
+    ///         trait, which provides the unchecked casting functionality.
+    ///
+    /// # Returns
+    ///
+    /// The converted `DomNode` as the target type `T`.
     pub fn unchecked_into<T: JsCast>(self) -> T {
         self.node.unchecked_into()
     }
+    /// Attempts to dynamically cast the `DomNode` into a specified type.
+    ///
+    /// This method performs a runtime type check to determine if the `DomNode` can be converted
+    /// into the desired type. If the conversion succeeds, it returns the converted value;
+    /// otherwise, it returns an error containing the original `DomNode`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `T` - The target type to cast the `DomNode` into. It should implement the `JsCast`
+    ///         trait, which provides the dynamic type casting functionality.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(T)` if the `DomNode` was successfully cast into the target type `T`.
+    /// - `Err(Node)` if the `DomNode` could not be cast into the target type `T`.
+
     pub fn dyn_into<T: JsCast>(self) -> Result<T, Node> {
         self.node.dyn_into()
     }

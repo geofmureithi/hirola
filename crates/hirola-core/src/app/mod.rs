@@ -18,7 +18,7 @@ pub struct App<S: 'static> {
 /// using the `new` method, which takes an initial state `S` and returns a new instance of the `App`.
 ///
 /// # Example
-/// ```
+/// ```no_run
 /// use hirola::prelude::*;
 /// #[derive(Clone)]
 /// struct AppState {
@@ -73,7 +73,7 @@ impl<S: Clone + 'static> App<S> {
     /// * `page` - A function that takes a reference to the `App<S>` and returns a `Dom` element.
     ///
     /// # Example
-    /// ```
+    /// ```no_run
     /// use hirola::prelude::*;
     /// #[derive(Clone)]
     /// struct AppState {
@@ -105,7 +105,7 @@ impl<S: Clone + 'static> App<S> {
     /// * `page` - A function that takes a reference to the `App<S>` and returns a `Dom` element.
     ///
     /// # Example
-    /// ```
+    /// ```no_run
     /// use hirola::prelude::*;
     ///
     /// #[derive(Clone)]
@@ -145,7 +145,7 @@ impl<S: Clone + 'static> App<S> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
     ///
@@ -191,15 +191,14 @@ impl<S: Clone + 'static> App<S> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
-    ///
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
     ///     }
-    ///     
+    ///     let app = App::new(AppState { });
     ///     // ... add routes and set up the app ...
     ///     
     ///     // Find the parent node where the app should be mounted
@@ -244,7 +243,7 @@ impl<S: Clone + 'static> App<S> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
     ///

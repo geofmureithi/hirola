@@ -16,7 +16,7 @@ use web_sys::{Element, Event};
 ///
 /// # Example
 ///
-/// ```
+/// ```no_run
 /// use hirola::prelude::*;
 /// #[derive(Clone)]
 /// struct AppState {
@@ -32,12 +32,12 @@ use web_sys::{Element, Event};
 /// }
 ///
 /// let mut app = App::new(AppState { /* ... */ });
-/// app.router("/", home_page);
-/// app.router("/about", about_page);
+/// app.route("/", home_page);
+/// app.route("/about", about_page);
 /// app.mount();
 /// ```
 #[derive(Clone)]
-pub struct Router<S: 'static> {
+pub struct Router<S: 'static = ()> {
     current: Mutable<String>,
     /// The internal router used to map route paths to corresponding route handler functions.
     pub(crate) handler: matchit::Router<fn(&App<S>) -> Dom>,
@@ -69,8 +69,10 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
-    /// let router = Router::new();
+    /// ```no_run
+    /// use hirola::prelude::*;
+    /// use hirola::prelude::router::Router;
+    /// let router = Router::<()>::new();
     /// ```
     pub fn new() -> Self {
         #[allow(unused_mut)]
@@ -98,8 +100,9 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
-    /// let router = Router::new();
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// let router = Router::<()>::new();
     /// let params = router.current_params();
     /// ```
     pub fn current_params(&self) -> HashMap<String, String> {
@@ -129,8 +132,9 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
-    /// let router = Router::new();
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// let router = Router::<()>::new();
     /// router.push("/about");
     pub fn push(&self, path: &str) {
         #[cfg(feature = "dom")]
@@ -157,8 +161,9 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
-    /// let router = Router::new();
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// let router = Router::<()>::new();
     /// let link_handler = router.link();
     ///
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
@@ -195,9 +200,9 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
-    ///
-    /// let router = Router::new();
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// let router = Router::<()>::new();
     /// let signal = router.signal();
     ///
     /// // ... use the `signal` to listen for route changes ...
@@ -224,7 +229,8 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
     /// use hirola::prelude::*;
     /// #[derive(Clone)]
     /// struct AppState {
@@ -244,7 +250,7 @@ impl<S: Clone + 'static> Router<S> {
     /// app.route("/about", about_page);
     /// let router = app.router().clone();
     /// let doc = web_sys::window().unwrap().document().unwrap();
-    /// router.render(&app, doc.body().unwrap());
+    /// router.render(&app, &DomType::fragment());
     /// ```
     pub fn render(self, app: &App<S>, parent: &DomType) -> Dom {
         let router = &self.handler;
@@ -351,14 +357,116 @@ impl<S: Clone + 'static> Router<S> {
         dom
     }
 
+    /// Inserts a new route and its corresponding page rendering function into the router.
+    ///
+    /// This method registers a new route pattern and its associated page rendering function in the router.
+    /// When a user navigates to the specified `path`, the corresponding `page` function will be called
+    /// to render the content for that route.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - A string representing the route pattern to match. This can include path parameters
+    ///            enclosed in curly braces, e.g., "/users/{id}".
+    /// * `page` - A function that takes a reference to the `App<S>` instance and returns the rendered
+    ///            DOM content (`Dom`). This function is responsible for generating the DOM structure
+    ///            for the specified route.
+    ///
+    /// # Panics
+    ///
+    /// If the insertion into the router fails, this method will panic. However, in most cases, such a
+    /// scenario is unlikely if there are no conflicts with existing routes or issues with the provided
+    /// page rendering function.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// use hirola::prelude::*;
+    ///
+    /// // Define a custom function to render the home page
+    /// fn home_page(_: &App<()>) -> Dom {
+    ///     html! {
+    ///         <h1>"Home"</h1>
+    ///     }
+    /// }
+    ///
+    /// // Create a new router and add a route for the home page
+    /// let mut router = Router::<()>::new();
+    /// router.insert("/", home_page);
+    /// ```
     pub fn insert(&mut self, path: &str, page: fn(&App<S>) -> Dom) {
         self.handler.insert(path.to_string(), page).unwrap();
     }
 
+    /// Sets the page rendering function for the not-found route.
+    ///
+    /// This method sets the page rendering function for the not-found route. When a user navigates to
+    /// a route that does not match any registered paths in the router, the specified `page` function
+    /// will be called to render the content for the not-found page.
+    ///
+    /// # Arguments
+    ///
+    /// * `page` - A function that takes a reference to the `App<S>` instance and returns the rendered
+    ///            DOM content (`Dom`). This function is responsible for generating the DOM structure
+    ///            for the not-found page.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// use hirola::prelude::*;
+    /// // Define a custom function to render the not-found page
+    /// fn not_found_page(_: &App<()>) -> Dom {
+    ///     html! {
+    ///         <h1>"Not Found"</h1>
+    ///     }
+    /// }
+    ///
+    /// // Create a new router and set the not-found page
+    /// let mut router = Router::<()>::new();
+    /// router.set_not_found(not_found_page);
+    /// ```
     pub fn set_not_found(&mut self, page: fn(&App<S>) -> Dom) {
         self.not_found = Box::new(page);
     }
 
+    /// Retrieves a clone of the route handler from the router.
+    ///
+    /// This method returns a clone of the route handler, which contains all the registered routes
+    /// and their corresponding page rendering functions. The route handler is a part of the internal
+    /// state of the router.
+    ///
+    /// # Returns
+    ///
+    /// A clone of the route handler, which is an instance of `matchit::Router<fn(&App<S>) -> Dom>`.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hirola::prelude::router::Router;
+    /// use hirola::prelude::*;
+    ///
+    /// // Define custom functions to render the home and about pages
+    /// fn home_page(_: &App<()>) -> Dom {
+    ///     html! {
+    ///         <h1>"Home"</h1>
+    ///     }
+    /// }
+    ///
+    /// fn about_page(_: &App<()>) -> Dom {
+    ///     html! {
+    ///         <h1>"About"</h1>
+    ///     }
+    /// }
+    ///
+    /// // Create a new router and add routes for the home and about pages
+    /// let mut router = Router::new();
+    /// router.insert("/", home_page);
+    /// router.insert("/about", about_page);
+    ///
+    /// // Get a clone of the route handler
+    /// let cloned_handler = router.handler();
+    /// ```
     pub fn handler(&self) -> matchit::Router<fn(&App<S>) -> Dom> {
         self.handler.clone()
     }

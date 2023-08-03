@@ -1,7 +1,7 @@
 use crate::{
     generic_node::{DomType, GenericNode},
     render::{Error, Render},
-    render_to, spawn, BoxedLocal,
+    spawn, BoxedLocal,
 };
 use discard::{Discard, DiscardOnDrop};
 use futures_signals::CancelableFutureHandle;
@@ -129,7 +129,7 @@ impl Dom {
             let document = window.document().unwrap();
             let element = document.create_element("div").unwrap();
 
-            let dom = render_to(self.clone(), &element.try_into().unwrap()).unwrap();
+            let dom = crate::render_to(self.clone(), &element.try_into().unwrap()).unwrap();
             return dom
                 .node()
                 .inner_element()

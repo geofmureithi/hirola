@@ -72,21 +72,17 @@ where
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
     /// use std::future::ready;
     /// use hirola::prelude::*;
     /// // Create a future that produces `()` as its output
     /// let my_future = ready(());
     ///
-    /// // Convert the future into a boxed side effect
-    /// let boxed_side_effect = my_future.effect();
-    /// 
-    /// //let render = html! {
-    /// //    <div use:boxed_side_effect />
-    /// //};
+    /// let render = html! {
+    ///    <div use:my_future />
+    /// };
     /// ```
     fn effect(self) -> BoxedLocal<()> {
         Box::pin(self)
     }
 }
-

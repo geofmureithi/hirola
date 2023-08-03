@@ -127,6 +127,24 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                         ::std::boxed::Box::new(#value),
                     );
                 }
+            } else if name.starts_with("use:") {
+                let effect = if value.is_some() {
+                    quote! {
+                        #value
+                    }
+                } else {
+                    let cleaned_name = Ident::new(&name.replace("use:", ""), Span::call_site());
+                    quote! {
+                        #cleaned_name
+                    }
+                };
+                quote! {
+                    ::hirola::prelude::Dom::effect(
+                        &template,
+                        #effect
+                    );
+
+                }
             } else if name.starts_with("mixin:") {
                 let name_space = name.replace("mixin:", "");
                 let ns_struct =

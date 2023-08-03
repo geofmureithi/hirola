@@ -341,7 +341,6 @@ impl<S: Clone + 'static> Router<S> {
                 let builder = page_fn(&app);
                 let dom = builder.mount(&DomType::fragment()).unwrap();
                 node.replace_children_with(&dom.node());
-                std::mem::forget(dom);
                 #[cfg(feature = "dom")]
                 let window = web_sys::window().unwrap();
                 #[cfg(feature = "dom")]

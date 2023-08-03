@@ -1,9 +1,7 @@
-use hirola::prelude::*;
-
-use crate::App;
+use hirola::prelude::{*, router::Router};
 
 #[component]
-pub fn SideBar(router: Router<App>) -> Dom {
+pub fn SideBar(router: Router<()>) -> Dom {
     html! {
         <ul class="space-y-2 text-gray-800">
             <li class="-ml-6 border-l-4 border-gray-700 pl-5 font-semibold">

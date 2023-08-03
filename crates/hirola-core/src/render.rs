@@ -8,7 +8,11 @@ use futures_signals::{
     signal::{Mutable, ReadOnlyMutable, SignalExt},
     signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
 };
-use std::{fmt::{Display, Debug}, iter::Enumerate, pin::Pin};
+use std::{
+    fmt::{Debug, Display},
+    iter::Enumerate,
+    pin::Pin,
+};
 
 #[derive(Debug)]
 pub enum Error {
@@ -76,6 +80,13 @@ impl<T: Render> Render for Vec<T> {
         for elem in *self {
             Box::new(elem).render_into(parent)?;
         }
+        Ok(())
+    }
+}
+
+impl<T: Render> Render for Box<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        (*self).render_into(parent)?;
         Ok(())
     }
 }

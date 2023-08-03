@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
-use hirola::prelude::mixins::{model::input, rhtml, show, text};
+use hirola::form::bind::model::input;
+use hirola::prelude::router::Router;
 use hirola::prelude::*;
 use hirola::signal::{Mutable, SignalExt};
 use wasm_bindgen::JsCast;
@@ -13,14 +14,10 @@ use crate::App;
 fn opacity(signal: &Mutable<bool>) -> Box<dyn Fn(&Dom) -> ()> {
     let signal = signal.clone();
     let cb = move |dom: &Dom| {
-        let element = dom
-            .inner_element()
-            .as_ref()
-            .clone()
-            .unchecked_into::<Element>();
+        let element = dom.node().clone().unchecked_into::<Element>();
         let effect = signal
-            .signal_ref(|val| {
-                if val {
+            .signal_ref(move |val| {
+                if *val {
                     element.class_list().add_1("opacity-100").unwrap();
                     element.class_list().remove_1("opacity-0").unwrap();
                 } else {
@@ -35,7 +32,7 @@ fn opacity(signal: &Mutable<bool>) -> Box<dyn Fn(&Dom) -> ()> {
     Box::new(cb)
 }
 
-pub fn mixins_page(_app: &App) -> Dom {
+pub fn mixins_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Mixins | Hirola"/>
@@ -83,8 +80,6 @@ pub fn mixins_page(_app: &App) -> Dom {
                     </div>
                 }
                 "#
-                /// Mixin that controls tailwind opacity based on a bool signal
-
                 file="main.rs"
             />
             <div class="demo">
@@ -112,13 +107,14 @@ pub fn mixins_page(_app: &App) -> Dom {
 
 pub fn inner_mixins(app: &App<()>) -> Dom {
     let router: &Router<()> = &app.router();
-    let param = router.param("mixin").unwrap_or(format!("404"));
+    let params = router.current_params();
+    let param = params.get("mixin").cloned().unwrap_or(format!("404"));
     let mixin = InbuiltMixin::from_str(&param).unwrap();
     let title = format!("Mixin - mixin:{} | Hirola", param);
     html! {
         <div>
-            <SeoTitle title=&title/>
-            <h1>{format!("mixin:{}", param).render()}</h1>
+            <SeoTitle title=title/>
+            <h1>{format!("mixin:{}", param)}</h1>
             {match mixin {
                 InbuiltMixin::Show => {
                     html! {
@@ -141,10 +137,13 @@ pub fn inner_mixins(app: &App<()>) -> Dom {
                                     html! {
                                         <div>
                                             <button on:click=shown
-                                                .callback_with(|c, _| !c)>"Toggle"</button>
-                                            <span class="ml-1" mixin:identity=&show(&shown)>
-                                                "I am shown"
-                                            </span>
+                                                .callback(|c| {
+                                                    let cur = c.get();
+                                                    *c.lock_mut() = cur;
+                                                })>"Toggle"</button>
+                                            // <span class="ml-1" mixin:identity=&show(&shown)>
+                                            //     "I am shown"
+                                            // </span>
                                         </div>
                                     }
                                 }
@@ -179,17 +178,17 @@ pub fn inner_mixins(app: &App<()>) -> Dom {
                                 {
                                     let message = Mutable::new(format!("Hello Hirola"));
                                     let handle_change = message
-                                        .callback_with(|_cur, e: Event| {
+                                        .callback_with(|cur, e: Event| {
                                             let input = e
                                                 .current_target()
                                                 .unwrap()
                                                 .dyn_into::<HtmlInputElement>()
                                                 .unwrap();
-                                            input.value()
+                                            cur.set(input.value());
                                         });
                                     html! {
                                         <div>
-                                            <span class="block" mixin:identity=&text(&message)></span>
+                                            // <span class="block" mixin:identity=&text(&message)></span>
                                             <input on:keyup=handle_change value=&message.get_cloned()/>
                                         </div>
                                     }
@@ -245,7 +244,7 @@ pub fn inner_mixins(app: &App<()>) -> Dom {
                                     let message = Mutable::new(format!("Hello Hirola"));
                                     html! {
                                         <div>
-                                            <span class="block" mixin:identity=&text(&message)></span>
+                                            // <span class="block" mixin:identity=&text(&message.signal_cloned())></span>
                                             <input mixin:identity=&input(&message)/>
                                         </div>
                                     }

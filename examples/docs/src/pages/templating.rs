@@ -3,7 +3,7 @@ use crate::pages::CodePreview;
 use crate::App;
 use hirola::prelude::*;
 
-pub fn templating_page(_app: &App) -> Dom {
+pub fn templating_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Templating | Hirola"/>
@@ -34,7 +34,7 @@ pub fn templating_page(_app: &App) -> Dom {
                 {for i in 0..5 {
                     html! {
                         <ul>
-                            <li>{i.render()}</li>
+                            <li>{i.to_string()}</li>
                         </ul>
                     }
                 }}

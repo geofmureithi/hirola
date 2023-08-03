@@ -1,4 +1,4 @@
-use hirola::prelude::mixins::text;
+use hirola::prelude::Mixin;
 use hirola::prelude::*;
 
 use crate::components::code_preview::CodePreview;
@@ -14,7 +14,7 @@ const INDEX: &str = r#"<!DOCTYPE html>
 </html>
 "#;
 
-pub fn getting_started_page(_app: &App) -> Dom {
+pub fn getting_started_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Getting Started | Hirola"/>
@@ -49,17 +49,17 @@ pub fn getting_started_page(_app: &App) -> Dom {
             <p class="text-xs">
                 <span>"Try it out"</span>
             </p>
-            // <div class="demo">
-            // {
-            //     let count = Signal::new(0);
-            //     html! {
-            //         <div>
-            //           <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
-            //           <span class="ml-1" mixin::text=&text(&count)></span>
-            //         </div>
-            //       }
-            //   }
-            // </div>
+            <div class="demo">
+            {
+                let count = Mutable::new(0);
+                html! {
+                    <div>
+                      <button on:click=count.callback(|c| *c.lock_mut() += 1)>"Increment"</button>
+                      <span class="ml-1">{count}</span>
+                    </div>
+                  }
+              }
+            </div>
             <p>"We can also test our project using wasm-pack"</p>
             <code class="block one-liner my-1 py-1">"wasm-pack test --node"</code>
         </div>

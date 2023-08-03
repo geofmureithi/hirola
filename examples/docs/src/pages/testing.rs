@@ -3,7 +3,7 @@ use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
 
-pub fn testing_page(_app: &App) -> Dom {
+pub fn testing_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Testing | Hirola"/>

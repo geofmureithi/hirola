@@ -3,7 +3,7 @@ use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
 
-pub fn ssr_page(_app: &App) -> Dom {
+pub fn ssr_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Server Side Rendering | Hirola"/>
@@ -14,11 +14,11 @@ pub fn ssr_page(_app: &App) -> Dom {
             </p>
             <h2>"Example"</h2>
             <CodePreview
-                code="fn main(){
+                code=r#"fn main(){
                     let app = App<S, G>::new();
                     let res = app.render_to_string(counter);
                     assert_eq!("<div><button>Increment</button><span>0</span></div>", &res);
-                }"
+                }"#
                 file="main.rs"
             />
         </div>

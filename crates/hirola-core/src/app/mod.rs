@@ -2,7 +2,10 @@ pub mod router;
 use router::Router;
 use std::fmt::Debug;
 
-use crate::dom::Dom;
+use crate::{
+    dom::Dom,
+    generic_node::{DomNode, DomType, GenericNode},
+};
 
 #[derive(Debug, Clone)]
 pub struct App<S: 'static> {
@@ -222,6 +225,69 @@ impl<S: Clone + 'static> App<S> {
             },
         );
         dom
+    }
+
+    /// Mounts the application on a specified parent node and starts the rendering process.
+    ///
+    /// This method should be called after setting up all the routes and configuring the application.
+    /// It mounts the application on the provided parent node, rendering the appropriate page based on
+    /// the current route. The rendering process will be managed by the `Router` associated with the app.
+    ///
+    /// # Arguments
+    ///
+    /// * `parent` - The `web_sys::Node` to which the application should be mounted.
+    /// * `cb` - A callback function that takes the generated `Dom` element representing the rendered
+    ///          content as input and returns a modified `Dom` element. This callback can be used to
+    ///          wrap the rendered content with layout components or apply any additional transformations.
+    ///
+    /// # Returns
+    ///
+    /// The modified `Dom` element after applying the callback's transformation.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// fn main() {
+    ///     use hirola::prelude::*;
+    ///     #[derive(Clone)]
+    ///     struct AppState {
+    ///         // ... fields and methods for your application state ...
+    ///     }
+    ///     let app = App::new(AppState { });
+    ///     // ... add routes and set up the app ...
+    ///     
+    ///     // Find the parent node where the app should be mounted
+    ///     let parent_node = web_sys::window()
+    ///         .unwrap()
+    ///         .document()
+    ///         .unwrap()
+    ///         .get_element_by_id("app-container")
+    ///         .unwrap();
+    ///
+    ///     // Mount the app on the specified parent node and start rendering
+    ///     // In this example, we wrap the rendered content with a layout component
+    ///     app.mount_with(&parent_node, |inner| {
+    ///         html! {
+    ///             <main>
+    ///                <nav>
+    ///                     <ul>
+    ///                         <li>"Home"</li>
+    ///                         <li>"About"</li>
+    ///                     </ul>
+    ///                 </nav>
+    ///                 <main>
+    ///                 {inner}
+    ///                 </main>
+    ///             </main>
+    ///         }
+    ///     });
+    /// }
+    /// ```
+    pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) -> Dom {
+        let res = cb(self);
+        let parent = Dom::new_from_node(&DomNode { node: parent.clone() });
+        parent.append_render(res);
+        parent
     }
 }
 

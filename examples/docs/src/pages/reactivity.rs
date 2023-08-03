@@ -3,7 +3,7 @@ use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
 
-pub fn reactivity_page(_app: &App) -> Dom {
+pub fn reactivity_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Reactivity | Hirola"/>
@@ -44,8 +44,6 @@ pub fn reactivity_page(_app: &App) -> Dom {
                 });
                 /// later
                 state.set(1);"
-                // do something with new value
-                /// later
                 file="main.rs"
             />
 

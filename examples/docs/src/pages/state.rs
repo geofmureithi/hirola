@@ -3,7 +3,7 @@ use crate::components::seo_title::SeoTitle;
 use crate::App;
 use hirola::prelude::*;
 
-pub fn state_page(_app: &App) -> Dom {
+pub fn state_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="State Management | Hirola"/>
@@ -14,7 +14,7 @@ pub fn state_page(_app: &App) -> Dom {
             </p>
             <h2>"Getting started"</h2>
             <CodePreview
-                code="let window = web_sys::window().unwrap();
+                code=r##"let window = web_sys::window().unwrap();
                 let document = window.document().unwrap();
                 let body = document.body().unwrap();
                 
@@ -33,9 +33,7 @@ pub fn state_page(_app: &App) -> Dom {
                     html! {
                         ...
                     }
-                });"
-
-                ///...
+                });"##
 
                 file="src/main.rs"
             />

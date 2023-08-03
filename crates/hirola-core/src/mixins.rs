@@ -101,7 +101,7 @@ pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
 /// Mixin that adds text to a dom node
 pub fn text<T, S>(text: &S) -> Box<dyn Fn(&Dom)>
 where
-    T: Display + Clone + 'static,
+    T: Display + 'static,
     S: Signal<Item = T> + SignalExt + Clone + 'static,
 {
     let signal = text.clone();

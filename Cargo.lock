@@ -379,6 +379,7 @@ dependencies = [
  "tower",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "wasm-log",
  "web-sys",
 ]
 
@@ -1807,6 +1808,17 @@ checksum = "6150d36a03e90a3cf6c12650be10626a9902d70c5270fd47d7a47e5389a10d56"
 dependencies = [
  "proc-macro2 1.0.63",
  "quote 1.0.28",
+]
+
+[[package]]
+name = "wasm-log"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "def95b2a762924804037f77e3de791f1c177d6ecbe0385a64e519bd7902a5f81"
+dependencies = [
+ "log",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

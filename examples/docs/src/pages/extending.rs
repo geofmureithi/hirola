@@ -1,7 +1,7 @@
 use crate::{components::seo_title::SeoTitle, App};
 use hirola::prelude::*;
 
-pub fn extending_page(_app: &App) -> Dom {
+pub fn extending_page(_app: &App<()>) -> Dom {
     html! {
         <div>
             <SeoTitle title="Extending | Hirola"/>

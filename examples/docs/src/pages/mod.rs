@@ -30,7 +30,7 @@ pub use testing::testing_page;
 use crate::components::code_preview::CodePreview;
 use crate::App;
 
-pub fn home(_: &App) -> Dom {
+pub fn home(_app: &App<()>) -> Dom {
     html! {
         <div>
             <h1>"What is Hirola?"</h1>
@@ -49,22 +49,22 @@ pub fn home(_: &App) -> Dom {
                 <li>
                     "No Context. You can choose passing props down, and/or use the global-state if routing. You can write hook-like functions though."
                 </li>
-                <li>"Familiality. Uses rsx which is very similar to JSX."</li>
+                <li>"Familiarity. Uses rsx which is very similar to JSX."</li>
             </ul>
             <h2>"Example"</h2>
             <CodePreview
-                code="use hirola::prelude::*;
+                code=r##"use hirola::prelude::*;
                 
                 fn counter(_: &App<S, G>) -> Dom {
                   let state = Signal::new(99);
-                  let decerement = state.mut_callback(|count, _| *count - 1);
-                  let incerement = state.mut_callback(|count, _| *count + 1);
+                  let decrement = state.mut_callback(|count, _| *count - 1);
+                  let increment = state.mut_callback(|count, _| *count + 1);
                 
                   html! {
                       <div class="flex flex-row h-10">
-                          <button on:click=decerement>"-"</button>
-                          <input value=state.get() disabled/>
-                          <button on:click=incerement>"+"</button>
+                          <button on:click=decrement>"-"</button>
+                          <input bind:value=state disabled=true/>
+                          <button on:click=increment>"+"</button>
                       </div>
                   }
                 }
@@ -76,20 +76,21 @@ pub fn home(_: &App) -> Dom {
                 
                   let app = App<S, G>::new();
                   app.mount(&body, counter);
-                }"
+                }"##
 
                 file="main.rs"
             />
 
             <div class="demo">
                 {
+                    
                     let state = Mutable::new(99);
-                    let decrement = state.update_with(|count, _| *count - 1);
-                    let increment = state.update_with(|count, _| *count + 1);
+                    let decrement = state.callback(|count| *count.lock_mut() -= 1);
+                    let increment = state.callback(|count| *count.lock_mut() += 1);
                     html! {
                         <div class="flex flex-row h-10">
                             <button on:click=decrement>"-"</button>
-                            <input class="w-12" value=state.get() disabled/>
+                            <input class="w-12" bind:value=state disabled={true}/>
                             <button on:click=increment>"+"</button>
                         </div>
                     }

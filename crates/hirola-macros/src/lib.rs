@@ -70,7 +70,20 @@ fn node_to_tokens(node: Node) -> TokenStream {
                 let mut attributes = node
                     .attributes()
                     .iter()
-                    .map(attribute_to_tokens)
+                    .map(|attribute| match &attribute {
+                        NodeAttribute::Block(expr) => {
+                            quote! {
+                                #expr
+                            }
+                        }
+                        NodeAttribute::Attribute(attr) => {
+                            let key = &attr.key;
+                            let value = &attr.value();
+                            quote! {
+                                #key : #value
+                            }
+                        }
+                    })
                     .collect::<Vec<TokenStream>>();
                 if !node.children.is_empty() {
                     let children_tokens = children_to_tokens(node.children);
@@ -82,16 +95,12 @@ fn node_to_tokens(node: Node) -> TokenStream {
                 }
 
                 let quoted = if attributes.is_empty() {
-                    quote!({
-                        Box::new(#fnname)
-                    })
+                    quote!(#fnname)
                 } else {
-                    quote!({ Box::new(#fnname {#(#attributes),*} )})
+                    quote!(#fnname {#(#attributes),*})
                 };
                 tokens.extend(quote! {
-                    {
-                        #quoted
-                     }
+                    #quoted
                 });
             }
         }
@@ -164,7 +173,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 let attribute_name = convert_name(&name).replace("bind:", "");
                 quote! {
                 {
-                        use futures_signals::signal::SignalExt;
+                        use hirola::signal::SignalExt;
                         let t = template.clone();
                         ::hirola::prelude::Dom::attribute(
                             &template,

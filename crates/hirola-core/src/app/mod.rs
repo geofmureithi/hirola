@@ -2,10 +2,7 @@ pub mod router;
 use router::Router;
 use std::fmt::Debug;
 
-use crate::{
-    dom::Dom,
-    generic_node::{DomNode},
-};
+use crate::{dom::Dom, generic_node::DomNode};
 
 #[derive(Debug, Clone)]
 pub struct App<S: 'static> {
@@ -289,7 +286,9 @@ impl<S: Clone + 'static> App<S> {
     /// ```
     pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) -> Dom {
         let res = cb(self);
-        let parent = Dom::new_from_node(&DomNode { node: parent.clone() });
+        let parent = Dom::new_from_node(&DomNode {
+            node: parent.clone(),
+        });
         parent.append_render(res);
         parent
     }

@@ -17,6 +17,15 @@ fn inner_html(element: &Node) -> String {
     element.inner_html()
 }
 
+#[allow(dead_code)]
+fn next_tick<F: Fn() + 'static>(f: F) {
+    let a = Closure::<dyn Fn()>::new(move || f());
+    web_sys::window()
+        .unwrap()
+        .set_timeout_with_callback(a.as_ref().unchecked_ref())
+        .unwrap();
+}
+
 #[wasm_bindgen_test]
 fn router_pushes() {
     let mut app: App<()> = App::new(());
@@ -30,22 +39,15 @@ fn router_pushes() {
             <main>"Page"</main>
         }
     });
+    let router = app.router().clone();
     let node = body();
-    app.mount_to(&node);
+    let root = app.mount_to(&node);
     assert_eq!("<main>Main</main>", inner_html(&node));
-    app.router().push("/page");
+    router.push("/page");
+
     next_tick(move || {
         assert_eq!("<main>Page</main>", inner_html(&node));
     });
-}
-
-#[allow(dead_code)]
-fn next_tick<F: Fn() + 'static>(f: F) {
-    let a = Closure::<dyn Fn()>::new(move || f());
-    web_sys::window()
-        .unwrap()
-        .set_timeout_with_callback(a.as_ref().unchecked_ref())
-        .unwrap();
 }
 
 #[wasm_bindgen_test]
@@ -56,9 +58,10 @@ fn app_renders() {
             <span>"Test"</span>
         }
     }
+    let node = &body();
     app.route("/", test_app);
-    app.mount(&body());
-    assert_eq!("<span>Test</span>", inner_html(&body()));
+    app.mount_to(&node);
+    assert_eq!("<span>Test</span>", inner_html(&node));
 }
 
 #[wasm_bindgen_test]
@@ -69,6 +72,7 @@ fn router_renders() {
             <main>"Main"</main>
         }
     });
-    let dom = app.mount(&body());
-    assert_eq!("<main>Main</main>", inner_html(&body()));
+    let node = &body();
+    let dom = app.mount_to(&node);
+    assert_eq!("<main>Main</main>", inner_html(&node));
 }

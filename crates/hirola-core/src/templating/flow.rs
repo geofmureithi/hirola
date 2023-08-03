@@ -9,8 +9,6 @@ use futures_signals::signal_vec::{SignalVec, SignalVecExt, VecDiff};
 use std::cell::RefCell;
 use std::future::ready;
 use std::rc::Rc;
-#[cfg(feature = "dom")]
-use wasm_bindgen::UnwrapThrowExt;
 
 /// Props for [`Indexed`].
 ///
@@ -29,24 +27,22 @@ where
 /// For keyed iteration, see [`Keyed`].
 ///
 /// # Example
-/// ```ignore
+/// ```rust,no_run
 /// use hirola::prelude::*;
 ///
 /// let count = MutableVec::new_with_values(vec![1, 2]);
 ///
 /// let res = html! {
-///      <Indexed
-///         props={IndexedProps {
-///             iterable: count,
-///             template: move |item| html! {
-///                <li>{ item }</li>
-///             },
-///         }}
-///     />
+///  <ul>
+///     {count
+///         .signal_vec()
+///         .render_map(|item| {
+///             html! { <li>{item.to_string()}</li> }
+///      })}
+///  </ul>
 /// };
 /// # let _ : Dom = res;
 /// ```
-// #[component]
 pub struct Indexed<T, I: SignalVec<Item = T> + Unpin, F>
 where
     F: Fn(T) -> Dom,

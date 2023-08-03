@@ -22,7 +22,7 @@ macro_rules! element {
 }
 
 // Same as element, but use string representation of token stream.
-// This is usefull when testing unquoted text,
+// This is useful when testing unquoted text,
 // because current `quote!` implementation cannot provide `Span::source_text`
 // that is used in `raw_text` handler
 macro_rules! element_from_string {

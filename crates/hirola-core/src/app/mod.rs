@@ -45,30 +45,28 @@ impl<S: Clone + 'static> App<S> {
 
 #[cfg(feature = "dom")]
 impl<S: Clone + 'static> App<S> {
-    pub fn mount(self) {
+    pub fn mount(&self) -> Dom {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
         let router = self.router.clone();
-        let app: &'static App<S> = Box::leak(Box::new(self));
         let dom = router.render(
-            app,
+            &self,
             &crate::generic_node::DomNode {
                 node: document.body().unwrap().into(),
             },
         );
-        std::mem::forget(dom);
+        dom
     }
 
-    pub fn mount_to(self, parent: &web_sys::Node) {
+    pub fn mount_to(&self, parent: &web_sys::Node) -> Dom {
         let router = self.router.clone();
-        let app: &'static App<S> = Box::leak(Box::new(self));
         let dom = router.render(
-            app,
+            &self,
             &crate::generic_node::DomNode {
                 node: parent.clone(),
             },
         );
-        std::mem::forget(dom);
+        dom
     }
 }
 

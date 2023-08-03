@@ -140,4 +140,8 @@ pub mod prelude {
     pub use crate::BoxedLocal;
     #[cfg(feature = "dom")]
     pub use crate::mixins::*;
+
+    pub use futures_signals::signal::Mutable;
+    pub use futures_signals::signal_vec::MutableVec;
+    pub use futures_signals::signal_map::MutableBTreeMap;
 }

@@ -1,3 +1,12 @@
+use std::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+    str::FromStr,
+};
+
+use hirola_core::prelude::{*, signal::SignalExt};
+use wasm_bindgen::JsCast;
+use web_sys::{Event, HtmlInputElement};
 
 /// Model allows 2-way binding eg between a signal and an input
 pub struct Model<Node, T: 'static>(Mutable<T>, PhantomData<Node>);
@@ -14,7 +23,7 @@ where
         let signal = self.0.clone();
         node.effect(
             signal
-                .signal_ref(|value| {
+                .signal_ref(move |value| {
                     input.set_value(&format!("{}", value));
                 })
                 .to_future(),

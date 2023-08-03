@@ -46,7 +46,7 @@ fn hello_world() {
         <p>"Hello World!"</p>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     assert_eq!(
         &document()
@@ -58,24 +58,21 @@ fn hello_world() {
     );
 }
 
-// #[wasm_bindgen_test]
-// fn hello_world_noderef() {
-//     let p_ref = NodeRef::new();
+#[wasm_bindgen_test]
+fn hello_world_noderef() {
+    let p_ref = NodeRef::new();
 
-//     let node = html! {
-//         <p ref=p_ref> "Hello World!"</p>
-//     };
+    let node = html! {
+        <p ref=p_ref> "Hello World!"</p>
+    };
 
-//     render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
-//     assert_eq!(
-//         &p_ref
-//             .get()
-//             .unchecked_into::<HtmlElement>()
-//             .outer_html(),
-//         "<p>Hello World!</p>"
-//     );
-// }
+    assert_eq!(
+        &p_ref.get().unchecked_into::<HtmlElement>().outer_html(),
+        "<p>Hello World!</p>"
+    );
+}
 
 #[wasm_bindgen_test]
 fn interpolation() {
@@ -84,7 +81,7 @@ fn interpolation() {
         <p>{text}</p>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     assert_eq!(
         document()
@@ -105,7 +102,7 @@ fn reactive_text() {
         <p> { count.clone() }</p>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("p").unwrap().unwrap();
 
@@ -125,7 +122,7 @@ fn reactive_attribute() {
         <span attribute=count.get()/>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let span = document().query_selector("span").unwrap().unwrap();
 

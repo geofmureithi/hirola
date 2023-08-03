@@ -20,7 +20,7 @@ fn append() {
         </ul>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
 
@@ -56,7 +56,7 @@ fn swap_rows() {
         </ul>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
     next_tick_with(&p, |p| {
@@ -91,7 +91,7 @@ fn delete_row() {
         </ul>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
     next_tick_with(&p, |p| {
@@ -120,7 +120,7 @@ fn clear() {
         </ul>
     };
 
-    render_to(node, &test_div()).unwrap();
+    let _ = render_to(node, &test_div()).unwrap();
 
     let p = document().query_selector("ul").unwrap().unwrap();
     next_tick_with(&p, |p| {
@@ -152,7 +152,7 @@ fn insert_front() {
         </ul>
     };
 
-    render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
     next_tick(|| {
         let p = document().query_selector("ul").unwrap().unwrap();
         assert_eq!(p.text_content().unwrap(), "123");

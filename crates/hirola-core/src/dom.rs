@@ -8,7 +8,7 @@ use futures_signals::CancelableFutureHandle;
 use std::{cell::RefCell, future::Future, rc::Rc};
 
 #[cfg(feature = "dom")]
-use wasm_bindgen::{prelude::Closure, JsValue};
+use wasm_bindgen::prelude::Closure;
 
 #[cfg(feature = "dom")]
 use crate::generic_node::EventListener;

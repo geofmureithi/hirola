@@ -1,10 +1,12 @@
+pub mod bind;
+
 use hirola_core::prelude::{
-    signal::{Mutable, MutableSignalRef, ReadOnlyMutable, SignalExt},
-    Dom, DomType, GenericNode, Mixin, NodeRef,
+    signal::{Mutable, MutableSignalRef, ReadOnlyMutable},
+    Dom, GenericNode, Mixin, NodeRef,
 };
 use json_dotpath::DotPaths;
 use serde::{de::DeserializeOwned, Serialize};
-use std::{collections::HashMap, marker::PhantomData, rc::Rc};
+use std::{collections::HashMap, marker::PhantomData};
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement, HtmlSelectElement};
 

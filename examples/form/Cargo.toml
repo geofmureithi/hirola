@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../", features=["form"]}
-wasm-bindgen = {version = "0.2", features= ["serde-serialize"]}
+hirola = { path = "../../", features = ["form", "dom"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 validator = "0.10"
 validator_derive = "0.10"
 serde = { version = "1.0.80", features = ["derive"] }
@@ -30,7 +30,7 @@ features = [
   "HtmlTextAreaElement",
   "HtmlSelectElement",
   "HtmlFormElement",
-  "FormData"
+  "FormData",
 ]
 
 version = "0.3"

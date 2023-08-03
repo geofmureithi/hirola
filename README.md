@@ -18,13 +18,13 @@
 
 We are going to create a simple counter program.
 
-```
+```bash
 cargo new counter
 ```
 
 With a new project, we need to create an index file which is the entry point and required by trunk
 
-```
+```bash
 cd counter
 ```
 
@@ -43,7 +43,7 @@ Create an `index.html` in the root of counter. Add the contents below
 
 Lets add some code to `src/main.rs`
 
-```rust
+```rust,no_run
 use hirola::prelude::*;
 use hirola::signal::Mutable;
 
@@ -67,7 +67,7 @@ fn main() {
 
 Now lets run our project
 
-```
+```bash
 hirola-kit serve
 ```
 

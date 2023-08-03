@@ -5,10 +5,11 @@
 //! use hirola::prelude::*;
 //! use web_sys::Element;
 //! // Mixin that controls tailwind opacity based on a bool signal
-//! fn opacity<'a>(signal: &'a Mutable<bool>) -> Box<dyn Fn(Dom) -> () + 'a> {
+//! fn opacity<'a>(signal: &'a Mutable<bool>) -> Box<dyn Fn(&Dom) -> () + 'a> {
 //!    let cb = move |dom: &Dom| {
-//!        let element = dom.node().unchecked_into::<Element>();
-//!        if *signal.get() {
+//!        let node = dom.node().clone();
+//!        let element = node.unchecked_into::<Element>();
+//!        if signal.get() {
 //!            element.class_list().add_1("opacity-100").unwrap();
 //!            element.class_list().remove_1("opacity-0").unwrap();
 //!        } else {
@@ -21,7 +22,10 @@
 //!
 //! fn mixin_demo() -> Dom {
 //!    let is_shown = Mutable::new(true);
-//!    let toggle = is_shown.callback(|show| show.lock_mut());
+//!    let toggle = is_shown.callback(|show| {
+//!         let current = show.get();
+//!         *show.lock_mut() = !current;
+//!    });
 //!    html! {
 //!        <div
 //!            class="h-screen flex flex-col items-center justify-center transition-all ease-in-out delay-1000">
@@ -37,7 +41,7 @@
 //!    }
 //! }
 //! fn main() {
-//! 
+//!
 //! }
 //! ```
 use crate::dom::Dom;
@@ -58,7 +62,7 @@ pub trait Mixin<Target> {
 /// use hirola::prelude::*;
 /// fn counter() -> Dom {
 ///     html! {
-///         <span x:identity=&raw_text("Hello Counter!") />
+///         <span mixin:identity=&raw_text("Hello Counter!") />
 ///     }
 /// }
 /// ```
@@ -87,7 +91,7 @@ pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
 }
 
 /// A mixin that allows adding non-signal text
-pub fn raw_text<'a, D: Display>(text: &'a D) -> Box<dyn Fn(&Dom) + 'a> {
+pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |dom: &Dom| {
         dom.node().node.set_text_content(Some(&format!("{text}")));
     };

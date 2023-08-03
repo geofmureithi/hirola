@@ -1,9 +1,10 @@
 pub mod keyed;
 pub mod non_keyed;
+pub mod router;
 
 use futures_signals::signal::Mutable;
 use hirola::prelude::*;
-use hirola_core::dom_test_utils::next_tick_with;
+use hirola_core::dom_test_utils::{next_tick, next_tick_with};
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -120,7 +121,7 @@ fn reactive_attribute() {
     let count = Mutable::new(0);
 
     let node = html! {
-        <span attribute=count.get()/>
+        <span bind:attribute=count/>
     };
 
     let _ = render_to(node, &test_div());
@@ -130,25 +131,27 @@ fn reactive_attribute() {
     assert_eq!(span.get_attribute("attribute").unwrap(), "0");
 
     count.set(1);
-    assert_eq!(span.get_attribute("attribute").unwrap(), "1");
+    next_tick(move || {
+        assert_eq!(span.get_attribute("attribute").unwrap(), "1");
+    });
 }
 
-// #[wasm_bindgen_test]
-// fn noderefs() {
-//     let noderef = NodeRef::new();
+#[wasm_bindgen_test]
+fn noderefs() {
+    let noderef = NodeRef::new();
 
-//     let node = html! {
-//         <div>
-//             <input ref=noderef />
-//         </div>
-//     };
+    let node = html! {
+        <div>
+            <input ref=noderef />
+        </div>
+    };
 
-//     render_to(node, &test_div());
+    let _ = render_to(node, &test_div());
 
-//     let input_ref = document().query_selector("input").unwrap().unwrap();
+    let input_ref = document().query_selector("input").unwrap().unwrap();
 
-//     assert_eq!(
-//         Node::from(input_ref),
-//         noderef.get().unchecked_into()
-//     );
-// }
+    assert_eq!(
+        Node::from(input_ref),
+        noderef.get().unchecked_into()
+    );
+}

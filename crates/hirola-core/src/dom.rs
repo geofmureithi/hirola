@@ -1,11 +1,15 @@
 use crate::{
     generic_node::{DomType, GenericNode},
     render::{Error, Render},
-    spawn, BoxedLocal,
+    render_to, spawn, BoxedLocal,
 };
 use discard::{Discard, DiscardOnDrop};
 use futures_signals::CancelableFutureHandle;
 use std::{cell::RefCell, future::Future, rc::Rc};
+#[cfg(feature = "dom")]
+use wasm_bindgen::JsCast;
+#[cfg(feature = "dom")]
+use web_sys::HtmlElement;
 
 #[cfg(feature = "dom")]
 use wasm_bindgen::prelude::Closure;
@@ -116,6 +120,29 @@ impl Dom {
         let dom = Dom::new_from_node(node);
         Box::new(self).render_into(&dom)?;
         Ok(dom)
+    }
+
+    pub fn inner_html(&self) -> String {
+        #[cfg(feature = "dom")]
+        {
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let element = document.create_element("div").unwrap();
+
+            let dom = render_to(self.clone(), &element.try_into().unwrap()).unwrap();
+            return dom
+                .node()
+                .inner_element()
+                .dyn_ref::<HtmlElement>()
+                .unwrap()
+                .inner_html();
+        }
+
+        #[cfg(feature = "ssr")]
+        #[allow(unreachable_code)]
+        {
+            return crate::render_to_string(self.clone());
+        }
     }
 }
 

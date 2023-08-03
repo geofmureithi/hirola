@@ -136,10 +136,31 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 }
             } else if &name == "ref" {
                 quote! {
-                    ::hirola::prelude::NodeRef::set(
+                    let _ = ::hirola::prelude::NodeRef::set(
                         &#value,
                         ::std::clone::Clone::clone(&template.node()),
                     );
+
+                }
+            } else if name.starts_with("bind:") {
+                let attribute_name = convert_name(&name).replace("bind:", "");
+                quote! {
+                {
+                        use futures_signals::signal::SignalExt;
+                        let t = template.clone();
+                        ::hirola::prelude::Dom::attribute(
+                            &template,
+                            #attribute_name,
+                            &::std::format!("{}", #value.get_cloned()),
+                        );
+                        template.effect(#value.signal_ref(move |value| {
+                            ::hirola::prelude::Dom::attribute(
+                                &t,
+                                #attribute_name,
+                                &::std::format!("{}", value),
+                            );
+                        }).to_future());
+                }
 
                 }
             } else {
@@ -165,22 +186,22 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 Node::Element(_) => {
                     let node = node_to_tokens(child);
                     append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_child(&mut template, #node );
+                        ::hirola::prelude::Dom::append_render(&mut template, #node );
                     });
                 }
                 Node::Text(text) => {
                     append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_child(
+                        ::hirola::prelude::Dom::append_render(
                             &mut template,
                             #[allow(unused_braces)]
                             ::hirola::prelude::Dom::text(#text),
-                        ).unwrap();
+                        );
                     });
                 }
                 Node::Comment(comment) => {
                     let s = comment.value;
                     append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_child(
+                        ::hirola::prelude::Dom::append_render(
                             &mut template,
                             #[allow(unused_braces)]
                             ::hirola::prelude::Dom::new_from_node(::hirola::prelude::GenericNode::comment(#s)),

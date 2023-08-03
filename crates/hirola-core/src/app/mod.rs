@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 use crate::{
     dom::Dom,
-    generic_node::{DomNode, DomType, GenericNode},
+    generic_node::{DomNode},
 };
 
 #[derive(Debug, Clone)]
@@ -266,7 +266,11 @@ impl<S: Clone + 'static> App<S> {
     ///
     ///     // Mount the app on the specified parent node and start rendering
     ///     // In this example, we wrap the rendered content with a layout component
-    ///     app.mount_with(&parent_node, |inner| {
+    ///     app.mount_with(&parent_node, |app| {
+    ///         let router = app.router().clone();
+    ///         let inner = router.render(app, &DomType {
+    ///             node: parent_node.clone().into()
+    ///         });
     ///         html! {
     ///             <main>
     ///                <nav>

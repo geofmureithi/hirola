@@ -48,7 +48,6 @@ pub mod callback;
 pub mod dom;
 pub mod effect;
 pub mod generic_node;
-#[cfg(feature = "dom")]
 pub mod mixins;
 pub mod render;
 pub mod templating;
@@ -136,7 +135,7 @@ pub mod prelude {
 
     #[cfg(feature = "app")]
     pub use crate::app::*;
-    #[cfg(feature = "dom")]
+
     pub use crate::mixins::*;
     pub use crate::render::*;
     pub use crate::BoxedLocal;

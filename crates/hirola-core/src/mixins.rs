@@ -46,9 +46,10 @@
 //! ```
 use crate::dom::Dom;
 use futures_signals::signal::{Signal, SignalExt};
-use futures_util::future::ready;
 use std::fmt::Display;
+#[cfg(feature = "dom")]
 use wasm_bindgen::JsCast;
+#[cfg(feature = "dom")]
 use web_sys::Element;
 
 pub trait Mixin<Target> {
@@ -82,37 +83,50 @@ where
 /// Note: This is a security risk if the string to be inserted might contain potentially malicious content.
 /// sanitize the content before it is inserted.
 /// See more: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+#[allow(unused_variables)]
 pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
     let cb = move |node: &Dom| {
-        let element = node.node().as_ref().clone().unchecked_into::<Element>();
-        element.set_inner_html(text);
+        #[cfg(feature = "dom")]
+        {
+            let element = node.node().as_ref().clone().unchecked_into::<Element>();
+            element.set_inner_html(text);
+        }
     };
     Box::new(cb)
 }
 
 /// A mixin that allows adding non-signal text
+#[allow(unused_variables)]
 pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |dom: &Dom| {
-        dom.node().node.set_text_content(Some(&format!("{text}")));
+        #[cfg(feature = "dom")]
+        {
+            dom.node().node.set_text_content(Some(&format!("{text}")));
+        }
     };
     Box::new(cb)
 }
 
 /// Mixin that adds text to a dom node
+#[allow(unused_variables)]
 pub fn text<T, S>(text: &S) -> Box<dyn Fn(&Dom)>
 where
     T: Display + 'static,
     S: Signal<Item = T> + SignalExt + Clone + 'static,
 {
     let signal = text.clone();
-    let cb = move |node: &Dom| {
-        let element = node.node().as_ref().clone().unchecked_into::<Element>();
-        let signal = signal.clone();
-        let future = signal.for_each(move |value| {
-            element.set_text_content(Some(&format!("{}", value)));
-            ready(())
-        });
-        node.effect(future);
+    
+    let cb = move |_node: &Dom| {
+        #[cfg(feature = "dom")]
+        {
+            let element = _node.node().as_ref().clone().unchecked_into::<Element>();
+            let signal = signal.clone();
+            let future = signal.for_each(move |value| {
+                element.set_text_content(Some(&format!("{}", value)));
+                ready(())
+            });
+            _node.effect(future);
+        }
     };
     Box::new(cb)
 }

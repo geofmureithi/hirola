@@ -1,54 +1,60 @@
 mod components;
-mod pages;
+// mod markdown;
+// mod pages;
+
+use std::{fs::File, path::PathBuf};
 
 use components::logo::HirolaLogo;
+use comrak::{markdown_to_html_with_plugins, ComrakPlugins};
 use hirola::prelude::*;
-use pages::{
-    async_page, event_handling_page, extending_page, forms_page, getting_started_page, home,
-    inner_mixins, mixins_page, reactivity_page, router_page, ssr_page, state_page, templating_page,
-    testing_page,
-};
 
 use crate::components::side_bar::SideBar;
+use serde::Deserialize;
 
-// macro_rules! make_example {
+use comrak::plugins::syntect::SyntectAdapter;
 
-//      ($jsx:expr)=>{
+#[allow(dead_code)]
+#[derive(Debug, Deserialize)]
+struct Seo {
+    title: String,
+    date: Option<String>,
+    tags: Vec<String>,
+    summary: String,
+    draft: bool,
+}
 
-//          {
-//           // {
-//           //   html! {
-//           //     <pre><code>{stringify!($jsx)}</code></pre>
-//           //   }
-//           // };
-//             html! {
-//               <div class="demo">
-//                 <pre>
-//                 {std::stringify!($jsx)}
-//                 </pre>
-//               </div>
-//             }
-//          }
-//      }
-//  }
-
-// impl App {
-//     fn new(router: Router<Self>) -> Self {
-//         Self { router }
-//     }
-// }
-
-//     fn mount(&self, parent: &web_sys::Node) {
-
-fn with_layout(app: &App<()>) -> Dom {
-    wasm_log::init(wasm_log::Config::default());
-    let router = app.router().clone();
-
-    let root = Dom::new();
-    let inner = router.render(&app, &root.node());
-
-    let router = app.router().clone();
+fn with_layout(seo: Seo) -> Dom {
     html! {
+        <html>
+        <head>
+          <title>{seo.title.clone()} " | Hirola documentation"</title>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+          <meta name="author" content="geofmureithi"/>
+          <meta name="description" content={&seo.summary}/>
+          <meta name="theme-color" content="#303030"/>
+          <meta property="og:type" content="website"/>
+          <meta property="og:title" content={&seo.title}/>
+          <meta property="og:description" content={&seo.summary}/>
+          <meta property="og:image" content="/public/some-image.png"/>
+          <meta property="og:url" content="/public/this-page.html"/>
+          <meta property="og:site_name" content="Hirola Docs"/>
+          <meta property="og:locale" content="en_US"/>
+          <meta name="twitter:card" content="summary"/>
+          <meta name="twitter:title" content={&seo.title}/>
+          <meta name="twitter:image" content="/public/image.jpg"/>
+          <link rel="icon" type="image/png" href="/public/favicon.png" />
+          <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="/favicon.png?width=76" />
+          <link rel="mask-icon" href="/public/safari-pinned-tab.svg" color="#5bbad5" />
+          <link rel="canonical" href="/" />
+          <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+            {r##"
+                @import url("https://fonts.googleapis.com/css2?family=Grape+Nuts&display=swap");
+            "##}
+            </style>
+        </head>
+        <body>
         <div>
             <header class="bg-white md:fixed md:left-0 md:right-0 md:top-0 md:z-30 md:h-[5rem]">
                 <div class="flex items-center justify-between pt-3">
@@ -100,7 +106,7 @@ fn with_layout(app: &App<()>) -> Dom {
                                     </svg>
                                 </button>
                             </div>
-                            <SideBar router=(&router).clone()/>
+                            <SideBar/>
                         </div>
                     </div>
                 </div>
@@ -112,7 +118,7 @@ fn with_layout(app: &App<()>) -> Dom {
                 class="fixed left-0 bottom-0 hidden w-48 px-8 pb-6 pt-8 md:top-[4rem] md:block lg:w-64"
                 hover-scrollbar=true
             >
-                <SideBar router={(&router).clone()}/>
+                <SideBar/>
             </aside>
             <main class="pt-32 pl-0 pr-0 md:pl-48 lg:pl-64 xl:pr-64">
                 <style>
@@ -148,6 +154,7 @@ fn with_layout(app: &App<()>) -> Dom {
             }
             .markdown blockquote { font-size: .95em; color: #2d3748; padding: 1rem; border-left-width: 4px; border-color: rgba(119, 193, 210); background: #f6f7f9; }
             .markdown table tbody td { border-color: #d8dee9; border-width: 1px; padding: .25rem .5rem }
+            .markdown pre { padding: 0.3em; }
             .demo { background: white; padding: 1rem; border-width: 1px; border-radius: .25rem; border-color: #d8dee9; }
             .demo li { list-style-position: inside; }
             .demo button { padding: 0 .5rem; border-width: 1px; border-radius: .25rem; border-color: #a0aec0; background-color: #e2e8f0; }
@@ -161,35 +168,68 @@ fn with_layout(app: &App<()>) -> Dom {
                 <div
                     class="m-auto max-w-3xl px-6 pb-24 text-gray-800 antialiased markdown"
                 >
-                {inner}
+                "__MARKDOWN_CONTENT_HERE__"
+                <script src="https://giscus.app/client.js"
+                    data-repo="geofmureithi/hirola"
+                    data-repo-id="R_kgDOHvfVtA"
+                    data-category="General"
+                    data-category-id="DIC_kwDOHvfVtM4CQ9Y7"
+                    data-mapping="og:title"
+                    data-strict="0"
+                    data-reactions-enabled="1"
+                    data-emit-metadata="0"
+                    data-input-position="bottom"
+                    data-theme="light"
+                    data-lang="en"
+                    crossorigin="anonymous"
+                    async=true>
+                </script>
                 </div>
             </main>
         </div>
+        </body>
+        </html>
     }
 }
 
 fn main() {
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
-    let mut app = App::new(());
-    app.route("/", home);
-    app.route("/basics/getting-started", getting_started_page);
-    app.route("/basics/reactivity", reactivity_page);
-    app.route("/basics/templating", templating_page);
-    app.route("/basics/mixins", mixins_page);
-    app.route("/basics/events", event_handling_page);
+    use glob::glob;
+    for entry in glob("src/pages/**/*.md").expect("Failed to read glob pattern") {
+        match entry {
+            Ok(path) => {
+                let (content, seo) = markdown_page(&path);
+                let mut layout = "<!DOCTYPE html>".to_string();
+                layout.extend(render_to_string(with_layout(seo)).chars());
+                let html_path = path
+                    .to_string_lossy()
+                    .replace("src/pages", "dist")
+                    .replace(".md", ".html");
+                std::fs::create_dir_all("dist/basics").unwrap();
+                std::fs::create_dir_all("dist/advanced").unwrap();
+                std::fs::create_dir_all("dist/plugins").unwrap();
+                let _file = File::create(&html_path).unwrap();
+                std::fs::write(
+                    &html_path,
+                    layout.replace("__MARKDOWN_CONTENT_HERE__", &content),
+                )
+                .unwrap();
+            }
+            Err(e) => println!("{:?}", e),
+        }
+    }
+}
 
-    app.route("/mixins/:mixin", inner_mixins);
+fn markdown_page(path: &PathBuf) -> (String, Seo) {
+    let adapter = SyntectAdapter::new("InspiredGitHub");
+    use comrak::ComrakOptions;
+    let markdown = std::fs::read_to_string(path).unwrap();
+    let mut options = ComrakOptions::default();
+    let mut plugins = ComrakPlugins::default();
 
-    app.route("/advanced/testing", testing_page);
-    app.route("/advanced/ssr", ssr_page);
-    app.route("/advanced/async", async_page);
-    app.route("/advanced/extending", extending_page);
-
-    app.route("/plugins/form", forms_page);
-    app.route("/plugins/router", router_page);
-    app.route("/plugins/state", state_page);
-    let rendered = app.mount_with(&body, |app| with_layout(app));
-    std::mem::forget(rendered);
+    options.extension.front_matter_delimiter = Some("---".to_owned());
+    plugins.render.codefence_syntax_highlighter = Some(&adapter);
+    let data = fronma::parser::parse::<Seo>(&markdown)
+        .expect(&format!("in file: {}", path.to_string_lossy()));
+    let res = markdown_to_html_with_plugins(&data.body, &options, &plugins);
+    (res, data.headers)
 }

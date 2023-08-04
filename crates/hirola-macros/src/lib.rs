@@ -299,7 +299,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         ::hirola::prelude::Dom::append_child(
                                             &mut template,
                                             #body,
-                                        );
+                                        ).unwrap();
                                     }
                                 });
                             }

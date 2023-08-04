@@ -1,11 +1,11 @@
-use hirola::prelude::{*, router::Router};
+use hirola::prelude::*;
 
 #[component]
-pub fn SideBar(router: Router<()>) -> Dom {
+pub fn SideBar() -> Dom {
     html! {
         <ul class="space-y-2 text-gray-800">
             <li class="-ml-6 border-l-4 border-gray-700 pl-5 font-semibold">
-                <a mixin:identity=&router.link() href="/" class="hover:text-gray-900">
+                <a href="/" class="hover:text-gray-900">
                     "Home"
                 </a>
             </li>
@@ -14,8 +14,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                 <ul class="pl-3">
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/basics/getting-started"
+
+                            href="/basics/getting-started.html"
                             class="hover:text-gray-900"
                         >
                             "Installation"
@@ -23,8 +23,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/basics/reactivity"
+
+                            href="/basics/reactivity.html"
                             class="hover:text-gray-900"
                         >
                             "Reactivity"
@@ -32,8 +32,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/basics/templating"
+
+                            href="/basics/templating.html"
                             class="hover:text-gray-900"
                         >
                             "Templating"
@@ -41,8 +41,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/basics/events"
+
+                            href="/basics/events.html"
                             class="hover:text-gray-900"
                         >
                             "Event Handling"
@@ -50,90 +50,22 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/basics/mixins"
+
+                            href="/basics/mixins.html"
                             class="hover:text-gray-900"
                         >
                             "Mixins"
                         </a>
                     </li>
-                </ul>
-            </li>
-            <li>
-                <span class="font-medium">"Inbuilt Mixins"</span>
-                <ul class="pl-3">
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/mixins/show"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "show"
-                        </a>
-                    </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/text"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "text"
-                        </a>
-                    </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/rhtml"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "rhtml"
-                        </a>
-                    </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/model"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "model"
-                        </a>
-                    </li>
 
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/transition"
+                            href="/basics/state-management.html"
                             class="hover:text-gray-900"
                         >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "transition 🚧"
+                            "State Management"
                         </a>
                     </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/ignore"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "ignore 🚧"
-                        </a>
-                    </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/mixins/if"
-                            class="hover:text-gray-900"
-                        >
-                            <span class="text-orange-500">"mixin:"</span>
-                            "if 🚧"
-                        </a>
-                    </li>
-
                 </ul>
             </li>
             <li>
@@ -141,8 +73,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                 <ul class="pl-3">
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/plugins/router"
+
+                            href="/plugins/router.html"
                             class="hover:text-gray-900"
                         >
                             "Router"
@@ -150,23 +82,13 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/plugins/form"
+
+                            href="/plugins/form.html"
                             class="hover:text-gray-900"
                         >
                             "Form"
                         </a>
                     </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/plugins/state"
-                            class="hover:text-gray-900"
-                        >
-                            "State"
-                        </a>
-                    </li>
-
                 </ul>
             </li>
             <li>
@@ -174,8 +96,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                 <ul class="pl-3">
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/advanced/testing"
+
+                            href="/advanced/testing.html"
                             class="hover:text-gray-900"
                         >
                             "Testing 🚧"
@@ -183,17 +105,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/advanced/extending"
-                            class="hover:text-gray-900"
-                        >
-                            "Extending"
-                        </a>
-                    </li>
-                    <li class="">
-                        <a
-                            mixin:identity=&router.link()
-                            href="/advanced/async"
+
+                            href="/advanced/async.html"
                             class="hover:text-gray-900"
                         >
                             "Async"
@@ -201,8 +114,8 @@ pub fn SideBar(router: Router<()>) -> Dom {
                     </li>
                     <li class="">
                         <a
-                            mixin:identity=&router.link()
-                            href="/advanced/ssr"
+
+                            href="/advanced/ssr.html"
                             class="hover:text-gray-900"
                         >
                             "SSR 🚧"

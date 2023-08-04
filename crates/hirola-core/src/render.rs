@@ -48,6 +48,14 @@ impl Render for String {
     }
 }
 
+impl Render for &String {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let child = Dom::new_from_node(&DomType::text_node(&self));
+        parent.append_child(child)?;
+        Ok(())
+    }
+}
+
 /// Renders `A`, then `B`
 impl<A: Render, B: Render> Render for (A, B) {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {

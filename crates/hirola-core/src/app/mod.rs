@@ -2,7 +2,7 @@ pub mod router;
 use router::Router;
 use std::fmt::Debug;
 
-use crate::{dom::Dom, generic_node::DomNode};
+use crate::{dom::Dom};
 
 #[derive(Debug, Clone)]
 pub struct App<S: 'static> {
@@ -133,10 +133,6 @@ impl<S: Clone + 'static> App<S> {
     /// It mounts the application on the web page body, rendering the appropriate page based on the
     /// current route. The rendering process will be managed by the `Router` associated with the app.
     ///
-    /// # Returns
-    ///
-    /// The generated `Dom` element representing the rendered content.
-    ///
     /// # Panics
     ///
     /// This method will panic if it fails to access the `window` or `document` objects from the
@@ -162,7 +158,7 @@ impl<S: Clone + 'static> App<S> {
     ///     app.mount();
     /// }
     /// ```
-    pub fn mount(&self) -> Dom {
+    pub fn mount(&self) {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
         let router = self.router.clone();
@@ -172,7 +168,8 @@ impl<S: Clone + 'static> App<S> {
                 node: document.body().unwrap().into(),
             },
         );
-        dom
+        // We leak the root node to avoid callbacks and futures being dropped
+        std::mem::forget(dom);
     }
 
     /// Mounts the application on a specified parent node and starts the rendering process.
@@ -184,10 +181,6 @@ impl<S: Clone + 'static> App<S> {
     /// # Arguments
     ///
     /// * `parent` - The web_sys::Node to which the application should be mounted.
-    ///
-    /// # Returns
-    ///
-    /// The generated `Dom` element representing the rendered content.
     ///
     /// # Example
     ///
@@ -213,7 +206,7 @@ impl<S: Clone + 'static> App<S> {
     ///     app.mount_to(&parent_node);
     /// }
     /// ```
-    pub fn mount_to(&self, parent: &web_sys::Node) -> Dom {
+    pub fn mount_to(&self, parent: &web_sys::Node) {
         let router = self.router.clone();
         let dom = router.render(
             &self,
@@ -221,7 +214,8 @@ impl<S: Clone + 'static> App<S> {
                 node: parent.clone(),
             },
         );
-        dom
+        // We leak the root node to avoid callbacks and futures being dropped
+        std::mem::forget(dom);
     }
 
     /// Mounts the application on a specified parent node and starts the rendering process.
@@ -236,10 +230,6 @@ impl<S: Clone + 'static> App<S> {
     /// * `cb` - A callback function that takes the generated `Dom` element representing the rendered
     ///          content as input and returns a modified `Dom` element. This callback can be used to
     ///          wrap the rendered content with layout components or apply any additional transformations.
-    ///
-    /// # Returns
-    ///
-    /// The modified `Dom` element after applying the callback's transformation.
     ///
     /// # Example
     ///
@@ -284,13 +274,11 @@ impl<S: Clone + 'static> App<S> {
     ///     });
     /// }
     /// ```
-    pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) -> Dom {
+    pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) {
         let res = cb(self);
-        let parent = Dom::new_from_node(&DomNode {
-            node: parent.clone(),
-        });
-        parent.append_render(res);
-        parent
+        parent.append_child(&res.node().inner_element()).unwrap();
+        // We leak the root node to avoid callbacks and futures being dropped
+        std::mem::forget(res);
     }
 }
 
@@ -332,7 +320,7 @@ impl<S: Clone + 'static> App<S> {
     pub fn render_to_string(&self, path: &str) -> String {
         use crate::generic_node::GenericNode;
         let fragment = crate::generic_node::SsrNode::fragment();
-        let router = self.router();
+        let router = self.router().clone();
         // Set the path
         router.push(path);
         // Render path to fragment

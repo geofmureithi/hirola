@@ -22,7 +22,7 @@ jobs:
         working-directory: examples/docs
 
       - name: Copy artifacts
-        run: cp ./examples/docs/dist/ ./public/
+        run: cp -r ./examples/docs/dist/ ./public/
 
       - name: Copy vercel config
         run: cp ./vercel.json ./public/vercel.json

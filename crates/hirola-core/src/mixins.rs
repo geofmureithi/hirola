@@ -119,6 +119,7 @@ where
     let cb = move |_node: &Dom| {
         #[cfg(feature = "dom")]
         {
+            use std::future::ready;
             let element = _node.node().as_ref().clone().unchecked_into::<Element>();
             let signal = signal.clone();
             let future = signal.for_each(move |value| {

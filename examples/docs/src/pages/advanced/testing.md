@@ -22,7 +22,7 @@ fn counter() -> Dom {
     let count = Mutable::new(0);
     html! {
         <div>
-            <button on:click=count.mut_callback(|c, _| c + 1)>"Increment"</button>
+            <button on:click=count.callback(|c| *c.lock_mut() +=1)>"Increment"</button>
             <span>{count}</span>
         </div>
     }

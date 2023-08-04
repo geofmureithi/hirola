@@ -12,7 +12,7 @@ Before getting started with `hirola` we are going to assume that you have the fo
 
 - rust
 - cargo
-- hirola-kit
+- trunk
 
 # Getting Started
 
@@ -63,6 +63,6 @@ fn main() {
 
 Now lets run our project
 
-`hirola-kit serve`
+`trunk serve`
 
 You should be able to get counter running.

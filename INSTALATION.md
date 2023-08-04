@@ -3,54 +3,28 @@
 lib.rs
 
 ```rust
+use std::fmt::Display;
 use hirola::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::Event;
-use web_sys::HtmlInputElement;
+use hirola::signal::Mutable;
 
-fn home() -> Dom {
-    let state = Signal::new(99);
-
-    let decerement = state.mut_callback(|count, _e| *count - 1);
-
-    let incerement = state.mut_callback(|count, _e| *count + 1);
-
+fn counter() -> Dom {
+    let count = Mutable::new(0i32);
+    let decrement = count.callback(|s| *s.lock_mut() -= 1);
+    let increment = count.callback(|s| *s.lock_mut() += 1);
     html! {
-            <div class="grid h-screen place-items-center">
-
-                <div class="h-10 w-32">
-                    <div class="flex flex-row h-10">
-                        <button
-                            on:click={decerement}
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            "-"
-                        </button>
-                        <div class="block">
-                            <input
-                                value={state.get()}
-                                disabled
-                            />
-                        </div>
-                        <button
-                            on:click={incerement}
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            "+"
-                        </button>
-                    </div>
-                </div>
-           </div>
+        <>
+            <button on:click=decrement>"-"</button>
+            <span>{count}</span>
+            <button on:click=increment>"+"</button>
+        </>
     }
 }
 
 fn main() {
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
-
-    let mut app = App<S, G>::new();
-    app.mount(&body, home);
+    let root = render(counter()).unwrap();
+    // We prevent the root from being dropped
+    std::mem::forget(root);
 }
-
 ```
 
 index.html
@@ -77,7 +51,7 @@ version = "0.1.0"
 
 
 [dependencies]
-hirola = "0.1"
+hirola = "0.3"
 console_error_panic_hook = "0.1"
 log = "0.4"
 console_log = "0.2"

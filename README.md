@@ -68,7 +68,7 @@ fn main() {
 Now lets run our project
 
 ```bash
-hirola-kit serve
+trunk serve
 ```
 
 ## Ecosystem

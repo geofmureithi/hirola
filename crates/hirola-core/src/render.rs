@@ -1,45 +1,201 @@
 //! Trait for describing how something should be rendered into DOM nodes.
+use crate::{
+    dom::Dom,
+    generic_node::{DomType, GenericNode},
+    templating::flow::{Indexed, IndexedProps},
+};
+use futures_signals::{
+    signal::{Mutable, ReadOnlyMutable, SignalExt},
+    signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
+};
+use std::{
+    fmt::{Debug, Display},
+    iter::Enumerate,
+    pin::Pin,
+};
 
-use std::fmt;
+#[derive(Debug)]
+pub enum Error {
+    DomError(Box<dyn Debug>),
+}
 
-use crate::generic_node::GenericNode;
+/// Trait for describing how something should be rendered into nodes.
+pub trait Render {
+    /// Called during the initial render when creating the nodes inside a dom.
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error>;
+}
 
-use crate::TemplateResult;
-
-/// Trait for describing how something should be rendered into DOM nodes.
-pub trait Render<G: GenericNode> {
-    /// Called during the initial render when creating the DOM nodes. Should return a [`GenericNode`].
-    fn render(&self) -> TemplateResult<G>;
-
-    /// Called when the node should be updated with new state.
-    /// The default implementation of this will replace the child node completely with the result of calling `render` again.
-    /// Another implementation might be better suited to some specific types.
-    /// For example, text nodes can simply replace the inner text instead of recreating a new node.
-    ///
-    /// Returns the new node. If the node is reused instead of replaced, the returned node is simply the node passed in.
-    fn update_node(&self, parent: &G, node: &G) -> G {
-        let new_node = self.render().node;
-        parent.replace_child(&new_node, &node);
-        new_node
+/// Does nothing
+impl Render for () {
+    fn render_into(self: Box<Self>, _dom: &Dom) -> Result<(), Error> {
+        Ok(())
     }
 }
 
-impl<T: fmt::Display + ?Sized, G: GenericNode> Render<G> for T {
-    fn render(&self) -> TemplateResult<G> {
-        TemplateResult::new(G::text_node(&format!("{}", self)))
-    }
-
-    fn update_node(&self, _parent: &G, node: &G) -> G {
-        // replace `textContent` of `node` instead of recreating
-
-        node.update_inner_text(&format!("{}", self));
-
-        node.clone()
+impl Render for &str {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let child = Dom::new_from_node(&DomType::text_node(*self));
+        parent.append_child(child)?;
+        Ok(())
     }
 }
 
-impl<G: GenericNode> Render<G> for TemplateResult<G> {
-    fn render(&self) -> TemplateResult<G> {
-        self.clone()
+impl Render for String {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let child = Dom::new_from_node(&DomType::text_node(&self));
+        parent.append_child(child)?;
+        Ok(())
+    }
+}
+
+impl Render for &String {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let child = Dom::new_from_node(&DomType::text_node(&self));
+        parent.append_child(child)?;
+        Ok(())
+    }
+}
+
+/// Renders `A`, then `B`
+impl<A: Render, B: Render> Render for (A, B) {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        Box::new(self.0).render_into(parent)?;
+        Box::new(self.1).render_into(parent)
+    }
+}
+
+/// Renders `A`, then `B`, then `C`
+impl<A: Render, B: Render, C: Render> Render for (A, B, C) {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        Box::new(self.0).render_into(parent)?;
+        Box::new(self.1).render_into(parent)?;
+        Box::new(self.2).render_into(parent)
+    }
+}
+
+/// Renders `T` or nothing
+impl<T: Render> Render for Option<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        match *self {
+            None => Ok(()),
+            Some(x) => Box::new(x).render_into(parent),
+        }
+    }
+}
+
+impl<T: Render> Render for Vec<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        for elem in *self {
+            Box::new(elem).render_into(parent)?;
+        }
+        Ok(())
+    }
+}
+
+impl<T: Render> Render for Box<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        (*self).render_into(parent)?;
+        Ok(())
+    }
+}
+
+impl<T: Display + Clone + 'static> Render for Mutable<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let node = DomType::text_node(&self.get_cloned().to_string());
+        let child = Dom::new_from_node(&node);
+        let fut = self.signal_ref(move |e| node.update_inner_text(&e.to_string()));
+        parent.effect(fut.to_future());
+        parent.append_child(child).unwrap();
+        Ok(())
+    }
+}
+
+pub struct Mapped<T> {
+    pub iter: Pin<Box<dyn SignalVec<Item = T>>>,
+    callback: Box<dyn Fn(T) -> Dom>,
+}
+
+pub trait RenderMap {
+    type Item;
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item>;
+}
+
+impl<T: Clone + 'static> RenderMap for MutableSignalVec<T> {
+    type Item = T;
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
+        Mapped {
+            iter: Box::pin(self),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: Clone + 'static, I: SignalVec<Item = T> + 'static, F: FnMut(&T) -> bool + 'static> RenderMap
+    for Filter<I, F>
+{
+    type Item = T;
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
+        Mapped {
+            iter: Box::pin(self),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: Clone + 'static, I: Iterator<Item = T>> RenderMap for Enumerate<I> {
+    type Item = (usize, T);
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
+        let items = self.collect();
+        Mapped {
+            iter: Box::pin(MutableVec::new_with_values(items).signal_vec_cloned()),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static> RenderMap
+    for futures_signals::signal_vec::Enumerate<I>
+{
+    type Item = (ReadOnlyMutable<Option<usize>>, T);
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
+        Mapped {
+            iter: Box::pin(self.to_signal_cloned().to_signal_vec()),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: Clone + 'static> RenderMap for Vec<T> {
+    type Item = T;
+    fn render_map(self, callback: impl Fn(Self::Item) -> Dom + 'static) -> Mapped<Self::Item> {
+        Mapped {
+            iter: Box::pin(MutableVec::new_with_values(self).signal_vec_cloned()),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: 'static + Clone> Render for Mapped<T> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        let template = {
+            let props = IndexedProps {
+                iterable: self.iter,
+                template: self.callback,
+            };
+            let indexed = Indexed { props };
+            indexed
+        };
+        Box::new(template).render_into(parent)?;
+        Ok(())
+    }
+}
+
+/// Renders `O` or `E`
+impl<O: Render, E: Render> Render for std::result::Result<O, E> {
+    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+        match *self {
+            Ok(o) => Box::new(o).render_into(parent),
+            Err(e) => Box::new(e).render_into(parent),
+        }
     }
 }

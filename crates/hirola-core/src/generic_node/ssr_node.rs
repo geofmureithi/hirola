@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::{fmt, mem};
 
-use crate::generic_node::{EventListener, GenericNode};
+use crate::generic_node::GenericNode;
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
 ///
@@ -231,12 +231,16 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
 
-    fn event(&self, _name: &str, _handler: Box<EventListener>) {
-        // Don't do anything. Events are attached on client side.
-    }
+    // fn event(&self, _name: &str, _handler: Box<EventListener>) {
+    //     // Don't do anything. Events are attached on client side.
+    // }
 
     fn update_inner_text(&self, text: &str) {
         self.unwrap_text().borrow_mut().0 = text.to_string();
+    }
+
+    fn replace_children_with(&self, _node: &Self) {
+        unimplemented!()
     }
 }
 

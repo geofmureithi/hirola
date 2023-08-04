@@ -1,20 +1,12 @@
+use hirola::prelude::*;
 use hirola_macros::html;
-use hirola_core::TemplateResult;
-
-// fn entry(entry: u8) -> String {
-//     html_to_string! {
-//         <li>{entry}</li>
-//     }
-// }
 
 #[test]
-fn test() {
+fn it_works() {
     let world = "planet";
-
-    assert_eq!(
-        html! {
-            <p>{world}</p>
-        },
-        TemplateResult::empty()
-    );
+    let template = html! {
+        <p>{world}</p>
+    };
+    let result = render_to_string(template);
+    assert_eq!("<p>planet</p>", result);
 }

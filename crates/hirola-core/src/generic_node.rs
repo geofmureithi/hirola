@@ -1,5 +1,3 @@
-//! Abstraction over a rendering backend.
-
 #[cfg(feature = "dom")]
 pub mod dom_node;
 #[cfg(feature = "ssr")]
@@ -10,31 +8,26 @@ pub use dom_node::*;
 #[cfg(feature = "ssr")]
 pub use ssr_node::*;
 
-use std::cell::RefCell;
-use std::fmt;
-use std::rc::Rc;
+#[cfg(feature = "dom")]
+use wasm_bindgen::prelude::Closure;
 
+use std::fmt;
+
+#[cfg(feature = "dom")]
 use web_sys::Event;
 
-use crate::prelude::*;
+#[cfg(feature = "ssr")]
+pub type Event = ();
 
 pub type EventListener = dyn Fn(Event);
 
-/// Abstraction over a rendering backend.
-///
-/// You would probably use this trait as a trait bound when you want to accept any rendering backend.
-/// For example, components are often generic over [`GenericNode`] to be able to render to different backends.
-///
-/// Note that components are **NOT** represented by [`GenericNode`]. Instead, components are _disappearing_, meaning
-/// that they are simply functions that generate [`GenericNode`]s inside a new reactive context. This means that there
-/// is no overhead whatsoever when using components.
-///
-/// Hirola ships with 2 rendering backends out of the box:
-/// * [`DomNode`] - Rendering in the browser (to real DOM nodes).
-/// * [`SsrNode`] - Render to a static string (often on the server side for Server Side Rendering, aka. SSR).
-///
-/// To implement your own rendering backend, you will need to create a new struct which implements [`GenericNode`].
-pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
+#[cfg(feature = "dom")]
+pub type DomType = dom_node::DomNode;
+
+#[cfg(feature = "ssr")]
+pub type DomType = ssr_node::SsrNode;
+
+pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Create a new element node.
     fn element(tag: &str) -> Self;
 
@@ -75,31 +68,17 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + Eq + 'static {
     fn next_sibling(&self) -> Option<Self>;
 
     /// Remove this node from the tree.
-    ///
-    /// TODO: Remove this node on Drop.
     fn remove_self(&self);
 
+    #[cfg(feature = "dom")]
     /// Add a [`EventListener`] to the event `name`.
-    fn event(&self, name: &str, handler: Box<EventListener>);
+    fn event(&self, _name: &str, _handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
+        None
+    }
 
     /// Update inner text of the node. If the node has elements, all the elements are replaced with a new text node.
     fn update_inner_text(&self, text: &str);
 
-    /// Append an item that implements [`Render`] and automatically updates the DOM inside an effect.
-    fn append_render(&self, child: Box<dyn Fn() -> Box<dyn Render<Self>>>) {
-        let parent = self.clone();
-
-        let node = create_effect_initial(cloned!((parent) => move || {
-            let node = RefCell::new(child().render().node);
-
-            let effect = cloned!((node) => move || {
-                let new_node = child().update_node(&parent, &node.borrow());
-                *node.borrow_mut() = new_node;
-            });
-
-            (Rc::new(effect), node)
-        }));
-
-        parent.append_child(&node.borrow());
-    }
+    /// Replace all the children in a node with a new node
+    fn replace_children_with(&self, node: &Self);
 }

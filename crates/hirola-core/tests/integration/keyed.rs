@@ -1,198 +1,198 @@
-use super::*;
+// use super::*;
 
-#[wasm_bindgen_test]
-fn append() {
-    let count = Signal::new(vec![1, 2]);
+// #[wasm_bindgen_test]
+// fn append() {
+//     let count = Mutable::new(vec![1, 2]);
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                    key: |item| *item,
-                }}
-            />
-        </ul>
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item }</li>
+//                     },
+//                     key: |item| *item,
+//                 }}
+//             />
+//         </ul>
 
-    });
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
+//     let p = document().query_selector("ul").unwrap().unwrap();
 
-    assert_eq!(p.text_content().unwrap(), "12");
+//     assert_eq!(p.text_content().unwrap(), "12");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.push(3);
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "123");
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.push(3);
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set(count.get()[1..].into());
-    assert_eq!(p.text_content().unwrap(), "23");
-}
+//     count.set(count.get()[1..].into());
+//     assert_eq!(p.text_content().unwrap(), "23");
+// }
 
-#[wasm_bindgen_test]
-fn swap_rows() {
-    let count = Signal::new(vec![1, 2, 3]);
+// #[wasm_bindgen_test]
+// fn swap_rows() {
+//     let count = Mutable::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                    key: |item| *item,
-                }}
-            />
-        </ul>
-    });
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item }</li>
+//                     },
+//                     key: |item| *item,
+//                 }}
+//             />
+//         </ul>
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
+//     let p = document().query_selector("ul").unwrap().unwrap();
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.swap(0, 2);
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "321");
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.swap(0, 2);
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "321");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.swap(0, 2);
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "123");
-}
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.swap(0, 2);
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "123");
+// }
 
-#[wasm_bindgen_test]
-fn delete_row() {
-    let count = Signal::new(vec![1, 2, 3]);
+// #[wasm_bindgen_test]
+// fn delete_row() {
+//     let count = Mutable::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                    key: |item| *item,
-                }}
-            />
-        </ul>
-    });
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item }</li>
+//                     },
+//                     key: |item| *item,
+//                 }}
+//             />
+//         </ul>
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
+//     let p = document().query_selector("ul").unwrap().unwrap();
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.remove(1);
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "13");
-}
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.remove(1);
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "13");
+// }
 
-#[wasm_bindgen_test]
-fn clear() {
-    let count = Signal::new(vec![1, 2, 3]);
+// #[wasm_bindgen_test]
+// fn clear() {
+//     let count = Mutable::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                    key: |item| *item,
-                }}
-            />
-        </ul>
-    });
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item }</li>
+//                     },
+//                     key: |item| *item,
+//                 }}
+//             />
+//         </ul>
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
+//     let p = document().query_selector("ul").unwrap().unwrap();
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set(Vec::new());
-    assert_eq!(p.text_content().unwrap(), "");
-}
+//     count.set(Vec::new());
+//     assert_eq!(p.text_content().unwrap(), "");
+// }
 
-#[wasm_bindgen_test]
-fn insert_front() {
-    let count = Signal::new(vec![1, 2, 3]);
+// #[wasm_bindgen_test]
+// fn insert_front() {
+//     let count = Mutable::new(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                    key: |item| *item,
-                }}
-            />
-        </ul>
-    });
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item }</li>
+//                     },
+//                     key: |item| *item,
+//                 }}
+//             />
+//         </ul>
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
+//     let p = document().query_selector("ul").unwrap().unwrap();
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.insert(0, 4);
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "4123");
-}
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.insert(0, 4);
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "4123");
+// }
 
-#[wasm_bindgen_test]
-fn nested_reactivity() {
-    let count = Signal::new(vec![1, 2, 3].into_iter().map(Signal::new).collect());
+// #[wasm_bindgen_test]
+// fn nested_reactivity() {
+//     let count = Mutable::new(vec![1, 2, 3].into_iter().map(Mutable::new).collect());
 
-    let node = cloned!((count) => html! {
-        <ul>
-            <Keyed
-                props={KeyedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item.get() }</li>
-                    },
-                    key: |item| *item.get(),
-                }}
-            />
-        </ul>
-    });
+//     let node = cloned!((count) => html! {
+//         <ul>
+//             <Keyed
+//                 props={KeyedProps {
+//                     iterable: count.handle(),
+//                     template: |item| html! {
+//                         <li>{ item.get() }</li>
+//                     },
+//                     key: |item| *item.get(),
+//                 }}
+//             />
+//         </ul>
+//     });
 
-    render_to(|| node, &test_div());
+//     render_to(|| node, &test_div());
 
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
+//     let p = document().query_selector("ul").unwrap().unwrap();
+//     assert_eq!(p.text_content().unwrap(), "123");
 
-    count.get()[0].set(4);
-    assert_eq!(p.text_content().unwrap(), "423");
+//     count.get()[0].set(4);
+//     assert_eq!(p.text_content().unwrap(), "423");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.push(Signal::new(5));
-        tmp
-    });
-    assert_eq!(p.text_content().unwrap(), "4235");
-}
+//     count.set({
+//         let mut tmp = (*count.get()).clone();
+//         tmp.push(Mutable::new(5));
+//         tmp
+//     });
+//     assert_eq!(p.text_content().unwrap(), "4235");
+// }

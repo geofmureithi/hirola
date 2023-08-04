@@ -1,10 +1,31 @@
-//! # Hirola API Documentation
+//! # hirola-core
 //!
-//! Hirola is based on [Marple](https://github.com/lukechu10/maple).
+//! ## Example
+//! ```rust,no_run
+//! use hirola::prelude::*;
+//! use hirola::signal::Mutable;
 //!
+//! fn counter() -> Dom {
+//!     let count = Mutable::new(0i32);
+//!     let decrement = count.callback(|s| *s.lock_mut() -= 1);
+//!     let increment = count.callback(|s| *s.lock_mut() += 1);
+//!     html! {
+//!          <>
+//!             <button on:click=decrement>"-"</button>
+//!             <span>{count}</span>
+//!             <button on:click=increment>"+"</button>
+//!          </>
+//!     }
+//! }
+//!
+//! fn main() {
+//!     let root = render(counter()).unwrap();
+//!     std::mem::forget(root);
+//! }
+//! ```
 //! ## Features
 //! - `dom` (_default_) - Enables rendering templates to DOM nodes. Only useful on `wasm32-unknown-unknown` target.
-//! - `ssr` - Enables rendering templates to static strings (useful for Server Side Rendering / Pre-rendering).
+//! - `ssr` - Enables rendering templates to static strings (useful for Server Side Rendering / Server side Generation).
 //! - `serde` - Enables serializing and deserializing `Signal`s and other wrapper types using `serde`.
 
 #![allow(non_snake_case)]
@@ -12,159 +33,137 @@
 #![warn(clippy::rc_buffer)]
 #![deny(clippy::trait_duplication_in_bounds)]
 #![deny(clippy::type_repetition_in_bounds)]
-
-use generic_node::GenericNode;
+use crate::dom::*;
+use discard::DiscardOnDrop;
+use futures_signals::{cancelable_future, CancelableFutureHandle};
 pub use hirola_macros::html;
+use std::{future::Future, pin::Pin};
 
+pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
+
+#[cfg(feature = "app")]
 pub mod app;
+#[cfg(feature = "dom")]
 pub mod callback;
-pub mod easing;
-pub mod flow;
+pub mod dom;
+pub mod effect;
 pub mod generic_node;
-pub mod macros;
-pub mod noderef;
-pub mod reactive;
-pub mod render;
-
-#[macro_use]
-pub mod styled;
-
-#[cfg(feature = "router")]
-#[cfg_attr(docsrs, doc(cfg(feature = "router")))]
-pub mod router;
-
 pub mod mixins;
+pub mod render;
+pub mod templating;
 
-pub mod utils;
+#[cfg(feature = "dom")]
+use crate::generic_node::DomNode;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TemplateResult<G: GenericNode> {
-    node: G,
-}
-
-impl<G: GenericNode> TemplateResult<G> {
-    /// Create a new [`TemplateResult`] from a [`GenericNode`].
-    pub fn new(node: G) -> Self {
-        Self { node }
-    }
-
-    /// Create a new [`TemplateResult`] with a blank comment node
-    pub fn empty() -> Self {
-        Self::new(G::marker())
-    }
-
-    pub fn inner_element(&self) -> G {
-        self.node.clone()
-    }
-}
-
-/// Render a [`TemplateResult`] into the DOM.
+/// Render a [`Dom`] into the DOM.
 /// Alias for [`render_to`] with `parent` being the `<body>` tag.
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render(template_result: impl FnOnce() -> TemplateResult<generic_node::DomNode>) {
+pub fn render(dom: Dom) -> Result<Dom, render::Error> {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
 
-    render_to(template_result, &document.body().unwrap());
+    render_to(dom, &document.body().unwrap())
 }
 
-/// Render a [`TemplateResult`] under a `parent` node.
+/// Render a [`Dom`] under a `parent` node.
 /// For rendering under the `<body>` tag, use [`render()`] instead.
 ///
 /// _This API requires the following crate features to be activated: `dom`_
 #[cfg(feature = "dom")]
-pub fn render_to(
-    template_result: impl FnOnce() -> TemplateResult<generic_node::DomNode>,
-    parent: &web_sys::Node,
-) {
-    let owner = reactive::create_root(|| {
-        parent
-            .append_child(&template_result().node.inner_element())
-            .unwrap();
-    });
-
-    thread_local! {
-        static GLOBAL_OWNERS: std::cell::RefCell<Vec<reactive::Owner>> = std::cell::RefCell::new(Vec::new());
-    }
-
-    GLOBAL_OWNERS.with(|global_owners| global_owners.borrow_mut().push(owner));
+pub fn render_to(dom: dom::Dom, parent: &web_sys::Node) -> Result<dom::Dom, render::Error> {
+    dom.mount(&DomNode {
+        node: parent.clone(),
+    })
 }
 
-/// Render a [`TemplateResult`] into a static [`String`]. Useful for rendering to a string on the server side.
+/// Render a [`Dom`] into a static [`String`]. Useful for rendering to a string on the server side.
 ///
 /// _This API requires the following crate features to be activated: `ssr`_
 #[cfg(feature = "ssr")]
-pub fn render_to_string(
-    template_result: impl FnOnce() -> TemplateResult<generic_node::SsrNode>,
-) -> String {
-    let mut ret = None;
-    let _owner =
-        reactive::create_root(|| ret = Some(format!("{}", template_result().inner_element())));
-
-    ret.unwrap()
+pub fn render_to_string(dom: Dom) -> String {
+    use crate::generic_node::GenericNode;
+    use crate::generic_node::SsrNode;
+    use crate::render::Render;
+    let node = SsrNode::fragment();
+    let root = Dom::new_from_node(&node);
+    Render::render_into(Box::new(dom), &root).unwrap();
+    format!("{}", root.node())
 }
 
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
-
-pub type AsyncResult<T> = prelude::Signal<Option<Result<T, wasm_bindgen::JsValue>>>;
-
-/// Helper for making async calls
-#[cfg(feature = "async")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
-pub fn use_async<F, T: 'static>(future: F) -> prelude::Signal<Option<T>>
+#[inline]
+pub fn spawn<F>(future: F) -> DiscardOnDrop<CancelableFutureHandle>
 where
-    F: std::future::Future<Output = T> + 'static,
+    F: Future<Output = ()> + 'static,
 {
-    let handler = prelude::Signal::new(None);
-    let inner = handler.clone();
-    wasm_bindgen_futures::spawn_local(async move {
-        let res = future.await;
-        inner.set(Some(res));
-    });
-    handler
+    let (handle, future) = cancelable_future(future, || ());
+
+    #[cfg(feature = "dom")]
+    wasm_bindgen_futures::spawn_local(future);
+
+    #[cfg(not(feature = "dom"))]
+    drop(future);
+    // tokio::task::spawn_local(future);
+
+    handle
 }
 
-/// The maple prelude.
 pub mod prelude {
-    pub use hirola_macros::{component, html};
 
-    pub use crate::cloned;
-    pub use crate::flow::{Indexed, IndexedProps, Keyed, KeyedProps};
+    // pub use crate::spawn;
+    pub use crate::effect::SideEffect;
     #[cfg(feature = "dom")]
-    pub use crate::generic_node::DomNode;
+    pub use crate::generic_node::DomNode as DomType;
     pub use crate::generic_node::GenericNode;
     #[cfg(feature = "ssr")]
-    pub use crate::generic_node::SsrNode;
-    pub use crate::noderef::NodeRef;
-    pub use crate::reactive::{
-        create_effect, create_effect_initial, create_memo, create_root, create_selector,
-        create_selector_with, on_cleanup, untrack, Signal, StateHandle,
-    };
-    pub use crate::render::Render;
+    pub use crate::generic_node::SsrNode as DomType;
+    pub use crate::templating::flow::{Indexed, IndexedProps};
+    pub use crate::templating::noderef::NodeRef;
+    pub use crate::templating::suspense::{Suspend, Suspense, SuspenseResult::*};
+    pub use crate::templating::switch::Switch;
+    pub use futures_signals::*;
+    pub use hirola_macros::{component, html};
+
+    #[cfg(feature = "dom")]
+    pub use crate::callback::Callback;
+    pub use crate::dom::Dom;
     #[cfg(feature = "ssr")]
     pub use crate::render_to_string;
-    pub use crate::TemplateResult;
     #[cfg(feature = "dom")]
     pub use crate::{render, render_to};
 
-    pub use crate::callback::Mixin;
-    pub use crate::callback::State;
-    pub use crate::callback::StateReduce;
-
+    #[cfg(feature = "app")]
     pub use crate::app::*;
-    #[cfg(feature = "router")]
-    pub use crate::router::*;
-    #[cfg(feature = "async")]
-    pub use crate::use_async;
-    #[cfg(feature = "async")]
-    pub use crate::AsyncResult;
 
-    pub use crate::styled::*;
+    pub use crate::mixins::*;
+    pub use crate::render::*;
+    pub use crate::BoxedLocal;
 
-    pub use crate::style;
+    pub use futures_signals::signal::Mutable;
+    pub use futures_signals::signal_map::MutableBTreeMap;
+    pub use futures_signals::signal_vec::MutableVec;
+}
 
-    pub use crate::mixins;
+#[cfg(feature = "dom")]
+pub mod dom_test_utils {
+    use wasm_bindgen::{prelude::Closure, JsCast};
+
+    pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
+        let with = with.clone();
+        let f: Box<dyn Fn() -> ()> = Box::new(move || f(&with));
+        let a = Closure::<dyn Fn()>::new(f);
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
+
+    pub fn next_tick<F: Fn() + 'static>(f: F) {
+        let a = Closure::<dyn Fn()>::new(move || f());
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
 }

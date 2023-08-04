@@ -1,0 +1,33 @@
+[package]
+name = "hirola-kit"
+version = "0.1.0"
+edition = "2021"
+documentation = "https://docs.rs/hirola"
+readme = "../../README.md"
+license = "MIT OR Apache-2.0"
+description = "A CLI for hirola"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+leptosfmt-pretty-printer = "0.1.6"
+rstml = "0.10.6"
+syn = { version = "2.0.18", features = [ "visit", "full", "extra-traits" ] }
+leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.11" }
+proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
+thiserror = "1.0.40"
+crop = "0.3.0"
+serde = { version = "1.0.163", features = [ "derive" ] }
+
+
+# Deps for cli
+clap = { version = "4.1.11", features = ["derive"] }
+rayon = "1.7.0"
+glob = "0.3.1"
+anyhow = "1.0.70"
+toml = "0.7.4"
+
+[dev-dependencies]
+indoc = "2.0.1"
+insta = "1.28.0"
+quote = "1.0.26"

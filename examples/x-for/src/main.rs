@@ -1,72 +1,50 @@
-use std::fmt::Display;
-
-use hirola::prelude::{mixins::model::input, *};
+use hirola::{
+    prelude::*,
+    signal_vec::{MutableVec, SignalVecExt},
+};
 use web_sys::Event;
 
-#[component]
-fn Color(text: Signal<String>) -> Dom {
-    html! {
-        <div
-            class="block"
-            mixin:model=&input(&text)
-        />
-    }
-}
-
-#[component]
-fn UserFn<T: Display>(name: T) {
-    let text = format!("Hello, {}", name);
-    html! {
-        <div>{text.clone()}</div>
-    }
-}
-
-struct User {
-    name: String,
-}
-
-impl hirola::prelude::Render<DomType> for User {
-    fn render(&self) -> Dom {
-        let text = format!("Hello, {}", self.name);
-        html! {
-            <div>{text.clone()}</div>
-        }
-    }
-}
-
-#[component]
-fn Page<'a, Children: Render<DomType>>(title: &'a str, children: Children) {
-    let text = format!("Hello, {}", title);
-    let children = children.render();
-    html! {
-        <>
-            <div>
-                {children.clone()}
-            </div>
-            <p>{text.clone()}</p>
-        </>
-    }
-}
-
-fn colors(_app: &HirolaApp) -> Dom {
-    let colors = Signal::new(
-        vec!["Red", "Green", "Blue"]
-            .iter()
-            .map(|c| Signal::new(c.to_string()))
-            .collect::<Vec<Signal<String>>>(),
-    );
-    let add_new = colors.callback(move |colors, _e: Event| {
-        colors.push(Signal::new("New Color".to_string()));
+fn colors() -> Dom {
+    let colors = MutableVec::new_with_values(vec!["Red", "Green", "Blue", "Violet"]);
+    let add_new = colors.callback_with(move |colors, _e: Event| {
+        colors.lock_mut().push("Violet-Dark");
     });
 
     html! {
         <>
-            <Page title=&"Test Page">
-                <User name=String::from("Geoff2") />
-                <UserFn name=String::from("Mureithi2") />
-                <button on:click=add_new>"Add New"</button>
-            </Page>
+            // <h2>"Static"</h2>
+            // <ul>
+            //     {for (_index, item) in (0..3).enumerate() {
+            //         html! { <li>{item.to_string()}</li> }
+            //     }}
+            // </ul>
+            // <h2>"Reactive"</h2>
+            // <ul>
+            //     {colors
+            //         .signal_vec()
+            //         .render_map(|item| {
+            //             html! { <li>{item}</li> }
+            //         })}
+            // </ul>
+            // <h2>"Reactive Filtered Starts with V"</h2>
+            // <ul>
+            //     {colors
+            //         .signal_vec()
+            //         .filter(|color| color.starts_with("V"))
+            //         .render_map(|item| {
+            //             html! { <li>{item}</li> }
+            //         })}
+            // </ul>
+            <MyComponentWithProps world="hirola" />
+            <button on:click=add_new>"Add New Color"</button>
         </>
+    }
+}
+
+#[component]
+fn MyComponentWithProps(world: &'static str) -> Dom {
+    html! {
+        <p>{world}</p>
     }
 }
 
@@ -75,6 +53,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
-    app.mount(&body, colors);
+    let dom = render_to(colors(), &body).unwrap();
+
+    std::mem::forget(dom);
 }

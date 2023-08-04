@@ -1,191 +1,203 @@
+use futures_signals::{signal::Mutable, signal_vec::MutableVec};
+use hirola_core::dom_test_utils::{next_tick, next_tick_with};
+
 use super::*;
 
 #[wasm_bindgen_test]
 fn append() {
-    let count = Signal::new(vec![1, 2]);
+    let count = MutableVec::new_with_values(vec![1, 2]);
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                }}
-            />
-        </ul>
-    });
+            {
+                count.signal_vec().render_map(|item| {
+                    html! {
+                        <li>{ item.to_string() }</li>
 
-    render_to(|| node, &test_div());
+                    }
+                } )
+            }
+        </ul>
+    };
+
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
 
-    assert_eq!(p.text_content().unwrap(), "12");
-
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.push(3);
-        tmp
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "12");
     });
-    assert_eq!(p.text_content().unwrap(), "123");
 
-    count.set(count.get()[1..].into());
-    assert_eq!(p.text_content().unwrap(), "23");
+    count.lock_mut().push(3);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "123");
+    });
+    let new_value = count.lock_ref()[1..].to_vec();
+    count.lock_mut().replace(new_value);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "23");
+    });
 }
 
 #[wasm_bindgen_test]
 fn swap_rows() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                }}
-            />
-        </ul>
-    });
+        {
+            count.signal_vec().render_map(|item| {
+                html! {
+                    <li>{ item.to_string() }</li>
 
-    render_to(|| node, &test_div());
+                }
+            } )
+        }
+        </ul>
+    };
+
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
-
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.swap(0, 2);
-        tmp
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "123");
     });
-    assert_eq!(p.text_content().unwrap(), "321");
 
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.swap(0, 2);
-        tmp
+    count.lock_mut().swap(0, 2);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "321");
     });
-    assert_eq!(p.text_content().unwrap(), "123");
+
+    count.lock_mut().swap(0, 2);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "123");
+    });
 }
 
 #[wasm_bindgen_test]
 fn delete_row() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                }}
-            />
-        </ul>
-    });
+        {
+            count.signal_vec().render_map(|item| {
+                html! {
+                    <li>{ item.to_string() }</li>
 
-    render_to(|| node, &test_div());
+                }
+            } )
+        }
+        </ul>
+    };
+
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
-
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.remove(1);
-        tmp
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "123");
     });
-    assert_eq!(p.text_content().unwrap(), "13");
+
+    count.lock_mut().remove(1);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "13");
+    });
 }
 
 #[wasm_bindgen_test]
 fn clear() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = MutableVec::new();
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                }}
-            />
+        {
+            count.signal_vec().render_map(|item: i32| {
+                html! {
+                    <li>{ item.to_string() }</li>
+                }
+            } )
+        }
         </ul>
-    });
+    };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div()).unwrap();
 
     let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
-
-    count.set(Vec::new());
-    assert_eq!(p.text_content().unwrap(), "");
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "");
+    });
+    count.lock_mut().replace(vec![1, 2, 3]);
+    next_tick_with(&p, |p| {
+        assert_eq!(p.inner_html(), "123");
+    });
+    count.lock_mut().replace(Vec::new());
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "");
+    });
 }
 
 #[wasm_bindgen_test]
 fn insert_front() {
-    let count = Signal::new(vec![1, 2, 3]);
+    let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item }</li>
-                    },
-                }}
-            />
+        {
+            count.signal_vec().render_map(|item| {
+                html! {
+                    <li>{ item.to_string() }</li>
+                }
+            } )
+        }
         </ul>
+    };
+
+    let _ = render_to(node, &test_div());
+    next_tick(|| {
+        let p = document().query_selector("ul").unwrap().unwrap();
+        assert_eq!(p.text_content().unwrap(), "123");
     });
-
-    render_to(|| node, &test_div());
-
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
-
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.insert(0, 4);
-        tmp
+    count.lock_mut().insert(0, 4);
+    next_tick(|| {
+        let p = document().query_selector("ul").unwrap().unwrap();
+        assert_eq!(p.text_content().unwrap(), "4123");
     });
-    assert_eq!(p.text_content().unwrap(), "4123");
 }
 
 #[wasm_bindgen_test]
 fn nested_reactivity() {
-    let count = Signal::new(vec![1, 2, 3].into_iter().map(Signal::new).collect());
+    let count =
+        MutableVec::new_with_values(vec![1u32, 2, 3].into_iter().map(Mutable::new).collect());
 
-    let node = cloned!((count) => html! {
+    let node = html! {
         <ul>
-            <Indexed
-                props={IndexedProps {
-                    iterable: count.handle(),
-                    template: |item| html! {
-                        <li>{ item.get() }</li>
-                    },
-                }}
-            />
+        {
+            count.signal_vec_cloned().render_map(|item| {
+                html! {
+                    <li>{ item }</li>
+
+                }
+            } )
+        }
         </ul>
+    };
+
+    let _ = render_to(node, &test_div());
+
+    next_tick(|| {
+        let p = document().query_selector("ul").unwrap().unwrap();
+        assert_eq!(p.text_content().unwrap(), "123");
     });
 
-    render_to(|| node, &test_div());
-
-    let p = document().query_selector("ul").unwrap().unwrap();
-    assert_eq!(p.text_content().unwrap(), "123");
-
-    count.get()[0].set(4);
-    assert_eq!(p.text_content().unwrap(), "423");
-
-    count.set({
-        let mut tmp = (*count.get()).clone();
-        tmp.push(Signal::new(5));
-        tmp
+    count.lock_ref()[0].set(4);
+    next_tick(|| {
+        let p = document().query_selector("ul").unwrap().unwrap();
+        assert_eq!(p.text_content().unwrap(), "423");
     });
-    assert_eq!(p.text_content().unwrap(), "4235");
+
+    count.lock_mut().push_cloned(Mutable::new(5));
+    next_tick(|| {
+        let p = document().query_selector("ul").unwrap().unwrap();
+        assert_eq!(p.text_content().unwrap(), "4235");
+    });
 }

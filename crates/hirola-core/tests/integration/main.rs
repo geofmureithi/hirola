@@ -1,7 +1,10 @@
 pub mod keyed;
 pub mod non_keyed;
+pub mod router;
 
+use futures_signals::signal::Mutable;
 use hirola::prelude::*;
+use hirola_core::dom_test_utils::{next_tick, next_tick_with};
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -45,7 +48,7 @@ fn hello_world() {
         <p>"Hello World!"</p>
     };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     assert_eq!(
         &document()
@@ -65,13 +68,10 @@ fn hello_world_noderef() {
         <p ref=p_ref> "Hello World!"</p>
     };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     assert_eq!(
-        &p_ref
-            .get::<DomNode>()
-            .unchecked_into::<HtmlElement>()
-            .outer_html(),
+        &p_ref.get().unchecked_into::<HtmlElement>().outer_html(),
         "<p>Hello World!</p>"
     );
 }
@@ -83,7 +83,7 @@ fn interpolation() {
         <p>{text}</p>
     };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     assert_eq!(
         document()
@@ -98,38 +98,42 @@ fn interpolation() {
 
 #[wasm_bindgen_test]
 fn reactive_text() {
-    let count = Signal::new(0);
+    let count = Mutable::new(0);
 
-    let node = cloned!((count) => html! {
-        <p> { count.get() }</p>
-    });
+    let node = html! {
+        <p> { count.clone() }</p>
+    };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let p = document().query_selector("p").unwrap().unwrap();
 
     assert_eq!(p.text_content().unwrap(), "0");
 
     count.set(1);
-    assert_eq!(p.text_content().unwrap(), "1");
+    next_tick_with(&p, |p| {
+        assert_eq!(p.text_content().unwrap(), "1");
+    });
 }
 
 #[wasm_bindgen_test]
 fn reactive_attribute() {
-    let count = Signal::new(0);
+    let count = Mutable::new(0);
 
-    let node = cloned!((count) => html! {
-        <span attribute=count.get()/>
-    });
+    let node = html! {
+        <span bind:attribute=count/>
+    };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let span = document().query_selector("span").unwrap().unwrap();
 
     assert_eq!(span.get_attribute("attribute").unwrap(), "0");
 
     count.set(1);
-    assert_eq!(span.get_attribute("attribute").unwrap(), "1");
+    next_tick(move || {
+        assert_eq!(span.get_attribute("attribute").unwrap(), "1");
+    });
 }
 
 #[wasm_bindgen_test]
@@ -142,12 +146,12 @@ fn noderefs() {
         </div>
     };
 
-    render_to(|| node, &test_div());
+    let _ = render_to(node, &test_div());
 
     let input_ref = document().query_selector("input").unwrap().unwrap();
 
     assert_eq!(
         Node::from(input_ref),
-        noderef.get::<DomNode>().unchecked_into()
+        noderef.get().unchecked_into()
     );
 }

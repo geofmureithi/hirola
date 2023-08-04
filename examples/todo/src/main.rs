@@ -1,4 +1,5 @@
 use hirola::prelude::*;
+use hirola::signal::Mutable;
 use wasm_bindgen::JsCast;
 use web_sys::window;
 use web_sys::HtmlInputElement;
@@ -11,14 +12,14 @@ struct Todo {
 }
 
 #[component]
-fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<Todo>>>) {
+fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Mutable<Todo>>>) {
     let todo = (&*todo).clone().get();
     let id = todo.id.clone();
     let href = format!("/todo/{}", id);
 
     let title = todo.title.clone();
     let tl = title.clone();
-    let on_remove = todos.callback(move |todos, _e| {
+    let on_remove = todos.update(move |todos, _e| {
         let index = todos
             .get()
             .iter()
@@ -34,7 +35,7 @@ fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<To
                 class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green hover:bg-green"
                 mixin:route=&router.link()
                 >
-                "View"
+                "Dom"
             </a>
             <button
                 on:click=on_remove
@@ -45,7 +46,7 @@ fn TodoCard(todo: StateHandle<Todo>, router: Router, todos: Signal<Vec<Signal<To
     }
 }
 
-fn todo_view(app: &HirolaApp) -> Dom {
+fn todo_dom(app: &App<TodoStore>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
     let route = router.params().get();
     let param = route.params.get("id").unwrap_or(&"1".to_string()).clone();
@@ -69,7 +70,7 @@ fn todo_view(app: &HirolaApp) -> Dom {
     }
 }
 
-fn home(app: &HirolaApp) -> Dom {
+fn home(app: &App<TodoStore>) -> Dom {
     let router = app.data::<Router>().unwrap().clone();
 
     let state = app.data::<TodoStore>().unwrap().clone().todos;
@@ -82,7 +83,7 @@ fn home(app: &HirolaApp) -> Dom {
             .get_element_by_id("add")
             .unwrap();
         let input = input.dyn_ref::<HtmlInputElement>().unwrap();
-        todos.push(Signal::new(Todo {
+        todos.push(Mutable::new(Todo {
             id: format!("{}", todos.get_untracked().len() + 1),
             title: input.value(),
             complete: false,
@@ -137,11 +138,11 @@ fn home(app: &HirolaApp) -> Dom {
 
 #[derive(Clone)]
 struct TodoStore {
-    todos: Signal<Vec<Signal<Todo>>>,
+    todos: MutableVec<Mutable<Todo>>,
 }
 
-fn index(app: &HirolaApp) -> Dom {
-    let router = app.data::<Router>().unwrap().clone();
+fn index(app: &App<TodoStore>) -> Dom {
+    let router = app.router();
     let app = app.clone();
     html! {
         <div>
@@ -155,30 +156,24 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let todos = vec![
-        Signal::new(Todo {
+    let todos = MutableVec::new_with_values(vec![
+        Mutable::new(Todo {
             id: String::from("1"),
             title: String::from("Add another component to Tailwind Components"),
             complete: false,
         }),
-        Signal::new(Todo {
+        Mutable::new(Todo {
             id: String::from("2"),
             title: String::from("Submit Todo App Component to Tailwind Components"),
             complete: true,
         }),
-    ];
-    let todos = Signal::new(todos);
+    ]);
+    let todos = Mutable::new(TodoStore { todos });
 
-    let mut app = HirolaApp::new();
-
-    let mut router = Router::new();
-    router.add("/", home);
-    router.add("/todo/:id", todo_view);
-
-    app.extend(TodoStore { todos });
-    app.extend(router);
-
-    app.mount(&body, index);
+    let mut app = App::new(todos);
+    app.route("/", home);
+    app.route("/todo/:id", todo_dom);
+    app.mount(index, &body);
 }
 
 #[cfg(test)]
@@ -187,7 +182,7 @@ mod test {
     #[test]
     fn app_renders() {
         let mut router = Router::new();
-        router.add("/", |app| {
+        router.route("/", |app| {
             html! {
                 <p>"Homepage"</p>
             }

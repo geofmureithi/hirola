@@ -1,44 +1,61 @@
-use crate::prelude::DomNode;
+use futures_signals::{signal::Mutable, signal_vec::MutableVec};
+use web_sys::Event;
 
-pub trait StateReduce<T> {
-    fn mut_callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+pub trait Callback<T> {
+    /// Pass a callback that allows interacting with the inner value and the dom event
+    /// This method returns the new value and this updates the signal.
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event)>
     where
-        F: Fn(&T, E) -> T + 'static;
+        F: Fn(&Self, Event) + 'static;
+    /// Pass a callback that allows interacting with self and the dom event
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event)>
+    where
+        F: Fn(&Self) + 'static,
+        Self: Sized;
 }
 
-use thiserror::Error;
+impl<T: Clone + 'static> Callback<T> for Mutable<T> {
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
+    where
+        F: Fn(&Self) + 'static,
+    {
+        let state = self.clone();
+        let cb = move |_| {
+            f(&state);
+        };
+        Box::new(cb)
+    }
 
-#[derive(Error, Debug)]
-pub enum MixinError {
-    #[error("Invalid namespace (expected {expected:?}, got {found:?})")]
-    InvalidNamespace { expected: String, found: String },
-    #[error("Could not bind mixin to Node: {0:?}")]
-    NodeError(DomNode),
-}
-
-pub trait Mixin {
-    fn mixin(&self, namespace: &str, node: DomNode) -> Result<(), MixinError>;
-}
-
-impl<T> Mixin for T
-where
-    T: Fn(DomNode),
-{
-    fn mixin(&self, _ns: &str, node: DomNode) -> Result<(), MixinError> {
-        (&self)(node);
-        Ok(())
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
+    where
+        F: Fn(&Self, Event) + 'static,
+    {
+        let state = self.clone();
+        let cb = move |e| {
+            f(&state, e);
+        };
+        Box::new(cb)
     }
 }
 
-pub trait State: Clone {
-    // Get a callback that allows interacting with state
-    fn callback<F, E>(&self, f: F) -> Box<dyn Fn(E)>
+impl<T: Clone + 'static> Callback<T> for MutableVec<T> {
+    fn callback<F>(&self, f: F) -> Box<dyn Fn(Event) + 'static>
     where
-        F: Fn(&Self, E) + 'static,
-        Self: 'static,
+        F: Fn(&Self) + 'static,
     {
         let state = self.clone();
-        let cb = move |e: E| {
+        let cb = move |_| {
+            (f(&state));
+        };
+        Box::new(cb)
+    }
+
+    fn callback_with<F>(&self, f: F) -> Box<dyn Fn(Event)>
+    where
+        F: Fn(&Self, Event) + 'static,
+    {
+        let state = self.clone();
+        let cb = move |e: Event| {
             f(&state, e);
         };
         Box::new(cb)

@@ -6,50 +6,50 @@ use hirola_core::prelude::*;
 pub fn bench(c: &mut Criterion) {
     c.bench_function("ssr_small", |b| {
         b.iter(|| {
-            fn App<G: GenericNode>() -> TemplateResult<G> {
-                template! {
-                    div(class="my-container") {
-                        p { "Hello World!" }
-                    }
+            fn App() -> Dom {
+                html! {
+                    <div class="my-container">
+                        <p>"Hello World!"</p>
+                    </div>
                 }
             }
 
-            let _ssr = render_to_string(|| template! { App() });
+            let _ssr = render_to_string(App());
         })
     });
 
-    c.bench_function("ssr_medium", |b| {
-        b.iter(|| {
-            fn ListItem<G: GenericNode>(value: i32) -> TemplateResult<G> {
-                template! {
-                    p {
-                        span(class="placeholder")
-                        i { (value) }
-                        button(class="delete") {
-                            i(class="delete-icon")
-                        }
-                    }
-                }
-            }
+    // c.bench_function("ssr_medium", |b| {
+    //     b.iter(|| {
+    //         fn ListItem<G: GenericNode>(value: i32) -> Dom<G> {
+    //             template! {
+    //                 p {
+    //                     span(class="placeholder")
+    //                     i { (value) }
+    //                     button(class="delete") {
+    //                         i(class="delete-icon")
+    //                     }
+    //                 }
+    //             }
+    //         }
 
-            fn App<G: GenericNode>() -> TemplateResult<G> {
-                let values = Signal::new((0i32..=10).collect::<Vec<_>>());
+    //         fn App<G: GenericNode>() -> Dom<G> {
+    //             let values = Signal::new((0i32..=10).collect::<Vec<_>>());
 
-                template! {
-                    div(class="my-container") {
-                        Indexed(IndexedProps {
-                            iterable: values.handle(),
-                            template: |x| template! {
-                                ListItem(x)
-                            }
-                        })
-                    }
-                }
-            }
+    //             template! {
+    //                 div(class="my-container") {
+    //                     Indexed(IndexedProps {
+    //                         iterable: values.handle(),
+    //                         template: |x| template! {
+    //                             ListItem(x)
+    //                         }
+    //                     })
+    //                 }
+    //             }
+    //         }
 
-            let _ssr = render_to_string(|| template! { App() });
-        })
-    });
+    //         let _ssr = render_to_string(|| template! { App() });
+    //     })
+    // });
 }
 
 criterion_group! {

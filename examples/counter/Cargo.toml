@@ -6,26 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../", features=["form"]}
-wasm-bindgen = {version = "0.2"}
-
-[dependencies.web-sys]
-features = [
-  "console",
-  "Comment",
-  "Document",
-  "DocumentFragment",
-  "Element",
-  "Event",
-  "HtmlElement",
-  "Node",
-  "Text",
-  "Window",
-]
-
-version = "0.3"
+hirola = { path = "../../", features = ["dom", "app"]}
 
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
-hirola = { path = "../../", default-features=false, features =["router", "global-state", "ssr"]}
+hirola = { path = "../../", default-features=false, features =["dom"]}

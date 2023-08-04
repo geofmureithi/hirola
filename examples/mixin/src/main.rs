@@ -9,10 +9,10 @@ fn x_html<'a>(text: &'a str) -> Box<dyn Fn(DomNode) -> () + 'a> {
     Box::new(cb)
 }
 
-fn mixin_demo(_app: &HirolaApp) -> Dom {
+fn mixin_demo() -> Dom {
     let raw = "<strong>calebporzio</strong>";
-    let is_shown = Signal::new(true);
-    let toggle = is_shown.mut_callback(|show, _e| !show);
+    let is_shown = Mutable::new(true);
+    let toggle = is_shown.update_with(|show, _e| !show);
 
     html! {
         <div
@@ -32,7 +32,7 @@ fn mixin_demo(_app: &HirolaApp) -> Dom {
                         "width": "max-content";
                         "margin-left": "auto";
                         "margin-right": "auto";
-                        "margin-top": {if *is_shown.get() { "5px" } else { "10px" }};
+                        "margin-top": {if is_shown.get() { "5px" } else { "10px" }};
                     }
 
                     @media "(orientation: landscape)" {
@@ -67,7 +67,5 @@ fn main() {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
-
-    let app = HirolaApp::new();
-    app.mount(&body, mixin_demo);
+    render_to(mixin_demo, &body);
 }

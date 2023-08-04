@@ -3,7 +3,7 @@ use tool::SignTool;
 
 mod tool;
 
-fn signature_pad(_app: &HirolaApp) -> Dom {
+fn signature_pad(_app: &App<S, G>) -> Dom {
     let canvas = NodeRef::new();
     let tool = SignTool::new(canvas.clone());
 
@@ -15,7 +15,7 @@ fn signature_pad(_app: &HirolaApp) -> Dom {
     });
 
     let mouse_move = tool.callback(|tool, e| {
-        if *tool.is_mouse_clicked.get() && *tool.is_mouse_in_canvas.get() {
+        if tool.is_mouse_clicked.get() && tool.is_mouse_in_canvas.get() {
             tool.update_position(e);
             tool.draw();
         }
@@ -50,7 +50,5 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let app = HirolaApp::new();
-
-    app.mount(&body, signature_pad);
+    hirola::prelude::render_to(signature_pad, &body);
 }

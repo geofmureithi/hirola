@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../", features =["router", "global-state"]}
+hirola = { path = "../../", features =["app"]}
 wasm-bindgen = {version = "0.2"}
 
 [dependencies.web-sys]

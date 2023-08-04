@@ -5,49 +5,33 @@
     unreachable_pub
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-//! # Hirola API Documentation
-//! **Hirola** is an un-opinionated and extensible web framework for that is focused on simplicity and predictability.
-//!
-//! ## Example
-//! ```rust,no_run
-//! use hirola::prelude::*;
-//!
-//! fn counter(_: &HirolaApp) -> Dom {
-//!     let state = Signal::new(99);
-//!     let decerement = state.mut_callback(|count, _| *count - 1);
-//!     let incerement = state.mut_callback(|count, _| *count + 1);
-//!
-//!     html! {
-//!         <div class="flex flex-row h-10">
-//!             <button on:click=decerement>"-"</button>
-//!             <input value=state.get() disabled/>
-//!             <button on:click=incerement>"+"</button>
-//!         </div>
-//!     }
-//! }
-//!
-//! fn main() {
-//!     let window = web_sys::window().unwrap();
-//!     let document = window.document().unwrap();
-//!     let body = document.body().unwrap();
-//!
-//!     let app = HirolaApp::new();
-//!     app.mount(&body, counter);
-//! }
-//! ```
-//!
-//!
+#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 //! ## Features
 #![cfg_attr(
     feature = "docsrs",
     cfg_attr(doc, doc = ::document_features::document_features!())
 )]
 
-//! Hirola is derived from a fork of [maple reactivity core](https://github.com/lukechu10/maple).
-/// The defaults from core
+/// The defaults imports
 pub mod prelude {
-    pub use super::*;
     pub use hirola_core::prelude::*;
+}
+
+/// Exposing single item signal
+pub mod signal {
+    pub use hirola_core::prelude::signal::*;
+}
+
+/// Exposing vec signal
+pub mod signal_vec {
+    pub use hirola_core::prelude::signal_vec::*;
+}
+
+/// App introduces state and routing management.
+/// Use if you need to store data shared between routes or just routing.
+#[cfg(feature = "app")]
+pub mod app {
+    pub use hirola_core::app::*;
 }
 
 /// Include form mixins and utilities

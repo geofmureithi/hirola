@@ -1,6 +1,6 @@
 [package]
 name = "hirola-form"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 description = "Form mixins and utilities for hirola"
 repository = "https://github.com/geofmureithi/hirola"
@@ -14,7 +14,7 @@ keywords = ["wasm", "html", "form", "web"]
 [dependencies]
 hirola-core = { path = "../hirola-core", features = [
   "dom",
-], version = "0.3.0" }
+], version = "0.3.1" }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 serde = { version = "1.0.80", features = ["derive"] }
 serde_json = "1"

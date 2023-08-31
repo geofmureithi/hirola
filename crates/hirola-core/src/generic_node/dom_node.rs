@@ -11,9 +11,15 @@ use web_sys::{Element, Event, Node, Text};
 /// _This API requires the following crate features to be activated: `dom`_
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[repr(transparent)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DomNode {
+    // TODO: Is there a better way to do this?
+    #[cfg_attr(feature = "serde", serde(skip, default = "unreachable_node"))]
     pub node: Node,
+}
+
+fn unreachable_node() -> Node {
+    unreachable!("It is currently not possible to serialize Browser dom nodes")
 }
 
 impl DomNode {

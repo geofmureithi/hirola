@@ -23,10 +23,13 @@ pub enum DomSideEffect {
 }
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Dom {
     node: DomType,
+    #[cfg_attr(feature = "serde", serde(skip))]
     pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
     #[cfg(feature = "dom")]
+    #[cfg_attr(feature = "serde", serde(skip))]
     event_handlers: Rc<RefCell<Vec<Closure<EventListener>>>>,
     children: RefCell<Vec<Dom>>,
 }

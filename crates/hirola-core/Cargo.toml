@@ -16,13 +16,14 @@ keywords = ["wasm", "html", "dom", "web"]
 [dependencies]
 html-escape = { version = "0.2.7", optional = true }
 hirola-macros = { path = "../hirola-macros", version = "0.3.0" }
-wasm-bindgen = { version = "0.2", optional = true  }
+wasm-bindgen = { version = "0.2", optional = true }
 matchit = { version = "0.7", optional = true }
-wasm-bindgen-futures = { optional = true , version = "0.4.29" }
+wasm-bindgen-futures = { optional = true, version = "0.4.29" }
 futures-signals = "0.3.32"
 futures-util = "0.3"
 discard = "1"
 log = "0.4.6"
+serde = { version = "1", optional = true, features = ["derive", "rc"] }
 
 [dependencies.web-sys]
 features = [
@@ -56,6 +57,7 @@ app = [
   "web-sys/Location",
   "web-sys/HtmlLinkElement",
 ]
+serde = ["dep:serde"]
 
 
 [[bench]]

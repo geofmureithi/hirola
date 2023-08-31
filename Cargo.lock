@@ -771,6 +771,7 @@ dependencies = [
  "html-escape",
  "log",
  "matchit",
+ "serde",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",

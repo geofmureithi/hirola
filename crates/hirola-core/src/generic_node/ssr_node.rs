@@ -9,6 +9,7 @@ use crate::generic_node::GenericNode;
 ///
 /// _This API requires the following crate features to be activated: `ssr`_
 #[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 enum SsrNodeType {
     Element(RefCell<Element>),
     Comment(RefCell<Comment>),
@@ -17,6 +18,8 @@ enum SsrNodeType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
+
 struct SsrNodeInner {
     ty: Rc<SsrNodeType>,
     /// No parent if `Weak::upgrade` returns `None`.
@@ -24,6 +27,7 @@ struct SsrNodeInner {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct SsrNode(Rc<SsrNodeInner>);
 
 impl PartialEq for SsrNode {
@@ -256,6 +260,7 @@ impl fmt::Display for SsrNode {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Element {
     name: String,
     attributes: HashMap<String, String>,
@@ -279,6 +284,7 @@ impl fmt::Display for Element {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Comment(String);
 
 impl fmt::Display for Comment {
@@ -288,6 +294,7 @@ impl fmt::Display for Comment {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Text(String);
 
 impl fmt::Display for Text {
@@ -297,6 +304,7 @@ impl fmt::Display for Text {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Fragment(Vec<SsrNode>);
 
 impl fmt::Display for Fragment {

@@ -18,6 +18,7 @@ pub struct DomNode {
     pub node: Node,
 }
 
+#[allow(unused)]
 fn unreachable_node() -> Node {
     unreachable!("It is currently not possible to serialize Browser dom nodes")
 }

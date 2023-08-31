@@ -24,7 +24,7 @@ default = ["hirola-core/default"]
 dom = ["hirola-core/dom"]
 
 # ## Enables serialization of state
-# serde = ["hirola-core/serde"]
+serde = ["hirola-core/serde"]
 
 ## Enables server side reendering
 ssr = ["hirola-core/ssr"]
@@ -70,8 +70,8 @@ optional = true
 [package.metadata.docs.rs]
 # defines the configuration attribute `docsrs`
 rustdoc-args = ["--cfg", "docsrs"]
-all-features = true
 default-target = "wasm32-unknown-unknown"
+features = ["app", "dom", "serde", "docsrs"]
 
 
 [profile.release]

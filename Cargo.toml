@@ -39,8 +39,8 @@ form = ["hirola-form"]
 
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.0"
-wasm-bindgen = { version = "0.2.79" }
+wasm-bindgen-test = "0.3.37"
+wasm-bindgen = { version = "0.2.87" }
 hirola = { path = ".", features = ["app", "dom"] }
 futures-util = "0.3"
 web-sys = { version = "0.3", features = ["Document", "Node", "Element"] }

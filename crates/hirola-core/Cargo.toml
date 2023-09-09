@@ -41,7 +41,7 @@ optional = true
 version = "0.3.64"
 
 [dev-dependencies]
-criterion = { version = "0.3", features = ["html_reports"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 wasm-bindgen-test = "0.3"
 hirola = { path = "../../" }
 web-sys = { version = "0.3", features = ["DomTokenList", "Element", "Window"] }

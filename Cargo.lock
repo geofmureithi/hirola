@@ -613,9 +613,9 @@ dependencies = [
 
 [[package]]
 name = "futures-signals"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36a12cb78961d5c0bc0e358599bba98ec09201090a22339cd8ea27e815c11b25"
+checksum = "3b175f2f6600dd81d92d20cf10872b03ea9df6b2513ca7f672341260dacb1ab2"
 dependencies = [
  "discard",
  "futures-channel",

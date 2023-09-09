@@ -28,6 +28,6 @@ anyhow = "1.0.70"
 toml = "0.7.4"
 
 [dev-dependencies]
-indoc = "2.0.1"
+indoc = "2.0.3"
 insta = "1.28.0"
 quote = "1.0.26"

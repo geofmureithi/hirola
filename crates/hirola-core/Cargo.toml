@@ -19,7 +19,7 @@ hirola-macros = { path = "../hirola-macros", version = "0.3.1" }
 wasm-bindgen = { version = "0.2", optional = true }
 matchit = { version = "0.7", optional = true }
 wasm-bindgen-futures = { optional = true, version = "0.4.37" }
-futures-signals = "0.3.32"
+futures-signals = "0.3.33"
 futures-util = "0.3"
 discard = "1"
 log = "0.4.20"

@@ -139,9 +139,12 @@ where
 
                     VecDiff::RemoveAt { index } => {
                         let dom = self.children.remove(index);
-                        let children = dom.children().take();
-                        for child in children {
-                            child.node().remove_self()
+                        #[cfg(feature = "dom")]
+                        {
+                            let children = dom.children().take();
+                            for child in children {
+                                child.node().remove_self()
+                            }
                         }
                         drop(dom)
                     }
@@ -149,9 +152,12 @@ where
                     VecDiff::Pop {} => {
                         // TODO: change to unwrap_throw
                         let dom = self.children.pop().unwrap();
-                        let children = dom.children().take();
-                        for child in children {
-                            child.node().remove_self()
+                        #[cfg(feature = "dom")]
+                        {
+                            let children = dom.children().take();
+                            for child in children {
+                                child.node().remove_self()
+                            }
                         }
                         drop(dom)
                     }
@@ -174,6 +180,7 @@ where
             state.process_change(change);
             ready(())
         });
+        #[cfg(feature = "dom")]
         parent.effect(fut);
         Ok(())
     }

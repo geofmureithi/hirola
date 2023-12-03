@@ -42,12 +42,15 @@ where
             }
 
             fn clear(&mut self) {
-                let node = &mut self.holder;
-                if let Some(frag) = &self.current {
-                    for child in &frag.children().take() {
-                        log::debug!("Result for remove {:?}", node.remove_child(&child.node()));
-                    }
-                };
+                #[cfg(feature = "dom")]
+                {
+                    let node = &mut self.holder;
+                    if let Some(frag) = &self.current {
+                        for child in &frag.children().take() {
+                            log::debug!("Result for remove {:?}", node.remove_child(&child.node()));
+                        }
+                    };
+                }
                 self.current = None;
             }
 
@@ -65,6 +68,7 @@ where
 
             async {}
         });
+        #[cfg(feature = "dom")]
         parent.effect(fut);
         Ok(())
     }

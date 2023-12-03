@@ -103,9 +103,12 @@ impl<T: Display + Clone + 'static> Render for Mutable<T> {
     fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
         let node = DomType::text_node(&self.get_cloned().to_string());
         let child = Dom::new_from_node(&node);
-        let fut = self.signal_ref(move |e| node.update_inner_text(&e.to_string()));
-        parent.effect(fut.to_future());
-        parent.append_child(child).unwrap();
+        #[cfg(feature = "dom")]
+        {
+            let fut = self.signal_ref(move |e| node.update_inner_text(&e.to_string()));
+            parent.effect(fut.to_future());
+        }
+        parent.append_child(child)?;
         Ok(())
     }
 }

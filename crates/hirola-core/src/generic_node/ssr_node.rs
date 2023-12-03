@@ -21,8 +21,10 @@ enum SsrNodeType {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 
 struct SsrNodeInner {
+    #[serde(rename = "type")]
     ty: Rc<SsrNodeType>,
     /// No parent if `Weak::upgrade` returns `None`.
+    #[serde(skip_serializing)]
     parent: RefCell<Weak<SsrNodeInner>>,
 }
 

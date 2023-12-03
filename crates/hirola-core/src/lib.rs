@@ -140,6 +140,8 @@ pub mod prelude {
     pub use crate::render::*;
     pub use crate::BoxedLocal;
 
+    pub use crate::generic_node::*;
+
     pub use futures_signals::signal::Mutable;
     pub use futures_signals::signal_map::MutableBTreeMap;
     pub use futures_signals::signal_vec::MutableVec;

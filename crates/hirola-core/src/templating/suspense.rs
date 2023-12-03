@@ -51,12 +51,15 @@ impl<Res: Default + 'static> Render for Suspense<Res> {
             }
 
             fn clear(&mut self) {
-                let node = &mut self.holder;
-                if let Some(frag) = &self.current {
-                    for child in &frag.children().take() {
-                        node.remove_child(&child.node());
-                    }
-                };
+                #[cfg(feature = "dom")]
+                {
+                    let node = &mut self.holder;
+                    if let Some(frag) = &self.current {
+                        for child in &frag.children().take() {
+                            node.remove_child(&child.node());
+                        }
+                    };
+                }
                 self.current = None;
             }
 
@@ -81,6 +84,7 @@ impl<Res: Default + 'static> Render for Suspense<Res> {
             let new_dom = template(future.await);
             state.apply(new_dom).unwrap();
         };
+        #[cfg(feature = "dom")]
         parent.effect(fut);
         Ok(())
     }

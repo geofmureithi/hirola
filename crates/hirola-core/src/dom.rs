@@ -23,14 +23,17 @@ pub enum DomSideEffect {
 }
 
 #[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Dom {
     node: DomType,
+    #[cfg(feature = "dom")]
     #[cfg_attr(feature = "serde", serde(skip))]
     pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
     #[cfg(feature = "dom")]
     #[cfg_attr(feature = "serde", serde(skip))]
     event_handlers: Rc<RefCell<Vec<Closure<EventListener>>>>,
+    #[cfg(feature = "dom")]
+    #[cfg_attr(feature = "serde", serde(skip))]
     children: RefCell<Vec<Dom>>,
 }
 
@@ -49,10 +52,12 @@ impl Dom {
 
     pub fn append_child(&self, child: Dom) -> Result<(), Error> {
         self.node.append_child(&child.node);
+        #[cfg(feature = "dom")]
         self.children.borrow_mut().push(child);
         Ok(())
     }
 
+    #[cfg(feature = "dom")]
     pub fn children(&self) -> &RefCell<Vec<Dom>> {
         &self.children
     }
@@ -64,9 +69,11 @@ impl Dom {
     pub fn new_from_node(node: &DomType) -> Dom {
         Self {
             node: node.clone(),
+            #[cfg(feature = "dom")]
             children: Default::default(),
             #[cfg(feature = "dom")]
             event_handlers: Default::default(),
+            #[cfg(feature = "dom")]
             side_effects: Default::default(),
         }
     }
@@ -84,7 +91,9 @@ impl Dom {
     pub fn attribute(&self, name: &str, value: &str) {
         self.node.set_attribute(name, value);
     }
+
     #[inline]
+    #[cfg(feature = "dom")]
     pub fn effect(&self, future: impl Future<Output = ()> + 'static) {
         self.side_effects
             .borrow_mut()
@@ -105,18 +114,18 @@ impl Dom {
                 .into_iter()
                 .map(|c| c.forget())
                 .collect();
+            let _cleanup: Vec<()> = self
+                .side_effects
+                .take()
+                .into_iter()
+                .map(|e| match e {
+                    DomSideEffect::Mounted(e) => e.discard(),
+                    DomSideEffect::UnMounted(_) => {
+                        log::warn!("Dropping a side effect that was not mounted")
+                    }
+                })
+                .collect();
         }
-        let _cleanup: Vec<()> = self
-            .side_effects
-            .take()
-            .into_iter()
-            .map(|e| match e {
-                DomSideEffect::Mounted(e) => e.discard(),
-                DomSideEffect::UnMounted(_) => {
-                    log::warn!("Dropping a side effect that was not mounted")
-                }
-            })
-            .collect();
     }
 
     pub fn mount(self, node: &DomType) -> Result<Dom, Error> {

@@ -1,11 +1,13 @@
-use crate::{dom::Dom, prelude::*};
-use futures_signals::signal::{Mutable, MutableSignalCloned, SignalExt};
+use hirola_core::prelude::signal::{Mutable, MutableSignalCloned, SignalExt};
+use hirola_core::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
-#[cfg(feature = "dom")]
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-#[cfg(feature = "dom")]
 use web_sys::{Element, Event};
+
+use crate::Dom;
+
+use super::App;
 
 /// Router struct for handling routing in the frontend application.
 ///
@@ -75,16 +77,14 @@ impl<S: Clone + 'static> Router<S> {
     /// let router = Router::<()>::new();
     /// ```
     pub fn new() -> Self {
-        #[allow(unused_mut)]
         let mut path = String::from("/");
-        #[cfg(feature = "dom")]
         if let Some(window) = web_sys::window() {
             path = window.location().pathname().unwrap_or("/".to_string());
         }
         Router {
             current: Mutable::new(path),
             handler: Default::default(),
-            not_found: Box::new(|_| Dom::text("Not Found")),
+            not_found: Box::new(|_| Dom::text_node("Not Found")),
         }
     }
 
@@ -137,9 +137,7 @@ impl<S: Clone + 'static> Router<S> {
     /// let router = Router::<()>::new();
     /// router.push("/about");
     pub fn push(&self, path: &str) {
-        #[cfg(feature = "dom")]
         let window = web_sys::window().unwrap();
-        #[cfg(feature = "dom")]
         window
             .history()
             .unwrap()
@@ -169,20 +167,15 @@ impl<S: Clone + 'static> Router<S> {
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
     /// ```
     pub fn link(&self) -> Box<dyn Fn(&Dom) -> () + '_> {
-        #[cfg(feature = "dom")]
         let router = self.clone();
-        #[allow(unused_variables)]
         let cb = move |node: &Dom| {
-            #[cfg(feature = "dom")]
             let router = router.clone();
-            #[cfg(feature = "dom")]
             let handle_click = Box::new(move |e: Event| {
                 e.prevent_default();
                 let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
                 let href = element.get_attribute("href").unwrap();
                 router.push(&href);
             }) as Box<dyn Fn(Event)>;
-            #[cfg(feature = "dom")]
             node.event("click", handle_click);
         };
         Box::new(cb)
@@ -252,11 +245,9 @@ impl<S: Clone + 'static> Router<S> {
     /// let doc = web_sys::window().unwrap().document().unwrap();
     /// router.render(&app, &DomType::fragment());
     /// ```
-    pub fn render(self, app: &App<S>, parent: &DomType) -> Dom {
+    pub fn render(self, app: &App<S>, parent: &Dom) -> Dom {
         let router = &self.handler;
-        #[cfg(feature = "dom")]
         let current = self.current.clone();
-        #[cfg(feature = "dom")]
         //Hash routing forward in history and URL rewrite
         let handle_hash = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let l: String = web_sys::window()
@@ -276,17 +267,13 @@ impl<S: Clone + 'static> Router<S> {
 
             current.set(l.to_string());
         }) as Box<dyn Fn(_)>);
-        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onhashchange(Some(handle_hash.as_ref().unchecked_ref()));
-        #[cfg(feature = "dom")]
         handle_hash.forget();
 
-        #[cfg(feature = "dom")]
         let current = self.current.clone();
         //Routing for navigating in history and escaping hash routes
-        #[cfg(feature = "dom")]
         let handle_pop = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let path_name = web_sys::window().unwrap().location().pathname().unwrap();
 
@@ -306,12 +293,10 @@ impl<S: Clone + 'static> Router<S> {
             log::debug!("pop handle : {path_name}");
         }) as Box<dyn Fn(_)>);
 
-        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onpopstate(Some(handle_pop.as_ref().unchecked_ref()));
 
-        #[cfg(feature = "dom")]
         handle_pop.forget();
         let route = &self.current.clone();
 
@@ -323,7 +308,7 @@ impl<S: Clone + 'static> Router<S> {
         };
 
         let builder = page_fn(&app);
-        let dom = builder.mount(&parent).unwrap();
+        let _ = builder.mount(&parent);
 
         let router = router.clone();
         let app = app.clone();
@@ -339,11 +324,10 @@ impl<S: Clone + 'static> Router<S> {
                 };
 
                 let builder = page_fn(&app);
-                let dom = builder.mount(&DomType::fragment()).unwrap();
-                node.replace_children_with(&dom.node());
-                #[cfg(feature = "dom")]
+                let dom = Dom::fragment();
+                builder.mount(&dom);
+                node.replace_children_with(&dom);
                 let window = web_sys::window().unwrap();
-                #[cfg(feature = "dom")]
                 window
                     .history()
                     .unwrap()
@@ -352,8 +336,8 @@ impl<S: Clone + 'static> Router<S> {
                 log::debug!("Router received new path: {route_match}");
             })
             .to_future();
-        dom.effect(wait_for_next_route);
-        dom
+        parent.effect(wait_for_next_route);
+        parent.clone()
     }
 
     /// Inserts a new route and its corresponding page rendering function into the router.

@@ -5,6 +5,7 @@ pub mod router;
 use futures_signals::signal::Mutable;
 use hirola::prelude::*;
 use hirola_core::dom_test_utils::{next_tick, next_tick_with};
+use hirola_dom::{node_ref::NodeRef, render_to};
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 

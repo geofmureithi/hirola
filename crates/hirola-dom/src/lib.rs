@@ -1,9 +1,9 @@
-pub mod noderef;
-use core::fmt;
-use std::rc::Rc;
-use std::{cell::RefCell, future::Future};
+pub mod app;
+pub mod mixins;
+pub mod node_ref;
 
-use discard::{DiscardOnDrop, Discard};
+use core::fmt;
+use discard::DiscardOnDrop;
 use hirola_core::prelude::cancelable_future;
 use hirola_core::render::Render;
 use hirola_core::{
@@ -12,10 +12,11 @@ use hirola_core::{
     render::Error,
     BoxedLocal,
 };
-use wasm_bindgen::closure::WasmClosure;
+use std::rc::Rc;
+use std::{cell::RefCell, future::Future};
 use wasm_bindgen::{prelude::*, JsCast};
 pub use web_sys::Event;
-use web_sys::{window, Element, Node, Text};
+use web_sys::{Element, Node, Text};
 
 pub enum DomSideEffect {
     UnMounted(BoxedLocal<()>),
@@ -267,7 +268,7 @@ pub fn render_to(dom: Dom, parent: &web_sys::Node) -> Result<Dom, Error> {
 
 impl EventListener for Dom {
     type Event = web_sys::Event;
-    fn event(&mut self, name: &str, handler: Box<dyn Fn(Self::Event)>) {
+    fn event(&self, name: &str, handler: Box<dyn Fn(Self::Event)>) {
         let closure = Closure::wrap(handler);
         self.node
             .add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())
@@ -316,3 +317,26 @@ impl Render<Dom> for Dom {
 //             .collect();
 //     }
 // }
+
+#[cfg(test)]
+pub mod dom_test_utils {
+    use wasm_bindgen::{prelude::Closure, JsCast};
+
+    pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
+        let with = with.clone();
+        let f: Box<dyn Fn() -> ()> = Box::new(move || f(&with));
+        let a = Closure::<dyn Fn()>::new(f);
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
+
+    pub fn next_tick<F: Fn() + 'static>(f: F) {
+        let a = Closure::<dyn Fn()>::new(move || f());
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback(a.as_ref().unchecked_ref())
+            .unwrap();
+    }
+}

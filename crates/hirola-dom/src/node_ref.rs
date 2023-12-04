@@ -4,6 +4,8 @@ use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
 
+use hirola_core::generic_node::NodeReference;
+
 use crate::Dom;
 
 /// A reference to a [`GenericNode`].
@@ -30,7 +32,7 @@ impl NodeRef {
     /// the wrong type.
     ///
     /// For a panicking version, see [`NodeRef::get`].
-    pub fn try_get(&self) -> Option<Dom> {
+    fn inner_try_get(&self) -> Option<Dom> {
         let obj = self.0.borrow();
         (obj.as_ref()? as &dyn Any).downcast_ref().cloned()
     }
@@ -54,7 +56,7 @@ impl NodeRef {
     }
 
     /// Sets the [`NodeRef`] with the specified [`DomNode`].
-    pub fn set(&self, node: Dom) {
+    fn inner_set(&self, node: Dom) {
         *self.0.borrow_mut() = Some(node);
     }
 }
@@ -68,5 +70,15 @@ impl Default for NodeRef {
 impl fmt::Debug for NodeRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("NodeRef").field(&self.0.borrow()).finish()
+    }
+}
+
+impl NodeReference for NodeRef {
+    type Target = Dom;
+    fn set(&self, node: Self::Target) {
+        self.inner_set(node)
+    }
+    fn try_get(&self) -> Option<Self::Target> {
+        self.inner_try_get()
     }
 }

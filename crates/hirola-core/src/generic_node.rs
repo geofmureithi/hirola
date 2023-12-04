@@ -1,4 +1,4 @@
-use std::{future::Future, cell::RefCell};
+use std::{cell::RefCell, future::Future};
 
 use crate::prelude::Render;
 
@@ -62,9 +62,14 @@ pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'sta
     }
 }
 
-
 pub trait EventListener {
     type Event;
-    // type Output;
-    fn event(&mut self, name: &str, handler: Box<dyn Fn(Self::Event)>);
+    fn event(&self, name: &str, handler: Box<dyn Fn(Self::Event)>);
+}
+
+/// Allows you to acquire a node during template processing
+pub trait NodeReference {
+    type Target;
+    fn try_get(&self) -> Option<Self::Target>;
+    fn set(&self, node: Self::Target);
 }

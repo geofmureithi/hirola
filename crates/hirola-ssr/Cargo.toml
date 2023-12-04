@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola-core = { path = "../hirola-core", features = ["ssr"], version = "0.3.1" }
+hirola-core = { path = "../hirola-core", version = "0.3.1" }
 html-escape = { version = "0.2.7" }

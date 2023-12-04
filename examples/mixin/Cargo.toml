@@ -6,13 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../"}
-wasm-bindgen = {version = "0.2"}
+hirola = { path = "../../" }
+wasm-bindgen = { version = "0.2" }
 
 [dependencies.web-sys]
-features = [
-  "DomTokenList",
-  "Navigator"
-]
+features = ["DomTokenList", "Navigator"]
 
 version = "0.3"

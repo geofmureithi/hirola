@@ -15,6 +15,7 @@
 /// The defaults imports
 pub mod prelude {
     pub use hirola_core::prelude::*;
+    pub use hirola_macros::{component, html};
 }
 
 /// Exposing single item signal
@@ -25,18 +26,4 @@ pub mod signal {
 /// Exposing vec signal
 pub mod signal_vec {
     pub use hirola_core::prelude::signal_vec::*;
-}
-
-/// App introduces state and routing management.
-/// Use if you need to store data shared between routes or just routing.
-#[cfg(feature = "app")]
-pub mod app {
-    // pub use hirola_core::app::*;
-}
-
-/// Include form mixins and utilities
-#[cfg(feature = "form")]
-#[cfg_attr(docsrs, doc(cfg(feature = "form")))]
-pub mod form {
-    pub use hirola_form::*;
 }

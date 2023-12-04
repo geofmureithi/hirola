@@ -12,10 +12,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: cargo test --features dom,app
+      - run: cargo test
         working-directory: crates/hirola-core
       - run: cargo test
         working-directory: crates/hirola-macros
+      - run: cargo test
+        working-directory: crates/hirola-dom
       - run: cargo test
         working-directory: crates/hirola-kit
       - run: cargo test

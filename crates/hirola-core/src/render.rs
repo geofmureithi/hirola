@@ -1,4 +1,4 @@
-//! Trait for describing how something should be rendered into DOM nodes.
+//! Trait for describing how components and other custom types should be rendered into DOM nodes.
 use crate::{
     generic_node::GenericNode,
     templating::flow::{Indexed, IndexedProps},

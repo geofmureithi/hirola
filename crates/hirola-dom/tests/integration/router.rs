@@ -1,6 +1,8 @@
 use hirola::prelude::*;
 use hirola_core::dom_test_utils::next_tick;
 use hirola_core::prelude::router::Router;
+use hirola_dom::Dom;
+use hirola_dom::app::router::Router;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -26,8 +28,8 @@ fn user(_: &App<AppState>) -> Dom {
     Dom::text("User")
 }
 
-fn body() -> DomType {
-    DomType::fragment()
+fn body() -> Dom {
+    Dom::fragment()
 }
 
 // Helper function to set up a test instance of Router

@@ -57,13 +57,13 @@ fn node_to_tokens(node: Node) -> TokenStream {
                 let children_tokens = children_to_tokens(node.children.clone());
 
                 tokens.extend(quote! {
-                {
-                    let mut template = ::hirola::prelude::GenericNode::element(#name);
-                    #children_tokens
-                    #(#attributes)*
-                    template
-                 }
-            });
+                    {
+                        let mut template = ::hirola::prelude::GenericNode::element(#name);
+                        #children_tokens
+                        #(#attributes)*
+                        template
+                     }
+                });
             } else {
                 let fnname: Ident = syn::parse_str(&name).unwrap();
 
@@ -150,18 +150,18 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                     );
 
                 }
-            } else if name.starts_with("mixin:") {
-                let name_space = name.replace("mixin:", "");
+            } else if name.starts_with("mixin:") || name.starts_with("x:") {
+                let name_space = name.replace("mixin:", "").replace("x:", "");
                 let ns_struct =
                     format_ident!("{}", &some_kind_of_uppercase_first_letter(&name_space));
                 quote! {
-                    hirola::prelude::Mixin::<#ns_struct>::mixin(#value, &template);
+                    hirola::prelude::Mixin::<#ns_struct, _>::mixin(#value, &template);
                 }
             } else if &name == "ref" {
                 quote! {
-                    let _ = ::hirola::prelude::NodeRef::set(
+                    let _ = ::hirola::prelude::NodeReference::set(
                         &#value,
-                        ::std::clone::Clone::clone(&template.node()),
+                        ::std::clone::Clone::clone(&template),
                     );
 
                 }
@@ -170,15 +170,15 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 quote! {
                 {
                         use hirola::signal::SignalExt;
-                        let t = template.clone();
-                        ::hirola::prelude::GenericNode::attribute(
+                        let template_clone = ::std::clone::Clone::clone(&template);
+                        ::hirola::prelude::GenericNode::set_attribute(
                             &template,
                             #attribute_name,
                             &::std::format!("{}", #value.get_cloned()),
                         );
-                        template.effect(#value.signal_ref(move |value| {
-                            ::hirola::prelude::GenericNode::attribute(
-                                &t,
+                        ::hirola::prelude::GenericNode::effect(&template, #value.signal_ref(move |value| {
+                            ::hirola::prelude::GenericNode::set_attribute(
+                                &template_clone,
                                 #attribute_name,
                                 &::std::format!("{}", value),
                             );
@@ -189,7 +189,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
             } else {
                 let attribute_name = convert_name(&name);
                 quote! {
-                    ::hirola::prelude::GenericNode::attribute(
+                    ::hirola::prelude::GenericNode::set_attribute(
                         &mut template,
                         #attribute_name,
                         &::std::format!("{}", #value),
@@ -205,12 +205,24 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
     let mut tokens = TokenStream::new();
     if !children.is_empty() {
         for child in children {
-            match child {
-                Node::Element(_) => {
-                    let node = node_to_tokens(child);
-                    append_children.extend(quote! {
-                        ::hirola::prelude::GenericNode::append_child(&mut template, &#node );
-                    });
+            match &child {
+                Node::Element(element) => {
+                    let node = node_to_tokens(child.clone());
+                    let name = element.name().to_string();
+
+                    match child {
+                        // Its a component
+                        Node::Element(_) if name[0..1].to_lowercase() != name[0..1] => {
+                            append_children.extend(quote! {
+                                ::hirola::prelude::GenericNode::append_render(&mut template, #node );
+                            });
+                        }
+                        _ => {
+                            append_children.extend(quote! {
+                                ::hirola::prelude::GenericNode::append_child(&mut template, &#node );
+                            });
+                        }
+                    }
                 }
                 Node::Text(text) => {
                     append_children.extend(quote! {
@@ -222,7 +234,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                     });
                 }
                 Node::Comment(comment) => {
-                    let s = comment.value;
+                    let s = comment.value.clone();
                     append_children.extend(quote! {
                         ::hirola::prelude::GenericNode::append_child(
                             &mut template,
@@ -294,8 +306,8 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     for #pat in #expr {
                                         ::hirola::prelude::GenericNode::append_child(
                                             &mut template,
-                                            #body,
-                                        ).unwrap();
+                                            &#body,
+                                        );
                                     }
                                 });
                             }
@@ -389,9 +401,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         };
                                         suspense
                                     };
-                                    ::hirola::prelude::GenericNode::append_child(
+                                    ::hirola::prelude::GenericNode::append_render(
                                         &mut template,
-                                        &suspense
+                                        suspense
                                     );
 
                                 });

@@ -45,7 +45,7 @@ where
                     let node = &mut self.holder;
                     if let Some(frag) = &self.current {
                         for child in &frag.children().take() {
-                            log::debug!("Result for remove {:?}", node.remove_child(&child));
+                            node.remove_child(&child)
                         }
                     };
                 }

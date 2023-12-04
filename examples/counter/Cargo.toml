@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola = { path = "../../", features = ["dom", "app"]}
+hirola = { path = "../../" }
 hirola-dom = { path = "../../crates/hirola-dom" }
 [dependencies.web-sys]
 features = [
@@ -25,4 +25,4 @@ version = "0.3.64"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
-hirola = { path = "../../", default-features=false, features =["dom"]}
+hirola = { path = "../../", default-features = false }

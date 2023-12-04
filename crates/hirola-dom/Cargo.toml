@@ -8,9 +8,9 @@ edition = "2021"
 [dependencies]
 wasm-bindgen = { version = "0.2" }
 log = "0.4"
-hirola-core = { path = "../hirola-core", features = ["dom"], version = "0.3.1" }
-
-wasm-bindgen-futures = "0.4"
+hirola-core = { path = "../hirola-core", version = "0.3.1" }
+matchit = { version = "0.7" }
+wasm-bindgen-futures = { version = "0.4.29" }
 discard = "1"
 
 [dependencies.web-sys]
@@ -24,5 +24,7 @@ features = [
   "Node",
   "Text",
   "Window",
+  "History",
+  "Location"
 ]
 version = "0.3.64"

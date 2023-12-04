@@ -44,13 +44,14 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
         // #[derive(Debug)]
         #vis struct #struct_name #impl_generics #inputs_block
 
-        impl #impl_generics ::hirola::prelude::Render for #struct_name #ty_generics #where_clause {
+        impl #impl_generics ::hirola::prelude::Render<Dom> for #struct_name #ty_generics #where_clause {
             fn render_into(self: Box<Self>, dom: &Dom) -> Result<(), Error> {
                 let result = {
                     #inputs_reading
                     #block
                 };
-                Box::new(result).render_into(&dom)?;
+                dom.append_child(&result);
+                // Box::new(result).render_into(&dom)?;
                 Ok(())
             }
         }

@@ -31,7 +31,7 @@ pub mod signal_vec {
 /// Use if you need to store data shared between routes or just routing.
 #[cfg(feature = "app")]
 pub mod app {
-    pub use hirola_core::app::*;
+    // pub use hirola_core::app::*;
 }
 
 /// Include form mixins and utilities

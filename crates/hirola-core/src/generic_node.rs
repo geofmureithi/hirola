@@ -1,35 +1,8 @@
-#[cfg(feature = "dom")]
-pub mod dom_node;
-#[cfg(feature = "ssr")]
-pub mod ssr_node;
+use std::{future::Future, cell::RefCell};
 
-// pub mod simple_node;
+use crate::prelude::Render;
 
-#[cfg(feature = "dom")]
-pub use dom_node::*;
-#[cfg(feature = "ssr")]
-pub use ssr_node::*;
-
-#[cfg(feature = "dom")]
-use wasm_bindgen::prelude::Closure;
-
-use std::fmt;
-
-#[cfg(feature = "dom")]
-use web_sys::Event;
-
-#[cfg(feature = "ssr")]
-pub type Event = ();
-
-pub type EventListener = dyn Fn(Event);
-
-#[cfg(feature = "dom")]
-pub type DomType = dom_node::DomNode;
-
-#[cfg(feature = "ssr")]
-pub type DomType = ssr_node::SsrNode;
-
-pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
+pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Create a new element node.
     fn element(tag: &str) -> Self;
 
@@ -72,15 +45,26 @@ pub trait GenericNode: fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
     /// Remove this node from the tree.
     fn remove_self(&self);
 
-    #[cfg(feature = "dom")]
-    /// Add a [`EventListener`] to the event `name`.
-    fn event(&self, _name: &str, _handler: Box<EventListener>) -> Option<Closure<dyn Fn(Event)>> {
-        None
-    }
+    fn mount(&self, parent: &Self);
 
     /// Update inner text of the node. If the node has elements, all the elements are replaced with a new text node.
     fn update_inner_text(&self, text: &str);
 
     /// Replace all the children in a node with a new node
     fn replace_children_with(&self, node: &Self);
+
+    fn effect(&self, future: impl Future<Output = ()> + 'static);
+
+    fn children(&self) -> RefCell<Vec<Self>>;
+
+    fn append_render(&self, render: impl Render<Self> + 'static) {
+        Box::new(render).render_into(&self).unwrap();
+    }
+}
+
+
+pub trait EventListener {
+    type Event;
+    // type Output;
+    fn event(&mut self, name: &str, handler: Box<dyn Fn(Self::Event)>);
 }

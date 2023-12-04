@@ -1,0 +1,28 @@
+[package]
+name = "hirola-dom"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wasm-bindgen = { version = "0.2" }
+log = "0.4"
+hirola-core = { path = "../hirola-core", features = ["dom"], version = "0.3.1" }
+
+wasm-bindgen-futures = "0.4"
+discard = "1"
+
+[dependencies.web-sys]
+features = [
+  "Comment",
+  "Document",
+  "DocumentFragment",
+  "Element",
+  "Event",
+  "HtmlElement",
+  "Node",
+  "Text",
+  "Window",
+]
+version = "0.3.64"

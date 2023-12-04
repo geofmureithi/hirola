@@ -3,13 +3,11 @@ use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::{fmt, mem};
 
-use crate::generic_node::GenericNode;
+use hirola_core::generic_node::GenericNode;
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
 ///
-/// _This API requires the following crate features to be activated: `ssr`_
 #[derive(Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 enum SsrNodeType {
     Element(RefCell<Element>),
     Comment(RefCell<Comment>),
@@ -18,8 +16,6 @@ enum SsrNodeType {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
-
 struct SsrNodeInner {
     ty: Rc<SsrNodeType>,
     /// No parent if `Weak::upgrade` returns `None`.
@@ -27,7 +23,6 @@ struct SsrNodeInner {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct SsrNode(Rc<SsrNodeInner>);
 
 impl PartialEq for SsrNode {
@@ -246,7 +241,6 @@ impl GenericNode for SsrNode {
     fn replace_children_with(&self, _node: &Self) {
         unimplemented!()
     }
-
     fn effect(&self, future: impl std::future::Future<Output = ()> + 'static) {
         unimplemented!()
     }
@@ -264,7 +258,6 @@ impl fmt::Display for SsrNode {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Element {
     name: String,
     attributes: HashMap<String, String>,
@@ -288,7 +281,6 @@ impl fmt::Display for Element {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Comment(String);
 
 impl fmt::Display for Comment {
@@ -298,7 +290,6 @@ impl fmt::Display for Comment {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Text(String);
 
 impl fmt::Display for Text {
@@ -308,7 +299,6 @@ impl fmt::Display for Text {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Fragment(Vec<SsrNode>);
 
 impl fmt::Display for Fragment {
@@ -318,4 +308,14 @@ impl fmt::Display for Fragment {
         }
         Ok(())
     }
+}
+
+/// Render a [`Dom`] into a static [`String`]. Useful for rendering to a string on the server side.
+pub fn render_to_string(dom: Dom) -> String {
+    use hirola_core::generic_node::GenericNode;
+    use hirola_core::render::Render;
+    let node = SsrNode::fragment();
+    let root = SsrNode::new_from_node(&node);
+    Render::render_into(Box::new(dom), &root).unwrap();
+    format!("{}", root)
 }

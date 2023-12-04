@@ -2,8 +2,6 @@ pub mod router;
 use router::Router;
 use std::fmt::Debug;
 
-use crate::{dom::Dom};
-
 #[derive(Debug, Clone)]
 pub struct App<S: 'static> {
     router: Router<S>,

@@ -7,6 +7,20 @@ edition = "2021"
 
 [dependencies]
 hirola = { path = "../../", features = ["dom", "app"]}
+hirola-dom = { path = "../../crates/hirola-dom" }
+[dependencies.web-sys]
+features = [
+    "Comment",
+    "Document",
+    "DocumentFragment",
+    "Element",
+    "Event",
+    "HtmlElement",
+    "Node",
+    "Text",
+    "Window",
+]
+version = "0.3.64"
 
 
 [dev-dependencies]

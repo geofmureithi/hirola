@@ -17,10 +17,10 @@ proc-macro = true
 
 
 [dependencies]
-proc-macro2 = "1.0.47"
-quote = "1.0.21"
-syn = "2.0.15"
-rstml = "0.10"
+proc-macro2 = "1.0.69"
+quote = "1.0.33"
+syn = "2.0.39"
+rstml = "0.11"
 proc-macro-error = "1.0"
 proc-macro-hack = "0.5"
 paste = { version = "1" }

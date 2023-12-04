@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
-hirola = { path = "../../" }
+hirola = { path = "../../", features = ["dom"] }
 serde = { version = "1.0.80", features = ["derive"] }
 reqwasm = "0.5.0"
 hirola-dom = { path = "../../crates/hirola-dom" }

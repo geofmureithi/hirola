@@ -11,23 +11,23 @@ description = "A CLI for hirola"
 
 [dependencies]
 leptosfmt-pretty-printer = "0.1.6"
-rstml = "0.10.6"
-syn = { version = "2.0.18", features = [ "visit", "full", "extra-traits" ] }
+rstml = "0.11.2"
+syn = { version = "2.0.39", features = [ "visit", "full", "extra-traits" ] }
 leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.11" }
-proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
-thiserror = "1.0.40"
-crop = "0.3.0"
-serde = { version = "1.0.163", features = [ "derive" ] }
+proc-macro2 = { version = "1.0.69", features = [ "span-locations" ] }
+thiserror = "1.0.50"
+crop = "0.4.0"
+serde = { version = "1.0.192", features = [ "derive" ] }
 
 
 # Deps for cli
-clap = { version = "4.1.11", features = ["derive"] }
-rayon = "1.7.0"
+clap = { version = "4.4.8", features = ["derive"] }
+rayon = "1.8.0"
 glob = "0.3.1"
-anyhow = "1.0.70"
-toml = "0.7.4"
+anyhow = "1.0.75"
+toml = "0.8.8"
 
 [dev-dependencies]
-indoc = "2.0.1"
-insta = "1.28.0"
-quote = "1.0.26"
+indoc = "2.0.4"
+insta = "1.34.0"
+quote = "1.0.33"

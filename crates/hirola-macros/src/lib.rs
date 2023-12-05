@@ -146,6 +146,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 quote! {
                     ::hirola::prelude::GenericNode::effect(
                         &template,
+                        #[allow(unused_braces)]
                         #effect
                     );
 
@@ -306,6 +307,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     for #pat in #expr {
                                         ::hirola::prelude::GenericNode::append_child(
                                             &mut template,
+                                            #[allow(unused_braces)]
                                             &#body,
                                         );
                                     }
@@ -421,6 +423,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         _ => {
                             append_children.extend(quote! {
                                 let _ = ::hirola::prelude::Render::render_into(
+                                    #[allow(unused_braces)]
                                     Box::new(#block),
                                     &template,
                                 );

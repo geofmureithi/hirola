@@ -28,3 +28,4 @@ paste = { version = "1" }
 [dev-dependencies]
 hirola = { path = "../../" }
 trybuild = "1.0"
+hirola-ssr = { path = "../hirola-ssr" }

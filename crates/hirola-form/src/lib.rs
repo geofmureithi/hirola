@@ -1,9 +1,10 @@
 pub mod bind;
 
-use hirola_core::prelude::{
+use hirola_core::{prelude::{
     signal::{Mutable, MutableSignalRef, ReadOnlyMutable},
-    Dom, GenericNode, Mixin, NodeRef,
-};
+    GenericNode, Mixin
+}, generic_node::EventListener};
+use hirola_dom::{Dom, node_ref::NodeRef};
 use json_dotpath::DotPaths;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{collections::HashMap, marker::PhantomData};
@@ -29,6 +30,7 @@ pub struct Form;
 #[derive(Clone, Debug)]
 pub struct FormHandler<T: 'static> {
     node_ref: NodeRef,
+    // TODO: change to MutableBTreeMap
     value: Mutable<T>,
 }
 
@@ -77,7 +79,7 @@ pub struct Register<T: 'static, E> {
     element_type: PhantomData<E>,
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlInputElement> {
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlInputElement> {
     fn mixin(&self, dom: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
@@ -93,16 +95,16 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlIn
         });
         dom.event("input", handler);
         let input = {
-            let node = dom.node().clone();
+            let node = dom.clone();
             node.dyn_into::<HtmlInputElement>().unwrap()
         };
         let name = input.name();
         let value: String = self.form.get_value_by_field(&name).unwrap().unwrap();
-        dom.node().set_attribute("value", &value);
+        dom.set_attribute("value", &value);
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlSelectElement> {
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlSelectElement> {
     fn mixin(&self, node: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {

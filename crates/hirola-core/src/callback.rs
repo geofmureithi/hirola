@@ -1,13 +1,14 @@
 use futures_signals::{signal::Mutable, signal_vec::MutableVec};
 
-
+/// Allows a shorthand for creating event listeners.
+/// Mainly useful in event emitting nodes
 pub trait Callback<T, E = ()> {
-    /// Pass a callback that allows interacting with the inner value and the dom event
+    /// Pass a callback that allows interacting with the inner value and the event
     /// This method returns the new value and this updates the signal.
     fn callback_with<F>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&Self, E) + 'static;
-    /// Pass a callback that allows interacting with self and the dom event
+    /// Pass a callback that allows interacting with self and the event
     fn callback<F>(&self, f: F) -> Box<dyn Fn(E)>
     where
         F: Fn(&Self) + 'static,

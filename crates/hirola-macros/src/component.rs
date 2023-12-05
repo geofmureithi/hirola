@@ -1,3 +1,4 @@
+
 use proc_macro::TokenStream;
 use proc_macro_error::emit_error;
 use quote::quote;
@@ -9,6 +10,16 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
     let inputs = f.sig.inputs;
     let block = f.block;
     let vis = f.vis;
+    let output = f.sig.output;
+
+    let output = match output {
+        syn::ReturnType::Default => {
+            emit_error!(output.span(), "A valid return is expected");
+            panic!("invalid component provided")
+        },
+        syn::ReturnType::Type(_, ty) => ty,
+        
+    };
 
     let inputs_block = if !inputs.is_empty() {
         let input_names: Vec<_> = inputs.iter().collect();
@@ -44,13 +55,13 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
         // #[derive(Debug)]
         #vis struct #struct_name #impl_generics #inputs_block
 
-        impl #impl_generics ::hirola::prelude::Render<Dom> for #struct_name #ty_generics #where_clause {
-            fn render_into(self: Box<Self>, dom: &Dom) -> Result<(), Error> {
+        impl #impl_generics ::hirola::prelude::Render<#output> for #struct_name #ty_generics #where_clause {
+            fn render_into(self: Box<Self>, dom: &#output) -> Result<(), hirola::prelude::Error> {
                 let result = {
                     #inputs_reading
                     #block
                 };
-                dom.append_child(&result);
+                hirola::prelude::GenericNode::append_child(dom, &result);
                 // Box::new(result).render_into(&dom)?;
                 Ok(())
             }

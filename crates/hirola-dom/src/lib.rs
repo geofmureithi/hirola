@@ -41,7 +41,12 @@ pub struct Dom {
 
 impl fmt::Debug for Dom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        Ok(())
+        f.debug_struct("Dom")
+            .field("node", &self.node)
+            .field("side_effects", &self.side_effects.borrow().len())
+            .field("event_handlers", &self.event_handlers.borrow())
+            .field("children", &self.children.borrow())
+            .finish()
     }
 }
 
@@ -60,6 +65,18 @@ impl Default for Dom {
             side_effects: Default::default(),
             event_handlers: Default::default(),
             children: Default::default(),
+        }
+    }
+}
+
+impl Dom {
+    pub fn inner_html(&self) -> String {
+        {
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let element = document.create_element("div").unwrap();
+            crate::render_to(self.clone(), &element.clone().try_into().unwrap()).unwrap();
+            return element.inner_html();
         }
     }
 }
@@ -318,7 +335,6 @@ impl Render<Dom> for Dom {
 //     }
 // }
 
-#[cfg(test)]
 pub mod dom_test_utils {
     use wasm_bindgen::{prelude::Closure, JsCast};
 

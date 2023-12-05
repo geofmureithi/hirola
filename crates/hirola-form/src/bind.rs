@@ -5,19 +5,20 @@ use std::{
 };
 
 use hirola_core::prelude::{*, signal::SignalExt};
+use hirola_dom::Dom;
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement};
 
 /// Model allows 2-way binding eg between a signal and an input
 pub struct Model<Node, T: 'static>(Mutable<T>, PhantomData<Node>);
 
-impl<T: Display + FromStr + Clone + 'static> Mixin<Identity> for Model<HtmlInputElement, T>
+impl<T: Display + FromStr + Clone + 'static> Mixin<Identity, Dom> for Model<HtmlInputElement, T>
 where
     <T as FromStr>::Err: Debug,
 {
     fn mixin(&self, node: &Dom) {
         let input = {
-            let node = node.node().as_ref().clone();
+            let node = node.as_ref().clone();
             node.dyn_into::<HtmlInputElement>().unwrap()
         };
         let signal = self.0.clone();

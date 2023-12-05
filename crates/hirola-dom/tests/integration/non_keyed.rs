@@ -1,5 +1,5 @@
-use futures_signals::{signal::Mutable, signal_vec::MutableVec};
-use crate::dom_test_utils::{next_tick, next_tick_with};
+use hirola_core::prelude::{signal::Mutable, signal_vec::MutableVec};
+use hirola_dom::dom_test_utils::{next_tick, next_tick_with};
 
 use super::*;
 

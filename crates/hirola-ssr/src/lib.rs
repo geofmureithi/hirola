@@ -4,6 +4,7 @@ use std::rc::{Rc, Weak};
 use std::{fmt, mem};
 
 use hirola_core::generic_node::GenericNode;
+use hirola_core::render::{Error, Render};
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
 ///
@@ -230,9 +231,13 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
 
-    // fn event(&self, _name: &str, _handler: Box<EventListener>) {
-    //     // Don't do anything. Events are attached on client side.
-    // }
+    fn children(&self) -> RefCell<Vec<Self>> {
+        unimplemented!()
+    }
+
+    fn mount(&self, parent: &Self) {
+        parent.append_child(&self)
+    }
 
     fn update_inner_text(&self, text: &str) {
         self.unwrap_text().borrow_mut().0 = text.to_string();
@@ -242,7 +247,8 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
     fn effect(&self, future: impl std::future::Future<Output = ()> + 'static) {
-        unimplemented!()
+        //?
+        drop(future)
     }
 }
 
@@ -254,6 +260,13 @@ impl fmt::Display for SsrNode {
             SsrNodeType::Text(x) => write!(f, "{}", x.borrow()),
             SsrNodeType::Fragment(x) => write!(f, "{}", x.borrow()),
         }
+    }
+}
+
+impl Render<SsrNode> for SsrNode {
+    fn render_into(self: Box<Self>, parent: &SsrNode) -> Result<(), Error> {
+        parent.append_child(&self);
+        Ok(())
     }
 }
 
@@ -310,12 +323,64 @@ impl fmt::Display for Fragment {
     }
 }
 
-/// Render a [`Dom`] into a static [`String`]. Useful for rendering to a string on the server side.
-pub fn render_to_string(dom: Dom) -> String {
-    use hirola_core::generic_node::GenericNode;
-    use hirola_core::render::Render;
-    let node = SsrNode::fragment();
-    let root = SsrNode::new_from_node(&node);
+/// Render a [`SsrNode`] into a static [`String`]. Useful for rendering to a string on the server side.
+pub fn render_to_string(dom: SsrNode) -> String {
+    let root = SsrNode::fragment();
     Render::render_into(Box::new(dom), &root).unwrap();
     format!("{}", root)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hirola::prelude::*;
+
+    #[test]
+    fn hello_world() {
+        let node = html! {
+            <p>"Hello World!"</p>
+        };
+
+        assert_eq!(render_to_string(node), "<p>Hello World!</p>");
+    }
+
+    #[test]
+    fn reactive_text() {
+        let count = Mutable::new(0);
+
+        assert_eq!(
+            render_to_string(html! {
+                <p>{count.clone()}</p>
+            }),
+            "<p>0</p>"
+        );
+
+        count.set(1);
+        assert_eq!(
+            render_to_string(html! {
+                <p>{count}</p>
+            }),
+            "<p>1</p>"
+        );
+    }
+
+    #[test]
+    fn check_effects() {
+        let count = MutableVec::new_with_values(vec![1, 2, 3]);
+
+        let node = html! {
+            <ul>
+            {
+                count.signal_vec().render_map(move |item| {
+                    html! {
+                        <li>{item.to_string()}</li>
+                    }
+                } )
+            }
+            </ul>
+        };
+
+        let dom = render_to_string(node);
+        assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", dom);
+    }
 }

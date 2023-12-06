@@ -1,5 +1,5 @@
-use hirola_macros::{html, component};
-use hirola_ssr::{SsrNode, render_to_string};
+use hirola_macros::{component, html};
+use hirola_ssr::{render_to_string, SsrNode};
 
 #[component]
 fn MyComponent() -> SsrNode {
@@ -24,7 +24,8 @@ fn it_renders_component() {
                 <MyComponent />
             </>
         }
-    });
+    })
+    .unwrap();
     assert_eq!("<p>planet</p>", result);
 }
 
@@ -36,6 +37,7 @@ fn it_renders_component_with_props() {
                 <MyComponentWithProps world="hirola" />
             </>
         }
-    });
+    })
+    .unwrap();
     assert_eq!("<p>hirola</p>", result);
 }

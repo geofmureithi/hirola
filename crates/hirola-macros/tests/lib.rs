@@ -7,6 +7,6 @@ fn it_works() {
     let template = html! {
         <p>{world}</p>
     };
-    let result = render_to_string(template);
+    let result = render_to_string(template).unwrap();
     assert_eq!("<p>planet</p>", result);
 }

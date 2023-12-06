@@ -340,7 +340,7 @@ mod tests {
             <p>"Hello World!"</p>
         };
 
-        assert_eq!(render_to_string(node), "<p>Hello World!</p>");
+        assert_eq!(render_to_string(node).unwrap(), "<p>Hello World!</p>");
     }
 
     #[test]
@@ -350,7 +350,8 @@ mod tests {
         assert_eq!(
             render_to_string(html! {
                 <p>{count.clone()}</p>
-            }),
+            })
+            .unwrap(),
             "<p>0</p>"
         );
 
@@ -358,7 +359,7 @@ mod tests {
         assert_eq!(
             render_to_string(html! {
                 <p>{count}</p>
-            }),
+            }).unwrap(),
             "<p>1</p>"
         );
     }
@@ -380,7 +381,7 @@ mod tests {
             </ul>
         };
 
-        let dom = render_to_string(node);
+        let dom = render_to_string(node).unwrap();
         assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", dom);
     }
 }

@@ -28,7 +28,7 @@ where
 /// # Example
 /// ```rust,no_run
 /// use hirola::prelude::*;
-///
+/// use hirola::dom::Dom;
 /// let count = MutableVec::new_with_values(vec![1, 2]);
 ///
 /// let res = html! {

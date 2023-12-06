@@ -3,11 +3,12 @@
 //! Here is an example of a mixin
 //! ```rust,no_run
 //! use hirola::prelude::*;
+//! use hirola::dom::Dom;
 //! use web_sys::Element;
 //! // Mixin that controls tailwind opacity based on a bool signal
 //! fn opacity<'a>(signal: &'a Mutable<bool>) -> Box<dyn Fn(&Dom) -> () + 'a> {
 //!    let cb = move |dom: &Dom| {
-//!        let node = dom.node().clone();
+//!        let node = dom.clone();
 //!        let element = node.unchecked_into::<Element>();
 //!        if signal.get() {
 //!            element.class_list().add_1("opacity-100").unwrap();
@@ -57,6 +58,7 @@ pub trait Mixin<Mix, Target> {
 /// ```rust,no_run
 /// use hirola::prelude::*;
 /// use hirola::dom::Dom;
+/// use hirola::dom::mixins::raw_text;
 /// 
 /// fn counter() -> Dom {
 ///     html! {

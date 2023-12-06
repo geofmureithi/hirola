@@ -75,10 +75,11 @@ where
     /// ```no_run
     /// use std::future::ready;
     /// use hirola::prelude::*;
+    /// use hirola::dom::Dom;
     /// // Create a future that produces `()` as its output
     /// let my_future = ready(());
     ///
-    /// let render = html! {
+    /// let render: Dom = html! {
     ///    <div use:my_future />
     /// };
     /// ```

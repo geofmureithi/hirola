@@ -27,3 +27,21 @@ pub mod signal {
 pub mod signal_vec {
     pub use hirola_core::prelude::signal_vec::*;
 }
+
+/// Expose the dom feature
+#[cfg(feature = "dom")]
+pub mod dom {
+    pub use hirola_dom::*;
+}
+
+/// Expose the ssr feature
+#[cfg(feature = "ssr")]
+pub mod ssr {
+    pub use hirola_ssr::*;
+}
+
+/// Expose the form feature
+#[cfg(feature = "form")]
+pub mod form {
+    pub use hirola_form::*;
+}

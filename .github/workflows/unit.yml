@@ -19,5 +19,7 @@ jobs:
       - run: cargo test
         working-directory: crates/hirola-dom
       - run: cargo test
+        working-directory: crates/hirola-ssr
+      - run: cargo test
         working-directory: crates/hirola-kit
       - run: cargo test

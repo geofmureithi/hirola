@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 
 use hirola::{
+    dom::*,
     form::{Bind, Form, FormHandler},
     prelude::*,
 };
@@ -66,7 +67,7 @@ fn form_demo() -> Dom {
             class="h-screen flex flex-col items-center justify-center"
             method="post"
             ref=form.node_ref()
-            on:submit=|e| e.prevent_default()
+            on:submit=Box::new(|e: web_sys::Event| e.prevent_default())
         >
             <div class="mb-6">
                 <label

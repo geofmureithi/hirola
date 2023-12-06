@@ -1,7 +1,7 @@
-use hirola::prelude::*;
+use hirola::{prelude::*, ssr::SsrNode};
 
 #[component]
-pub fn SideBar() -> Dom {
+pub fn SideBar() -> SsrNode {
     html! {
         <ul class="space-y-2 text-gray-800">
             <li class="-ml-6 border-l-4 border-gray-700 pl-5 font-semibold">

@@ -55,7 +55,6 @@ where
             fn apply(&mut self, dom: DomType) {
                 self.clear();
                 let node = &self.holder;
-                let dom = DomType::fragment();
                 node.insert_child_before(&dom, Some(&self.marker));
                 self.current = Some(dom);
             }

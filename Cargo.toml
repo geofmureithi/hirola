@@ -13,9 +13,17 @@ edition = "2021"
 [dependencies]
 hirola-core = { path = "crates/hirola-core", version = "0.3.1" }
 hirola-macros = { path = "crates/hirola-macros", version = "0.3.1" }
-
+hirola-dom = { path = "crates/hirola-dom", version = "0.3.1", optional = true }
+hirola-ssr = { path = "crates/hirola-ssr", version = "0.3.1", optional = true }
 
 [features]
+default = ["dom"]
+## Enables browser based rendering including websys and wasmbindgen
+dom = ["hirola-dom"]
+
+## Enables server side rendering
+ssr = ["hirola-ssr"]
+
 docsrs = ["document-features"]
 
 
@@ -34,6 +42,7 @@ members = [
     "crates/hirola-kit",
     "crates/hirola-ssr",
     "crates/hirola-dom",
+    "examples/axum",
     "examples/counter",
     "examples/todo",
     "examples/canvas",

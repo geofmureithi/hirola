@@ -1,6 +1,6 @@
 mod model;
 use hirola::prelude::*;
-use hirola_dom::Dom;
+use hirola::dom::Dom;
 use model::Users;
 use reqwasm::http::Request;
 use anyhow::bail;
@@ -49,7 +49,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let dom = hirola_dom::render_to(fetch_users(), &body).unwrap();
+    let dom = hirola::dom::render_to(fetch_users(), &body).unwrap();
 
     std::mem::forget(dom);
 }

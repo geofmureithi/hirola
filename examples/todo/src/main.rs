@@ -1,5 +1,9 @@
+use hirola::dom::Dom;
+use hirola::dom::app::App;
+use hirola::dom::app::router::Router;
 use hirola::prelude::*;
 use hirola::signal::Mutable;
+use hirola::signal::ReadOnlyMutable;
 use wasm_bindgen::JsCast;
 use web_sys::window;
 use web_sys::HtmlInputElement;
@@ -12,8 +16,8 @@ struct Todo {
 }
 
 #[component]
-fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Mutable<Todo>>>) {
-    let todo = (&*todo).clone().get();
+fn TodoCard(todo: ReadOnlyMutable<Todo>, router: Router, todos: Mutable<Vec<Mutable<Todo>>>) -> Dom {
+    let todo = (&todo).clone().get();
     let id = todo.id.clone();
     let href = format!("/todo/{}", id);
 
@@ -71,11 +75,11 @@ fn todo_dom(app: &App<TodoStore>) -> Dom {
 }
 
 fn home(app: &App<TodoStore>) -> Dom {
-    let router = app.data::<Router>().unwrap().clone();
+    let router = app.router().clone();
 
-    let state = app.data::<TodoStore>().unwrap().clone().todos;
+    let state = app.state().clone().todos;
 
-    let add_new = state.callback(|todos, _e| {
+    let add_new = state.callback_with(|todos, _e| {
         let input = window()
             .unwrap()
             .document()
@@ -83,8 +87,8 @@ fn home(app: &App<TodoStore>) -> Dom {
             .get_element_by_id("add")
             .unwrap();
         let input = input.dyn_ref::<HtmlInputElement>().unwrap();
-        todos.push(Mutable::new(Todo {
-            id: format!("{}", todos.get_untracked().len() + 1),
+        todos.lock_mut()).push(Mutable::new(Todo {
+            id: format!("{}", todos.get().len() + 1),
             title: input.value(),
             complete: false,
         }))
@@ -146,7 +150,7 @@ fn index(app: &App<TodoStore>) -> Dom {
     let app = app.clone();
     html! {
         <div>
-            {router.render(&app)}
+            {router.render(&app, &Dom::fragment())}
         </div>
     }
 }

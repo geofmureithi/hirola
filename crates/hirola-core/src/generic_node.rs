@@ -63,8 +63,8 @@ pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'sta
 }
 
 pub trait EventListener {
-    type Event;
-    fn event(&self, name: &str, handler: Box<dyn Fn(Self::Event)>);
+    type Handler;
+    fn event(&self, name: &str, handler: Self::Handler);
 }
 
 /// Allows you to acquire a node during template processing

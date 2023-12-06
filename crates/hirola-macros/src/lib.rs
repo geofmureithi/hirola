@@ -326,7 +326,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 match ty.as_ref() {
                                     &Type::Infer(_) => {
                                         append_children.extend(quote! {
-                                            let mut template = {
+                                            let switch = {
                                                 let switch = ::hirola::prelude::Switch {
                                                     signal: #expr,
                                                     renderer: |res| {
@@ -337,15 +337,19 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                         }
                                                     }
                                                 };
-                                                Box::new(switch)
+                                                switch
                                             };
+                                            ::hirola::prelude::GenericNode::append_render(
+                                                &mut template,
+                                                switch
+                                            );
                                         });
                                     }
                                     &Type::Path(ref path) => {
                                         let ident = Ident::new("Signal", Span::call_site());
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
-                                                let mut template = {
+                                                let switch = {
                                                     let switch = ::hirola::prelude::Switch {
                                                         signal: #expr,
                                                         renderer: |res| {
@@ -356,8 +360,12 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                             }
                                                         }
                                                     };
-                                                    Box::new(switch)
+                                                    switch
                                                 };
+                                                ::hirola::prelude::GenericNode::append_render(
+                                                    &mut template,
+                                                    switch
+                                                );
                                             });
                                         } else {
                                             append_children.extend(
@@ -381,7 +389,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                     ::hirola::prelude::GenericNode::append_child(
                                         &mut template,
                                         #[allow(unused_braces)]
-                                        #block,
+                                        &#block,
                                     );
                                 });
                             }

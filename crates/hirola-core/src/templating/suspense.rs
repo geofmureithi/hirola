@@ -65,7 +65,7 @@ impl<Res: Default + 'static, N: GenericNode> Render<N> for Suspense<Res, N> {
                 self.clear();
                 let node = &mut self.holder;
                 let frag = N::fragment();
-                let dom = dom.mount(&frag);
+                frag.append_child(&dom);
                 node.append_child(&frag);
                 self.current = Some(frag);
                 Ok(())

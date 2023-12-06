@@ -1,12 +1,9 @@
 mod components;
-// mod markdown;
-// mod pages;
-
 use std::{fs::File, path::PathBuf};
 
 use components::logo::HirolaLogo;
 use comrak::{markdown_to_html_with_plugins, ComrakPlugins};
-use hirola::prelude::*;
+use hirola::{prelude::*, ssr::{SsrNode, render_to_string}};
 
 use crate::components::side_bar::SideBar;
 use serde::Deserialize;
@@ -23,7 +20,7 @@ struct Seo {
     draft: bool,
 }
 
-fn with_layout(seo: Seo) -> Dom {
+fn with_layout(seo: Seo) -> SsrNode {
     html! {
         <html>
         <head>
@@ -199,7 +196,7 @@ fn main() {
             Ok(path) => {
                 let (content, seo) = markdown_page(&path);
                 let mut layout = "<!DOCTYPE html>".to_string();
-                layout.extend(render_to_string(with_layout(seo)).chars());
+                layout.extend(render_to_string(with_layout(seo)).unwrap().chars());
                 let html_path = path
                     .to_string_lossy()
                     .replace("src/pages", "dist")

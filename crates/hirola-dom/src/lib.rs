@@ -284,8 +284,8 @@ pub fn render_to(dom: Dom, parent: &web_sys::Node) -> Result<Dom, Error> {
 }
 
 impl EventListener for Dom {
-    type Event = web_sys::Event;
-    fn event(&self, name: &str, handler: Box<dyn Fn(Self::Event)>) {
+    type Handler = Box<dyn Fn(web_sys::Event)>;
+    fn event(&self, name: &str, handler: Self::Handler) {
         let closure = Closure::wrap(handler);
         self.node
             .add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())

@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 hirola = { path = "../../" }
-hirola-dom = { path = "../../crates/hirola-dom" }
+gloo-timers = { version = "0.3.0", features = ["futures"] }
+
 [dependencies.web-sys]
 features = [
     "Comment",

@@ -7,7 +7,7 @@ use hirola_core::generic_node::GenericNode;
 use hirola_core::render::{Error, Render};
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
-///
+/// Offers interior mutability and is not thread safe.
 #[derive(Debug)]
 enum SsrNodeType {
     Element(RefCell<Element>),
@@ -246,9 +246,8 @@ impl GenericNode for SsrNode {
     fn replace_children_with(&self, _node: &Self) {
         unimplemented!()
     }
-    fn effect(&self, future: impl std::future::Future<Output = ()> + 'static) {
-        //?
-        drop(future)
+    fn effect(&self, _future: impl std::future::Future<Output = ()> + 'static) {
+        // panic!("SsrNode does not support effects, please use SsrNodeAsync!")
     }
 }
 
@@ -324,10 +323,10 @@ impl fmt::Display for Fragment {
 }
 
 /// Render a [`SsrNode`] into a static [`String`]. Useful for rendering to a string on the server side.
-pub fn render_to_string(dom: SsrNode) -> String {
+pub fn render_to_string(dom: SsrNode) -> Result<String, Error> {
     let root = SsrNode::fragment();
-    Render::render_into(Box::new(dom), &root).unwrap();
-    format!("{}", root)
+    Render::render_into(Box::new(dom), &root)?;
+    Ok(format!("{}", root))
 }
 
 #[cfg(test)]
@@ -365,7 +364,8 @@ mod tests {
     }
 
     #[test]
-    fn check_effects() {
+    #[should_panic]
+    fn check_reject_effects() {
         let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
         let node = html! {

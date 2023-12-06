@@ -16,7 +16,7 @@ syn = { version = "2.0.39", features = [ "visit", "full", "extra-traits" ] }
 leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.11" }
 proc-macro2 = { version = "1.0.69", features = [ "span-locations" ] }
 thiserror = "1.0.50"
-crop = "0.4.0"
+crop = "0.4.1"
 serde = { version = "1.0.193", features = [ "derive" ] }
 
 

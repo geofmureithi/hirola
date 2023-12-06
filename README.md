@@ -45,7 +45,7 @@ Lets add some code to `src/main.rs`
 
 ```rust,no_run
 use hirola::prelude::*;
-use hirola::signal::Mutable;
+use hirola::dom::Dom;
 
 fn counter() -> Dom {
     let count = Mutable::new(0i32);
@@ -60,7 +60,7 @@ fn counter() -> Dom {
     }
 }
 fn main() {
-    let root = render(counter()).unwrap();
+    let root = hirola::dom::render(counter()).unwrap();
     std::mem::forget(root);
 }
 ```

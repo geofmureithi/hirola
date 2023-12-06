@@ -56,6 +56,8 @@ pub trait Mixin<Mix, Target> {
 /// ## Example
 /// ```rust,no_run
 /// use hirola::prelude::*;
+/// use hirola::dom::Dom;
+/// 
 /// fn counter() -> Dom {
 ///     html! {
 ///         <span mixin:identity=&raw_text("Hello Counter!") />

@@ -4,7 +4,8 @@
 //! ```rust,no_run
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
-//!
+//! use hirola::dom::Dom;
+//! 
 //! fn counter() -> Dom {
 //!     let count = Mutable::new(0i32);
 //!     let decrement = count.callback(|s| *s.lock_mut() -= 1);
@@ -18,10 +19,6 @@
 //!     }
 //! }
 //!
-//! fn main() {
-//!     let root = render(counter()).unwrap();
-//!     std::mem::forget(root);
-//! }
 //! ```
 
 #![allow(non_snake_case)]

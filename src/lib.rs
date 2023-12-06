@@ -39,9 +39,3 @@ pub mod dom {
 pub mod ssr {
     pub use hirola_ssr::*;
 }
-
-/// Expose the form feature
-#[cfg(feature = "form")]
-pub mod form {
-    pub use hirola_form::*;
-}

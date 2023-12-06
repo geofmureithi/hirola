@@ -1,6 +1,8 @@
 #![allow(unused_variables)]
 use hirola::prelude::*;
-use hirola_core::dom_test_utils::next_tick;
+use hirola::dom::dom_test_utils::next_tick;
+use hirola::dom::app::App;
+use hirola::dom::Dom;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::{Element, Node};

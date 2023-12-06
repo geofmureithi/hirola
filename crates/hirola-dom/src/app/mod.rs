@@ -20,6 +20,7 @@ pub struct App<S: 'static> {
 /// # Example
 /// ```no_run
 /// use hirola::prelude::*;
+/// use hirola_dom::app::App;
 /// #[derive(Clone)]
 /// struct AppState {
 ///     // ... fields and methods for your application state ...
@@ -75,6 +76,9 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     /// ```no_run
     /// use hirola::prelude::*;
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
+    /// 
     /// #[derive(Clone)]
     /// struct AppState {
     ///     // ... fields and methods for your application state ...
@@ -107,7 +111,9 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     /// ```no_run
     /// use hirola::prelude::*;
-    ///
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
+    /// 
     /// #[derive(Clone)]
     /// struct AppState {
     ///     // ... fields and methods for your application state ...
@@ -124,7 +130,6 @@ impl<S: Clone + 'static> App<S> {
         self.router.set_not_found(page);
     }
 }
-
 
 impl<S: Clone + 'static> App<S> {
     /// Mounts the application on the web page body and starts the rendering process.
@@ -144,7 +149,7 @@ impl<S: Clone + 'static> App<S> {
     /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
-    ///
+    ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -188,6 +193,7 @@ impl<S: Clone + 'static> App<S> {
     /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
+    ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -238,6 +244,9 @@ impl<S: Clone + 'static> App<S> {
     /// ```no_run
     /// fn main() {
     ///     use hirola::prelude::*;
+    ///     use hirola::dom::app::App;
+    ///     use hirola::dom::Dom;
+    ///
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -257,9 +266,7 @@ impl<S: Clone + 'static> App<S> {
     ///     // In this example, we wrap the rendered content with a layout component
     ///     app.mount_with(&parent_node, |app| {
     ///         let router = app.router().clone();
-    ///         let inner = router.render(app, &DomType {
-    ///             node: parent_node.clone().into()
-    ///         });
+    ///         let inner = router.render(app, &Dom::new_from_node(&parent_node));
     ///         html! {
     ///             <main>
     ///                <nav>

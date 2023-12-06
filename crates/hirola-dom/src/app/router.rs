@@ -20,6 +20,8 @@ use super::App;
 ///
 /// ```no_run
 /// use hirola::prelude::*;
+/// use hirola::dom::Dom;
+/// use hirola_dom::app::App;
 /// #[derive(Clone)]
 /// struct AppState {
 ///     // ... fields and methods for your application state ...
@@ -73,7 +75,7 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// ```no_run
     /// use hirola::prelude::*;
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// ```
     pub fn new() -> Self {
@@ -101,7 +103,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let params = router.current_params();
     /// ```
@@ -133,7 +135,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// router.push("/about");
     pub fn push(&self, path: &str) {
@@ -160,7 +162,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let link_handler = router.link();
     ///
@@ -194,7 +196,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let signal = router.signal();
     ///
@@ -223,7 +225,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
     /// use hirola::prelude::*;
     /// #[derive(Clone)]
     /// struct AppState {
@@ -243,7 +247,7 @@ impl<S: Clone + 'static> Router<S> {
     /// app.route("/about", about_page);
     /// let router = app.router().clone();
     /// let doc = web_sys::window().unwrap().document().unwrap();
-    /// router.render(&app, &DomType::fragment());
+    /// router.render(&app, &Dom::fragment());
     /// ```
     pub fn render(self, app: &App<S>, parent: &Dom) -> Dom {
         let router = &self.handler;
@@ -363,8 +367,10 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// use hirola::prelude::*;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     ///
     /// // Define a custom function to render the home page
     /// fn home_page(_: &App<()>) -> Dom {
@@ -396,7 +402,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     /// use hirola::prelude::*;
     /// // Define a custom function to render the not-found page
     /// fn not_found_page(_: &App<()>) -> Dom {
@@ -426,7 +434,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     /// use hirola::prelude::*;
     ///
     /// // Define custom functions to render the home and about pages

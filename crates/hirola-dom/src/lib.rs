@@ -79,6 +79,13 @@ impl Dom {
             return element.inner_html();
         }
     }
+
+    pub fn new_from_node(node: &Node) -> Self {
+        Dom {
+            node: node.clone(),
+            ..Default::default()
+        }
+    }
 }
 
 impl Dom {

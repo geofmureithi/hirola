@@ -17,6 +17,7 @@ keywords = ["wasm", "html", "dom", "web"]
 futures-signals = "0.3.32"
 futures-util = "0.3"
 
+
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }
 wasm-bindgen-test = "0.3"

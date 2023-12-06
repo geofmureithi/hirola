@@ -28,8 +28,8 @@ docsrs = ["document-features"]
 
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.0"
-wasm-bindgen = { version = "0.2.79" }
+wasm-bindgen-test = "0.3.38"
+wasm-bindgen = { version = "0.2.88" }
 hirola = { path = "." }
 futures-util = "0.3"
 web-sys = { version = "0.3", features = ["Document", "Node", "Element"] }

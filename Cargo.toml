@@ -44,7 +44,7 @@ members = [
     "crates/hirola-dom",
     "examples/axum",
     "examples/counter",
-    "examples/todo",
+    "examples/todo-mvc",
     "examples/canvas",
     "examples/fake-api",
     "examples/chartjs",

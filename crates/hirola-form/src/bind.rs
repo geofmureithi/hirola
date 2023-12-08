@@ -16,7 +16,7 @@ impl<T: Display + FromStr + Clone + 'static> Mixin<Identity, Dom> for Model<Html
 where
     <T as FromStr>::Err: Debug,
 {
-    fn mixin(&self, node: &Dom) {
+    fn mixin(self, node: &Dom) {
         let input = {
             let node = node.as_ref().clone();
             node.dyn_into::<HtmlInputElement>().unwrap()

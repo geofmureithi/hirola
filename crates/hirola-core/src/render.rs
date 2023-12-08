@@ -113,10 +113,10 @@ pub struct MappedVec<T, G: GenericNode> {
     callback: Box<dyn Fn(T) -> G>,
 }
 
-pub struct Mapped<T, G: GenericNode> {
-    pub signal: Pin<Box<dyn Signal<Item = T>>>,
-    callback: Box<dyn Fn(T) -> G>,
-}
+// pub struct Mapped<T, G: GenericNode> {
+//     pub signal: Pin<Box<dyn Signal<Item = T>>>,
+//     callback: Box<dyn Fn(T) -> G>,
+// }
 
 pub trait MapRender<G: GenericNode> {
     type Item;
@@ -135,17 +135,17 @@ impl<T: Clone + 'static, G: GenericNode> MapRender<G> for MutableSignalVec<T> {
     }
 }
 
-impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Mutable<T> {
-    type Item = T;
-    type Output = Mapped<Self::Item, G>;
+// impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Mutable<T> {
+//     type Item = T;
+//     type Output = Mapped<Self::Item, G>;
 
-    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
-        Mapped {
-            signal: Box::pin(self.signal_cloned()),
-            callback: Box::new(callback),
-        }
-    }
-}
+//     fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
+//         Mapped {
+//             signal: Box::pin(self.signal_cloned()),
+//             callback: Box::new(callback),
+//         }
+//     }
+// }
 
 impl<
         T: Clone + 'static,

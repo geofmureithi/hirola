@@ -25,6 +25,7 @@ nav {
   padding: 0 3px;
 }
 "#;
+#[derive(Debug, Clone)]
 pub struct Seo {
     pub title: String,
     pub author: String,

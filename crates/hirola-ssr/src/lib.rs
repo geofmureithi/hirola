@@ -231,7 +231,7 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
 
-    fn children(&self) -> Vec<Self> {
+    fn children(&self) -> RefCell<Vec<SsrNode>> {
         unimplemented!()
     }
 

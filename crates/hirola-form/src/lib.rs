@@ -80,7 +80,7 @@ pub struct Register<T: 'static, E> {
 }
 
 impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlInputElement> {
-    fn mixin(&self, dom: &Dom) {
+    fn mixin(self, dom: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -105,7 +105,7 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, H
 }
 
 impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlSelectElement> {
-    fn mixin(&self, node: &Dom) {
+    fn mixin(self, node: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e

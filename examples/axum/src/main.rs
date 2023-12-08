@@ -30,17 +30,18 @@ async fn home() -> impl IntoResponse {
     let template = html! {
         <>
             <Layout
-                seo=posting
+                seo=posting.clone()
                 nav={
                     html! { <Nav items=&["Bikes", "BMX", "Jump Bike 3000"]/> }
                 }
                 main={
-                    html! {
+                    let node: SsrNode = html! {
                         <>
                             <h2>{&posting.title}</h2>
                             <p>{&posting.description}</p>
                         </>
-                    }
+                    };
+                    node
                 }
                 footer=SsrNode::fragment()
             />

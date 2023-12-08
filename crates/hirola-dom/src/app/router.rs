@@ -143,7 +143,7 @@ impl<S: Clone + 'static> Router<S> {
         window
             .history()
             .unwrap()
-            .push_state_with_url(&JsValue::default(), "", Some(&path))
+            .push_state_with_url(&JsValue::default(), "", Some(path))
             .unwrap();
         self.current.set(path.to_owned());
     }
@@ -168,7 +168,7 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
     /// ```
-    pub fn link(&self) -> Box<dyn Fn(&Dom) -> () + '_> {
+    pub fn link(&self) -> Box<dyn Fn(&Dom) + '_> {
         let router = self.clone();
         let cb = move |node: &Dom| {
             let router = router.clone();
@@ -291,7 +291,7 @@ impl<S: Clone + 'static> Router<S> {
                 > 0
             {
                 log::debug!("hash detected");
-                return ();
+                return ;
             }
             current.set(path_name.to_string());
             log::debug!("pop handle : {path_name}");
@@ -311,7 +311,7 @@ impl<S: Clone + 'static> Router<S> {
             Err(_) => &self.not_found,
         };
 
-        let builder = page_fn(&app);
+        let builder = page_fn(app);
         let _ = &parent.append_child(&builder);
 
         let router = router.clone();

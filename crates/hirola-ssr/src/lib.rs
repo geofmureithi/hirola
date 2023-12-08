@@ -77,7 +77,7 @@ impl SsrNode {
         if let Some(index) = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == child).then(|| i))
+            .find_map(|(i, c)| (c == child).then_some(i))
         {
             children.remove(index);
         } else {
@@ -85,7 +85,7 @@ impl SsrNode {
             for c in &children {
                 if let SsrNodeType::Fragment(fragment) = c.0.ty.as_ref() {
                     for c in &fragment.borrow().0 {
-                        c.try_remove_child(&child);
+                        c.try_remove_child(child);
                     }
                 }
             }
@@ -161,7 +161,7 @@ impl GenericNode for SsrNode {
                     children
                         .iter()
                         .enumerate()
-                        .find_map(|(i, child)| (child == reference).then(|| i))
+                        .find_map(|(i, child)| (child == reference).then_some(i))
                         .expect("couldn't find reference node"),
                     new_node.clone(),
                 );
@@ -185,7 +185,7 @@ impl GenericNode for SsrNode {
         let index = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == child).then(|| i))
+            .find_map(|(i, c)| (c == child).then_some(i))
             .expect("couldn't find child");
         children.remove(index);
 
@@ -204,7 +204,7 @@ impl GenericNode for SsrNode {
         let index = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == old).then(|| i))
+            .find_map(|(i, c)| (c == old).then_some(i))
             .expect("Couldn't find child");
         children[index] = new.clone();
     }

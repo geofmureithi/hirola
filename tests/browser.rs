@@ -11,8 +11,8 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 fn body() -> Node {
     let doc = web_sys::window().unwrap().document().unwrap();
-    let element = doc.create_element("div").unwrap().into();
-    element
+    
+    doc.create_element("div").unwrap().into()
 }
 
 fn inner_html(element: &Node) -> String {
@@ -35,7 +35,7 @@ fn router_pushes() {
     });
     let router = app.router().clone();
     let node = body();
-    let root = app.mount_to(&node);
+    app.mount_to(&node);
     assert_eq!("<main>Main</main>", inner_html(&node));
     router.push("/page");
 
@@ -54,8 +54,8 @@ fn app_renders() {
     }
     let node = &body();
     app.route("/", test_app);
-    app.mount_to(&node);
-    assert_eq!("<span>Test</span>", inner_html(&node));
+    app.mount_to(node);
+    assert_eq!("<span>Test</span>", inner_html(node));
 }
 
 #[wasm_bindgen_test]
@@ -67,6 +67,6 @@ fn router_renders() {
         }
     });
     let node = &body();
-    let dom = app.mount_to(&node);
-    assert_eq!("<main>Main</main>", inner_html(&node));
+    app.mount_to(node);
+    assert_eq!("<main>Main</main>", inner_html(node));
 }

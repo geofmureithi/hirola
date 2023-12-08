@@ -54,7 +54,7 @@ impl<Res: Default + 'static, N: GenericNode> Render<N> for Suspense<Res, N> {
                     let node = &mut self.holder;
                     if let Some(frag) = &self.current {
                         for child in &frag.children().take() {
-                            node.remove_child(&child);
+                            node.remove_child(child);
                         }
                     };
                 }
@@ -79,8 +79,8 @@ impl<Res: Default + 'static, N: GenericNode> Render<N> for Suspense<Res, N> {
         binding.apply(template(Res::default()))?;
         let future = self.future;
         let fut = async move {
-            let mut state = state.borrow_mut();
             let new_dom = template(future.await);
+            let mut state = state.borrow_mut();
             state.apply(new_dom).unwrap();
         };
         parent.effect(fut);

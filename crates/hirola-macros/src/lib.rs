@@ -29,7 +29,6 @@ fn to_token_stream(input: proc_macro::TokenStream) -> TokenStream {
             #nodes_output
         }
     }
-    .into()
 }
 
 fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
@@ -122,8 +121,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
     match attribute {
         NodeAttribute::Block(block) => quote! {
             #block
-        }
-        .into(),
+        },
         NodeAttribute::Attribute(attr) => {
             let name = attr.key.to_string();
             let value = attr.value();
@@ -247,8 +245,8 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 }
                 Node::Doctype(_) => {}
                 Node::Block(block) => match block {
-                    NodeBlock::ValidBlock(block) => match braced_for_control(&block) {
-                        Some(Control::ExprForLoop(ExprForLoop {
+                    NodeBlock::ValidBlock(block) => match braced_for_control(block) {
+                        Some(Control::ForLoop(ExprForLoop {
                             pat, expr, body, ..
                         })) => {
                             if let Expr::Cast(ExprCast { ty, expr, .. }) = expr.as_ref() {
@@ -269,7 +267,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                             };
                                         });
                                     }
-                                    &Type::Path(ref path) => {
+                                    Type::Path(path) => {
                                         let ident = Ident::new("SignalVec", Span::call_site());
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
@@ -315,7 +313,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 });
                             }
                         }
-                        Some(Control::ExprIf(ExprIf {
+                        Some(Control::If(ExprIf {
                             cond,
                             then_branch,
                             else_branch,
@@ -346,7 +344,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                             );
                                         });
                                     }
-                                    &Type::Path(ref path) => {
+                                    Type::Path(path) => {
                                         let ident = Ident::new("Signal", Span::call_site());
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
@@ -396,7 +394,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             }
                         }
 
-                        Some(Control::ExprMatch(ExprMatch { expr, arms, .. })) => match *expr {
+                        Some(Control::Match(ExprMatch { expr, arms, .. })) => match *expr {
                             Expr::Await(fut) => {
                                 let fut = fut.base;
                                 append_children.extend(quote! {
@@ -461,9 +459,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
 }
 
 enum Control {
-    ExprForLoop(ExprForLoop),
-    ExprIf(ExprIf),
-    ExprMatch(ExprMatch),
+    ForLoop(ExprForLoop),
+    If(ExprIf),
+    Match(ExprMatch),
 }
 
 fn braced_for_control(block: &Block) -> Option<Control> {
@@ -473,9 +471,9 @@ fn braced_for_control(block: &Block) -> Option<Control> {
     } else {
         let stmt = &block.stmts[0];
         match stmt {
-            Stmt::Expr(Expr::ForLoop(expr), _) => Some(Control::ExprForLoop(expr.clone())),
-            Stmt::Expr(Expr::If(expr), _) => Some(Control::ExprIf(expr.clone())),
-            Stmt::Expr(Expr::Match(expr), _) => Some(Control::ExprMatch(expr.clone())),
+            Stmt::Expr(Expr::ForLoop(expr), _) => Some(Control::ForLoop(expr.clone())),
+            Stmt::Expr(Expr::If(expr), _) => Some(Control::If(expr.clone())),
+            Stmt::Expr(Expr::Match(expr), _) => Some(Control::Match(expr.clone())),
             _ => None,
         }
     }

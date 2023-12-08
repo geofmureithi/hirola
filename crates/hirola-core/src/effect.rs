@@ -57,10 +57,7 @@ pub trait SideEffect {
     fn effect(self) -> BoxedLocal<()>;
 }
 
-impl<F: 'static> SideEffect for F
-where
-    F: Future<Output = ()>,
-{
+impl<F: 'static + Future<Output = ()>> SideEffect for F {
     /// Converts the provided future into a boxed future of `()` as a side effect.
     ///
     /// This implementation allows any future that produces `()` as its output to be converted

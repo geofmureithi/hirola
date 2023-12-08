@@ -9,7 +9,7 @@ async fn user_fetcher() -> anyhow::Result<Users> {
     let request = Request::get("https://jsonplaceholder.typicode.com/users");
     let response = request.send().await?;
     if response.status() == 200 {
-        return Ok(response.json().await?);
+        Ok(response.json().await?)
     } else {
         bail!(
             "Failed with status {}, {}",

@@ -56,7 +56,7 @@ pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'sta
     fn children(&self) -> RefCell<Vec<Self>>;
 
     fn append_render(&self, render: impl Render<Self> + 'static) {
-        Box::new(render).render_into(&self).unwrap();
+        Box::new(render).render_into(self).unwrap();
     }
 }
 

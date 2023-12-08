@@ -45,7 +45,7 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
 
     /// Get the immutable handle for form value
     pub fn handle(&self) -> ReadOnlyMutable<T> {
-        (&self.value).read_only()
+        self.value.read_only()
     }
 
     /// Update a specific field using the dot notation.
@@ -53,7 +53,7 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
     pub fn update_field<S: Serialize>(&self, name: &str, value: S) -> Result<(), Error> {
         let current_value = self.value.clone();
         let mut json = serde_json::to_value(&current_value).map_err(Error::Json)?;
-        json.dot_set(&name, value).map_err(Error::InvalidSetter)?;
+        json.dot_set(name, value).map_err(Error::InvalidSetter)?;
         let ser: T = serde_json::from_value(json).map_err(Error::Json)?;
         current_value.set(ser);
         Ok(())
@@ -144,7 +144,7 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> B
             let json = serde_json::to_value(value).unwrap();
             json.dot_get(name).unwrap().unwrap()
         }
-        current_value.signal_ref(|value| read_inner_value::<F, B>(&value, name))
+        current_value.signal_ref(|value| read_inner_value::<F, B>(value, name))
     }
 }
 

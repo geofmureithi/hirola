@@ -4,7 +4,7 @@ use crate::{
     templating::flow::{Indexed, IndexedProps},
 };
 use futures_signals::{
-    signal::{Mutable, ReadOnlyMutable, Signal, SignalExt},
+    signal::{Mutable, ReadOnlyMutable, SignalExt},
     signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
 };
 use std::{
@@ -207,13 +207,14 @@ impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Vec<T> {
 impl<T: 'static + Clone, N: GenericNode> Render<N> for MappedVec<T, N> {
     fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let template = {
+            #[allow(clippy::type_complexity)]
             let props: IndexedProps<T, Pin<Box<dyn SignalVec<Item = T>>>, Box<dyn Fn(T) -> N>, N> =
                 IndexedProps {
                     iterable: self.iter,
                     template: self.callback,
                 };
-            let indexed = Indexed { props };
-            indexed
+            
+            Indexed { props }
         };
         Box::new(template).render_into(parent)?;
         Ok(())

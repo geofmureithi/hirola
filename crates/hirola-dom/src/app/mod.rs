@@ -168,7 +168,7 @@ impl<S: Clone + 'static> App<S> {
         let document = window.document().unwrap();
         let router = self.router.clone();
         let dom = router.render(
-            &self,
+            self,
             &crate::Dom {
                 node: document.body().unwrap().into(),
                 ..Default::default()
@@ -216,7 +216,7 @@ impl<S: Clone + 'static> App<S> {
     pub fn mount_to(&self, parent: &web_sys::Node) {
         let router = self.router.clone();
         let dom = router.render(
-            &self,
+            self,
             &crate::Dom {
                 node: parent.clone(),
                 ..Default::default()

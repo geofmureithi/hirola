@@ -196,7 +196,7 @@ fn main() {
             Ok(path) => {
                 let (content, seo) = markdown_page(&path);
                 let mut layout = "<!DOCTYPE html>".to_string();
-                layout.extend(render_to_string(with_layout(seo)).unwrap().chars());
+                layout.push_str(&render_to_string(with_layout(seo)).unwrap().chars());
                 let html_path = path
                     .to_string_lossy()
                     .replace("src/pages", "dist")
@@ -227,6 +227,6 @@ fn markdown_page(path: &PathBuf) -> (String, Seo) {
     plugins.render.codefence_syntax_highlighter = Some(&adapter);
     let data = fronma::parser::parse::<Seo>(&markdown)
         .expect(&format!("in file: {}", path.to_string_lossy()));
-    let res = markdown_to_html_with_plugins(&data.body, &options, &plugins);
+    let res = markdown_to_html_with_plugins(data.body, &options, &plugins);
     (res, data.headers)
 }

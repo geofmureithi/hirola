@@ -89,7 +89,7 @@ where
 
             fn insert_at(&self, new_index: usize, child: &N) {
                 if let Some(dom) = self.children.get(new_index) {
-                    self.element.insert_child_before(child, Some(&dom));
+                    self.element.insert_child_before(child, Some(dom));
                 } else {
                     self.element.insert_child_before(child, Some(&self.marker));
                 }
@@ -102,7 +102,7 @@ where
                         self.clear();
                         self.children = values;
                         for dom in self.children.iter_mut() {
-                            self.element.insert_child_before(&dom, Some(&self.marker));
+                            self.element.insert_child_before(dom, Some(&self.marker));
                         }
                     }
 

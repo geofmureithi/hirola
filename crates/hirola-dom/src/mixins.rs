@@ -14,7 +14,7 @@ use crate::Dom;
 /// sanitize the content before it is inserted.
 /// See more: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 #[allow(unused_variables)]
-pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
+pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |node: &Dom| {
         let element = node.as_ref().clone().unchecked_into::<Element>();
         element.set_inner_html(text);
@@ -26,7 +26,7 @@ pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
 #[allow(unused_variables)]
 pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |dom: &Dom| {
-        dom.node.set_text_content(Some(&format!("{text}")));
+        dom.node.set_text_content(Some(text));
     };
     Box::new(cb)
 }

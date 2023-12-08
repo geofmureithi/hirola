@@ -76,7 +76,7 @@ impl Dom {
             let document = window.document().unwrap();
             let element = document.create_element("div").unwrap();
             crate::render_to(self.clone(), &element.clone().try_into().unwrap()).unwrap();
-            return element.inner_html();
+            element.inner_html()
         }
     }
 
@@ -343,9 +343,9 @@ impl Render<Dom> for Dom {
 pub mod dom_test_utils {
     use wasm_bindgen::{prelude::Closure, JsCast};
 
-    pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) -> () + 'static) {
+    pub fn next_tick_with<N: Clone + 'static>(with: &N, f: impl Fn(&N) + 'static) {
         let with = with.clone();
-        let f: Box<dyn Fn() -> ()> = Box::new(move || f(&with));
+        let f: Box<dyn Fn()> = Box::new(move || f(&with));
         let a = Closure::<dyn Fn()>::new(f);
         web_sys::window()
             .unwrap()
@@ -354,7 +354,7 @@ pub mod dom_test_utils {
     }
 
     pub fn next_tick<F: Fn() + 'static>(f: F) {
-        let a = Closure::<dyn Fn()>::new(move || f());
+        let a = Closure::<dyn Fn()>::new(f);
         web_sys::window()
             .unwrap()
             .set_timeout_with_callback(a.as_ref().unchecked_ref())

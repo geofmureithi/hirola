@@ -32,7 +32,7 @@ fn colors() -> Dom {
             <ul>
                 {colors
                     .signal_vec()
-                    .filter(|color| color.starts_with("V"))
+                    .filter(|color| color.starts_with('V'))
                     .map_render(|item| {
                         html! { <li>{item}</li> }
                     })}

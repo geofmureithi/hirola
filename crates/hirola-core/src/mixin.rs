@@ -49,7 +49,7 @@
 use crate::generic_node::GenericNode;
 
 pub trait Mixin<Mix, Target> {
-    fn mixin(&self, node: &Target);
+    fn mixin(self, node: &Target);
 }
 
 /// Unbound mixin in the form of `Fn(&Dom)`
@@ -71,9 +71,9 @@ pub struct Identity;
 
 impl<T, Node: GenericNode> Mixin<Identity, Node> for T
 where
-    T: Fn(&Node),
+    T: FnOnce(&Node),
 {
-    fn mixin(&self, node: &Node) {
-        (&self)(node);
+    fn mixin(self, node: &Node) {
+        (self)(node);
     }
 }

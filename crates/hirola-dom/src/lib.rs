@@ -3,7 +3,7 @@ pub mod mixins;
 pub mod node_ref;
 
 use core::fmt;
-use discard::DiscardOnDrop;
+use discard::{DiscardOnDrop, Discard};
 use hirola_core::prelude::cancelable_future;
 use hirola_core::render::Render;
 use hirola_core::{
@@ -85,6 +85,26 @@ impl Dom {
             node: node.clone(),
             ..Default::default()
         }
+    }
+
+    pub fn discard(&mut self) {
+        let _cleanup: Vec<()> = self
+            .event_handlers
+            .take()
+            .into_iter()
+            .map(|c| c.forget())
+            .collect();
+        let _cleanup: Vec<()> = self
+            .side_effects
+            .take()
+            .into_iter()
+            .map(|e| match e {
+                DomSideEffect::Mounted(e) => e.discard(),
+                DomSideEffect::UnMounted(_) => {
+                    log::warn!("Dropping a side effect that was not mounted")
+                }
+            })
+            .collect();
     }
 }
 
@@ -228,8 +248,9 @@ impl GenericNode for Dom {
     }
 
     fn parent_node(&self) -> Option<Self> {
-        self.node.parent_node().map(|node| Self {
-            node,
+        let n =self.node.parent_node().unwrap();
+        Some(Self {
+            node: n,
             ..Default::default()
         })
     }
@@ -265,9 +286,6 @@ impl GenericNode for Dom {
     fn children(&self) -> RefCell<Vec<Self>> {
         self.children.clone()
     }
-    fn mount(&self, parent: &Self) {
-        parent.append_child(self);
-    }
 }
 
 /// Render a [`Dom`] into the DOM.
@@ -283,11 +301,12 @@ pub fn render(dom: Dom) -> Result<Dom, Error> {
 /// For rendering under the `<body>` tag, use [`render()`] instead.
 
 pub fn render_to(dom: Dom, parent: &web_sys::Node) -> Result<Dom, Error> {
-    dom.mount(&Dom {
+    let parent = Dom {
         node: parent.clone(),
         ..Default::default()
-    });
-    Ok(dom)
+    };
+    parent.append_child(&dom);
+    Ok(parent)
 }
 
 impl EventListener for Dom {
@@ -320,27 +339,6 @@ impl Render<Dom> for Dom {
     }
 }
 
-// impl Drop for Dom {
-//     fn drop(&mut self) {
-//         let _cleanup: Vec<()> = self
-//             .event_handlers
-//             .take()
-//             .into_iter()
-//             .map(|c| c.forget())
-//             .collect();
-//         let _cleanup: Vec<()> = self
-//             .side_effects
-//             .take()
-//             .into_iter()
-//             .map(|e| match e {
-//                 DomSideEffect::Mounted(e) => e.discard(),
-//                 DomSideEffect::UnMounted(_) => {
-//                     log::warn!("Dropping a side effect that was not mounted")
-//                 }
-//             })
-//             .collect();
-//     }
-// }
 
 pub mod dom_test_utils {
     use wasm_bindgen::{prelude::Closure, JsCast};

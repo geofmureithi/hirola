@@ -96,8 +96,8 @@ impl<S: Clone + 'static> App<S> {
     /// app.route("/", home_page);
     /// app.route("/about", about_page);
     /// ```
-    pub fn route(&mut self, path: &str, page: fn(&Self) -> Dom) {
-        self.router.handler.insert(path.to_string(), page).unwrap();
+    pub fn route(&mut self, path: impl AsRef<str>, page: fn(&Self) -> Dom) {
+        self.router.handler.insert(path.as_ref().to_string(), page).unwrap();
     }
 
     /// Set the not-found page for the application.

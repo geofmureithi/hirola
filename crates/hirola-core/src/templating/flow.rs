@@ -60,9 +60,7 @@ where
         let template = props.template;
 
         let iterable = SignalVecExt::map(props.iterable, move |item| {
-            let frag = N::fragment();
-            template(item).mount(&frag);
-            frag
+            template(item)
         });
 
         let marker = N::marker();

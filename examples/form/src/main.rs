@@ -4,11 +4,8 @@ extern crate validator_derive;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 
-use hirola::{
-    dom::*,
-    form::{Bind, Form, FormHandler},
-    prelude::*,
-};
+use hirola::{dom::*, prelude::*};
+use hirola_form::{Bind, Form, FormHandler};
 use web_sys::{Event, HtmlInputElement};
 
 #[derive(Validate, PartialEq, Clone, Serialize, Deserialize, Debug)]

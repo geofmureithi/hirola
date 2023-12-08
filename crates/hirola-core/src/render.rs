@@ -4,7 +4,7 @@ use crate::{
     templating::flow::{Indexed, IndexedProps},
 };
 use futures_signals::{
-    signal::{Mutable, ReadOnlyMutable, SignalExt},
+    signal::{Mutable, ReadOnlyMutable, Signal, SignalExt},
     signal_vec::{Filter, MutableSignalVec, MutableVec, SignalVec, SignalVecExt},
 };
 use std::{
@@ -108,21 +108,40 @@ impl<T: Display + Clone + 'static, N: GenericNode> Render<N> for Mutable<T> {
     }
 }
 
-pub struct Mapped<T, G: GenericNode> {
+pub struct MappedVec<T, G: GenericNode> {
     pub iter: Pin<Box<dyn SignalVec<Item = T>>>,
     callback: Box<dyn Fn(T) -> G>,
 }
 
-pub trait RenderMap<G: GenericNode> {
-    type Item;
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G>;
+pub struct Mapped<T, G: GenericNode> {
+    pub signal: Pin<Box<dyn Signal<Item = T>>>,
+    callback: Box<dyn Fn(T) -> G>,
 }
 
-impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for MutableSignalVec<T> {
+pub trait MapRender<G: GenericNode> {
+    type Item;
+    type Output;
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> Self::Output;
+}
+
+impl<T: Clone + 'static, G: GenericNode> MapRender<G> for MutableSignalVec<T> {
     type Item = T;
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
-        Mapped {
+    type Output = MappedVec<Self::Item, G>;
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> MappedVec<Self::Item, G> {
+        MappedVec {
             iter: Box::pin(self),
+            callback: Box::new(callback),
+        }
+    }
+}
+
+impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Mutable<T> {
+    type Item = T;
+    type Output = Mapped<Self::Item, G>;
+
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
+        Mapped {
+            signal: Box::pin(self.signal_cloned()),
             callback: Box::new(callback),
         }
     }
@@ -133,22 +152,26 @@ impl<
         I: SignalVec<Item = T> + 'static,
         F: FnMut(&T) -> bool + 'static,
         G: GenericNode,
-    > RenderMap<G> for Filter<I, F>
+    > MapRender<G> for Filter<I, F>
 {
     type Item = T;
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
-        Mapped {
+    type Output = MappedVec<Self::Item, G>;
+
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> MappedVec<Self::Item, G> {
+        MappedVec {
             iter: Box::pin(self),
             callback: Box::new(callback),
         }
     }
 }
 
-impl<T: Clone + 'static, I: Iterator<Item = T>, G: GenericNode> RenderMap<G> for Enumerate<I> {
+impl<T: Clone + 'static, I: Iterator<Item = T>, G: GenericNode> MapRender<G> for Enumerate<I> {
     type Item = (usize, T);
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
+    type Output = MappedVec<Self::Item, G>;
+
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> MappedVec<Self::Item, G> {
         let items = self.collect();
-        Mapped {
+        MappedVec {
             iter: Box::pin(MutableVec::new_with_values(items).signal_vec_cloned()),
             callback: Box::new(callback),
         }
@@ -156,34 +179,39 @@ impl<T: Clone + 'static, I: Iterator<Item = T>, G: GenericNode> RenderMap<G> for
 }
 
 impl<T: Clone + 'static + PartialEq, I: SignalVec<Item = T> + Unpin + 'static, G: GenericNode>
-    RenderMap<G> for futures_signals::signal_vec::Enumerate<I>
+    MapRender<G> for futures_signals::signal_vec::Enumerate<I>
 {
     type Item = (ReadOnlyMutable<Option<usize>>, T);
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
-        Mapped {
+    type Output = MappedVec<Self::Item, G>;
+
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> MappedVec<Self::Item, G> {
+        MappedVec {
             iter: Box::pin(self.to_signal_cloned().to_signal_vec()),
             callback: Box::new(callback),
         }
     }
 }
 
-impl<T: Clone + 'static, G: GenericNode> RenderMap<G> for Vec<T> {
+impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Vec<T> {
     type Item = T;
-    fn render_map(self, callback: impl Fn(Self::Item) -> G + 'static) -> Mapped<Self::Item, G> {
-        Mapped {
+    type Output = MappedVec<Self::Item, G>;
+
+    fn map_render(self, callback: impl Fn(Self::Item) -> G + 'static) -> MappedVec<Self::Item, G> {
+        MappedVec {
             iter: Box::pin(MutableVec::new_with_values(self).signal_vec_cloned()),
             callback: Box::new(callback),
         }
     }
 }
 
-impl<T: 'static + Clone, N: GenericNode> Render<N> for Mapped<T, N> {
+impl<T: 'static + Clone, N: GenericNode> Render<N> for MappedVec<T, N> {
     fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let template = {
-            let props = IndexedProps {
-                iterable: self.iter,
-                template: self.callback,
-            };
+            let props: IndexedProps<T, Pin<Box<dyn SignalVec<Item = T>>>, Box<dyn Fn(T) -> N>, N> =
+                IndexedProps {
+                    iterable: self.iter,
+                    template: self.callback,
+                };
             let indexed = Indexed { props };
             indexed
         };

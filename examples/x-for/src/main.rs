@@ -6,10 +6,14 @@ use hirola::{
 use web_sys::Event;
 
 fn colors() -> Dom {
+    let visible = Mutable::new(true);
+    let vis = visible.clone();
     let colors = MutableVec::new_with_values(vec!["Red", "Green", "Blue", "Violet"]);
     let add_new = colors.callback_with(move |colors, _e: Event| {
         colors.lock_mut().push("Violet-Dark");
+        vis.set(!vis.get())
     });
+    
 
     html! {
         <>
@@ -23,7 +27,7 @@ fn colors() -> Dom {
             <ul>
                 {colors
                     .signal_vec()
-                    .render_map(|item| {
+                    .map_render(|item| {
                         html! { <li>{item}</li> }
                     })}
             </ul>
@@ -32,10 +36,17 @@ fn colors() -> Dom {
                 {colors
                     .signal_vec()
                     .filter(|color| color.starts_with("V"))
-                    .render_map(|item| {
+                    .map_render(|item| {
                         html! { <li>{item}</li> }
                     })}
             </ul>
+            {
+                visible.map_render(|vs| {
+                    html! {
+                        <>"Test"</>
+                    }
+                })
+            }
             <button on:click=add_new>"Add New Color"</button>
         </>
     }

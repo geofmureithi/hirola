@@ -170,20 +170,21 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 let attribute_name = convert_name(&name).replace("bind:", "");
                 quote! {
                 {
-                        use hirola::signal::SignalExt;
+                        use ::hirola::signal::SignalExt;
                         let template_clone = ::std::clone::Clone::clone(&template);
-                        ::hirola::prelude::GenericNode::set_attribute(
-                            &template,
-                            #attribute_name,
-                            &::std::format!("{}", #value.get_cloned()),
-                        );
-                        ::hirola::prelude::GenericNode::effect(&template, #value.signal_ref(move |value| {
+                        // ::hirola::prelude::GenericNode::set_attribute(
+                        //     &template,
+                        //     #attribute_name,
+                        //     &::std::format!("{}", #value),
+                        // );
+                        let future = SignalExt::dedupe_map(#value, move |value| {
                             ::hirola::prelude::GenericNode::set_attribute(
                                 &template_clone,
                                 #attribute_name,
                                 &::std::format!("{}", value),
                             );
-                        }).to_future());
+                        }).to_future();
+                        ::hirola::prelude::GenericNode::effect(&template, future);
                 }
 
                 }
@@ -329,7 +330,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                             let switch = {
                                                 let switch = ::hirola::prelude::Switch {
                                                     signal: #expr,
-                                                    renderer: |res| {
+                                                    renderer: move |res| {
                                                         if res {
                                                             #then_branch
                                                         } else {
@@ -352,7 +353,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                 let switch = {
                                                     let switch = ::hirola::prelude::Switch {
                                                         signal: #expr,
-                                                        renderer: |res| {
+                                                        renderer: move |res| {
                                                             if res {
                                                                 #then_branch
                                                             } else {

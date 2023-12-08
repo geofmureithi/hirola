@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use hirola_core::{prelude::signal::{Signal, SignalExt}, generic_node::GenericNode};
+use hirola_core::{
+    generic_node::GenericNode,
+    prelude::signal::{Signal, SignalExt},
+};
 use wasm_bindgen::JsCast;
 use web_sys::Element;
 
@@ -30,17 +33,14 @@ pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
 
 /// Mixin that adds text to a dom node
 #[allow(unused_variables)]
-pub fn text<T, S>(text: &S) -> Box<dyn Fn(&Dom)>
+pub fn text<T, S>(signal: S) -> Box<dyn FnOnce(&Dom)>
 where
     T: Display + 'static,
-    S: Signal<Item = T> + SignalExt + Clone + 'static,
+    S: Signal<Item = T> + SignalExt + 'static,
 {
-    let signal = text.clone();
-
     let cb = move |_node: &Dom| {
         use std::future::ready;
         let element = _node.as_ref().clone().unchecked_into::<Element>();
-        let signal = signal.clone();
         let future = signal.for_each(move |value| {
             element.set_text_content(Some(&format!("{}", value)));
             ready(())

@@ -231,12 +231,8 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
 
-    fn children(&self) -> RefCell<Vec<Self>> {
+    fn children(&self) -> Vec<Self> {
         unimplemented!()
-    }
-
-    fn mount(&self, parent: &Self) {
-        parent.append_child(&self)
     }
 
     fn update_inner_text(&self, text: &str) {

@@ -249,7 +249,7 @@ impl<S: Clone + 'static> Router<S> {
     /// let doc = web_sys::window().unwrap().document().unwrap();
     /// router.render(&app, &Dom::fragment());
     /// ```
-    pub fn render(self, app: &App<S>, parent: &Dom) -> Dom {
+    pub fn render(&self, app: &App<S>, parent: &Dom) -> Dom {
         let router = &self.handler;
         let current = self.current.clone();
         //Hash routing forward in history and URL rewrite
@@ -312,7 +312,7 @@ impl<S: Clone + 'static> Router<S> {
         };
 
         let builder = page_fn(&app);
-        let _ = builder.mount(&parent);
+        let _ = &parent.append_child(&builder);
 
         let router = router.clone();
         let app = app.clone();
@@ -329,7 +329,7 @@ impl<S: Clone + 'static> Router<S> {
 
                 let builder = page_fn(&app);
                 let dom = Dom::fragment();
-                builder.mount(&dom);
+                dom.append_child(&builder);
                 node.replace_children_with(&dom);
                 let window = web_sys::window().unwrap();
                 window

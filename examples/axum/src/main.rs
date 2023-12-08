@@ -21,29 +21,31 @@ use hirola::{
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 async fn home() -> impl IntoResponse {
-    let seo = Seo {
+    let posting = Seo {
         author: "Jude Bellingham".to_owned(),
         description: "This BMX bike is a solid step into the pro world. It looks as legit as it rides and is built to polish your skills.".to_owned(),
         title: "Jump Bike 3000".to_owned(),
     };
-    let main: SsrNode = html! {
-            <>
-                <h2>{&seo.title}</h2>
-                <p>{&seo.description}</p>
-            </>
-        };
+
     let template = html! {
-            <>
-                <Layout
-                    seo=seo
-                    nav={
-                        html! { <Nav items=&["Bikes", "BMX", "Jump Bike 3000"]/> }
+        <>
+            <Layout
+                seo=posting
+                nav={
+                    html! { <Nav items=&["Bikes", "BMX", "Jump Bike 3000"]/> }
+                }
+                main={
+                    html! {
+                        <>
+                            <h2>{&posting.title}</h2>
+                            <p>{&posting.description}</p>
+                        </>
                     }
-                    main=main
-                    footer=SsrNode::fragment()
-                />
-            </>
-        };
+                }
+                footer=SsrNode::fragment()
+            />
+        </>
+    };
     SsrTemplate(template)
 }
 

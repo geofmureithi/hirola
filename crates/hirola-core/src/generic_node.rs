@@ -45,8 +45,6 @@ pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'sta
     /// Remove this node from the tree.
     fn remove_self(&self);
 
-    fn mount(&self, parent: &Self);
-
     /// Update inner text of the node. If the node has elements, all the elements are replaced with a new text node.
     fn update_inner_text(&self, text: &str);
 

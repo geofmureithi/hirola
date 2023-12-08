@@ -122,7 +122,7 @@ fn reactive_attribute() {
     let count = Mutable::new(0);
 
     let node = html! {
-        <span bind:attribute=count/>
+        <span bind:attribute=count.signal()/>
     };
 
     let _ = render_to(node, &test_div());

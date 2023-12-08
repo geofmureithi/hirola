@@ -23,6 +23,8 @@ pub enum DomSideEffect {
     Mounted(CancelableFutureHandle),
 }
 
+pub type EventHandlers = Rc<RefCell<Vec<Closure<dyn Fn(Event)>>>>;
+
 /// Rendering backend for the DOM.
 ///
 /// The `DomNode` struct represents a node in the Document Object Model (DOM) and serves as the
@@ -35,7 +37,7 @@ pub enum DomSideEffect {
 pub struct Dom {
     pub node: Node,
     pub side_effects: Rc<RefCell<Vec<DomSideEffect>>>,
-    event_handlers: Rc<RefCell<Vec<Closure<dyn Fn(Event)>>>>,
+    event_handlers: EventHandlers,
     children: RefCell<Vec<Dom>>,
 }
 

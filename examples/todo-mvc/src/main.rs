@@ -47,15 +47,15 @@ pub struct State {
 }
 
 impl State {
-    fn new() -> Arc<Self> {
-        Arc::new(State {
+    fn new() -> Self {
+        State {
             todo_id: Cell::new(0),
             mode: Mutable::new(Mode::AddNew),
             todo_list: MutableVec::new(),
-        })
+        }
     }
 
-    pub fn deserialize() -> Arc<Self> {
+    pub fn deserialize() -> Self {
         local_storage()
             .get_item("todos-hirola")
             .unwrap()
@@ -72,10 +72,7 @@ impl State {
     }
 
     fn create_new_todo(&self, title: &str) {
-        // let mut title = self.new_todo_title.lock_mut();
-
-        // Only create a new Todo if the text box is not empty
-        if let Some(trimmed) = trim(&title) {
+        if let Some(trimmed) = trim(title) {
             let id = self.todo_id.get();
             self.todo_id.set(id + 1);
 
@@ -94,7 +91,7 @@ impl State {
     fn remove_all_completed_todos(&self) {
         self.todo_list
             .lock_mut()
-            .retain(|todo| todo.completed.get() == false);
+            .retain(|todo| !todo.completed.get());
     }
 
     fn set_all_todos_completed(&self, checked: bool) {
@@ -126,43 +123,10 @@ impl State {
             .map(|len| len > 0)
             .dedupe()
     }
-
-    // fn render_button(app: &State, text: &str, route: Route) -> Dom {
-    //     html!("li", {
-    //         .children(&mut [
-    //             link!(route.to_url(), {
-    //                 .text(text)
-    //                 .class_signal("selected", app.route().map(move |x| x == route))
-    //             })
-    //         ])
-    //     })
-    // }
-
-    // fn render_footer(app: Arc<Self>) -> Dom {
-
-    // pub fn render(app: Arc<Self>) -> Dom {
-    //     html!("section", {
-    //         .class("todoapp")
-
-    //         // Update the Route when the URL changes
-    //         .future(routing::url()
-    //             .signal_ref(|url| Route::from_url(url))
-    //             .for_each(clone!(app => move |route| {
-    //                 app.route.set_neq(route);
-    //                 async {}
-    //             })))
-
-    //         .children(&mut [
-    //             Self::render_header(app.clone()),
-    //             Self::render_main(app.clone()),
-    //             Self::render_footer(app.clone()),
-    //         ])
-    //     })
-    // }
 }
 
 #[component]
-fn Header(app: App<Arc<State>>) -> Dom {
+fn Header(app: App<State>) -> Dom {
     let state = app.state().clone();
     let create_new: Box<dyn Fn(Event)> = Box::new(move |event| {
         let target = event.target().unwrap();
@@ -188,7 +152,7 @@ fn Header(app: App<Arc<State>>) -> Dom {
 }
 
 #[component]
-fn Button<'a>(app: App<Arc<State>>, text: &'a str, route: Route) -> Dom {
+fn Button<'a>(app: App<State>, text: &'a str, route: Route) -> Dom {
     let router = app.router().signal();
     html! {
         <li>
@@ -201,7 +165,7 @@ fn Button<'a>(app: App<Arc<State>>, text: &'a str, route: Route) -> Dom {
 }
 
 #[component]
-fn Footer(app: App<Arc<State>>) -> Dom {
+fn Footer(app: App<State>) -> Dom {
     let clear_completed = app.state().callback_with(move |state, e| {
         state.remove_all_completed_todos();
         state.serialize();
@@ -240,60 +204,10 @@ fn Footer(app: App<Arc<State>>) -> Dom {
                 </button>
         </footer>
     }
-
-    //     html!("footer", {
-    //         .class("footer")
-
-    //         .visible_signal(app.has_todos())
-
-    //         .children(&mut [
-    //             html!("span", {
-    //                 .class("todo-count")
-
-    //                 .children(&mut [
-    //                     html!("strong", {
-    //                         .text_signal(app.not_completed_len().map(|len| len.to_string()))
-    //                     }),
-
-    //                     text_signal(app.not_completed_len().map(|len| {
-    //                         if len == 1 {
-    //                             " item left"
-    //                         } else {
-    //                             " items left"
-    //                         }
-    //                     })),
-    //                 ])
-    //             }),
-
-    //             html!("ul", {
-    //                 .class("filters")
-    //                 .children(&mut [
-    //                     Self::render_button(&app, "All", Route::All),
-    //                     Self::render_button(&app, "Active", Route::Active),
-    //                     Self::render_button(&app, "Completed", Route::Completed),
-    //                 ])
-    //             }),
-
-    //             html!("button", {
-    //                 .class("clear-completed")
-
-    //                 // Show if there is at least one completed item.
-    //                 .visible_signal(app.completed_len().map(|len| len > 0).dedupe())
-
-    //                 .event(clone!(app => move |_: events::Click| {
-    //                     app.remove_all_completed_todos();
-    //                     app.serialize();
-    //                 }))
-
-    //                 .text("Clear completed")
-    //             }),
-    //         ])
-    //     })
-    // }
 }
 
 #[component]
-fn Main(app: App<Arc<State>>) -> Dom {
+fn Main(app: App<State>) -> Dom {
     let state = app.state().clone();
     let has_todos = state.has_todos();
     let on_toggle: Box<dyn Fn(Event)> = Box::new(move |event| {
@@ -342,7 +256,7 @@ where
     Box::new(cb)
 }
 
-fn page(app: &App<Arc<State>>) -> Dom {
+fn page(app: &App<State>) -> Dom {
     html! {
         <div id="app" class="todoapp">
             <Header app=app.clone()/>

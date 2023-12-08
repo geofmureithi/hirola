@@ -368,7 +368,7 @@ mod tests {
         let node = html! {
             <ul>
             {
-                count.signal_vec().render_map(move |item| {
+                count.signal_vec().map_render(move |item| {
                     html! {
                         <li>{item.to_string()}</li>
                     }

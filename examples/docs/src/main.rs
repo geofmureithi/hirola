@@ -46,9 +46,9 @@ fn with_layout(seo: Seo) -> SsrNode {
           <link rel="canonical" href="/" />
           <script src="https://cdn.tailwindcss.com"></script>
             <style>
-            {r##"
+            {r#"
                 @import url("https://fonts.googleapis.com/css2?family=Grape+Nuts&display=swap");
-            "##}
+            "#}
             </style>
         </head>
         <body>
@@ -196,7 +196,7 @@ fn main() {
             Ok(path) => {
                 let (content, seo) = markdown_page(&path);
                 let mut layout = "<!DOCTYPE html>".to_string();
-                layout.push_str(&render_to_string(with_layout(seo)).unwrap().chars());
+                layout.push_str(&render_to_string(with_layout(seo)).unwrap());
                 let html_path = path
                     .to_string_lossy()
                     .replace("src/pages", "dist")
@@ -226,7 +226,7 @@ fn markdown_page(path: &PathBuf) -> (String, Seo) {
     options.extension.front_matter_delimiter = Some("---".to_owned());
     plugins.render.codefence_syntax_highlighter = Some(&adapter);
     let data = fronma::parser::parse::<Seo>(&markdown)
-        .expect(&format!("in file: {}", path.to_string_lossy()));
+        .unwrap();
     let res = markdown_to_html_with_plugins(data.body, &options, &plugins);
     (res, data.headers)
 }

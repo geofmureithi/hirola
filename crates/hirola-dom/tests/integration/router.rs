@@ -55,7 +55,7 @@ fn test_router_insert_and_render() {
     let app = App::new(AppState {});
     let body = &body();
     let home_dom = (router.handler().at("/").unwrap().value)(&app);
-    let rendered = router.clone().render(&app, &body);
+    let rendered = router.clone().render(&app, body);
     assert_eq!(rendered.inner_html(), home_dom.inner_html());
     router.push("/about");
 

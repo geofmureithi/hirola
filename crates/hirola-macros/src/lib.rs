@@ -57,7 +57,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
 
                 tokens.extend(quote! {
                     {
-                        let mut template = ::hirola::prelude::GenericNode::element(#name);
+                        let template = ::hirola::prelude::GenericNode::element(#name);
                         #children_tokens
                         #(#attributes)*
                         template
@@ -128,7 +128,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
             if name.starts_with("on:") {
                 let name = name.replace("on:", "");
                 quote! {
-                    ::hirola::prelude::EventListener::event(&mut template, #name, #value);
+                    ::hirola::prelude::EventListener::event(&template, #name, #value);
                 }
             } else if name.starts_with("use:") {
                 let effect = if value.is_some() {
@@ -190,7 +190,7 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 let attribute_name = convert_name(&name);
                 quote! {
                     ::hirola::prelude::GenericNode::set_attribute(
-                        &mut template,
+                        &template,
                         #attribute_name,
                         &::std::format!("{}", #value),
                     );
@@ -214,12 +214,14 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         // Its a component
                         Node::Element(_) if name[0..1].to_lowercase() != name[0..1] => {
                             append_children.extend(quote! {
-                                ::hirola::prelude::GenericNode::append_render(&mut template, #node );
+                                #[allow(unused_braces)]
+                                ::hirola::prelude::GenericNode::append_render(&template, #node );
                             });
                         }
                         _ => {
                             append_children.extend(quote! {
-                                ::hirola::prelude::GenericNode::append_child(&mut template, &#node );
+                                #[allow(unused_braces)]
+                                ::hirola::prelude::GenericNode::append_child(&template, &#node );
                             });
                         }
                     }
@@ -227,7 +229,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                 Node::Text(text) => {
                     append_children.extend(quote! {
                         ::hirola::prelude::GenericNode::append_child(
-                            &mut template,
+                            &template,
                             #[allow(unused_braces)]
                             &::hirola::prelude::GenericNode::text_node(#text),
                         );
@@ -237,7 +239,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                     let s = comment.value.clone();
                     append_children.extend(quote! {
                         ::hirola::prelude::GenericNode::append_child(
-                            &mut template,
+                            &template,
                             #[allow(unused_braces)]
                             &::hirola::prelude::GenericNode::comment(#s),
                         );
@@ -305,7 +307,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 append_children.extend(quote! {
                                     for #pat in #expr {
                                         ::hirola::prelude::GenericNode::append_child(
-                                            &mut template,
+                                            &template,
                                             #[allow(unused_braces)]
                                             &#body,
                                         );
@@ -325,6 +327,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 match ty.as_ref() {
                                     &Type::Infer(_) => {
                                         append_children.extend(quote! {
+                                            #[allow(unused_braces)]
                                             let switch = {
                                                 let switch = ::hirola::prelude::Switch {
                                                     signal: #expr,
@@ -339,7 +342,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                 switch
                                             };
                                             ::hirola::prelude::GenericNode::append_render(
-                                                &mut template,
+                                                &template,
                                                 switch
                                             );
                                         });
@@ -349,6 +352,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
                                                 let switch = {
+                                                    #[allow(unused_braces)]
                                                     let switch = ::hirola::prelude::Switch {
                                                         signal: #expr,
                                                         renderer: move |res| {
@@ -362,7 +366,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                     switch
                                                 };
                                                 ::hirola::prelude::GenericNode::append_render(
-                                                    &mut template,
+                                                    &template,
                                                     switch
                                                 );
                                             });
@@ -386,7 +390,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             } else {
                                 append_children.extend(quote! {
                                     ::hirola::prelude::GenericNode::append_child(
-                                        &mut template,
+                                        &template,
                                         #[allow(unused_braces)]
                                         &#block,
                                     );
@@ -399,7 +403,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 let fut = fut.base;
                                 append_children.extend(quote! {
                                     let suspense = {
-
+                                        #[allow(unused_braces)]
                                         let suspense = ::hirola::prelude::Suspense {
                                             future: Box::pin(#fut),
                                             template: Box::new(move |res| {
@@ -411,7 +415,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         suspense
                                     };
                                     ::hirola::prelude::GenericNode::append_render(
-                                        &mut template,
+                                        &template,
                                         suspense
                                     );
 
@@ -420,7 +424,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             _ => {
                                 append_children.extend(quote! {
                                     ::hirola::prelude::GenericNode::append_child(
-                                        &mut template,
+                                        &template,
                                         #[allow(unused_braces)]
                                         &#block,
                                     );

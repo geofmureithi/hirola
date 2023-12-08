@@ -22,7 +22,7 @@ pub struct Todo {
 impl Todo {
     pub fn new(id: u32, title: String) -> Arc<Self> {
         Arc::new(Self {
-            id: id,
+            id,
             title: Mutable::new(title),
             completed: Mutable::new(false),
             editing: Mutable::new(false),
@@ -33,12 +33,12 @@ impl Todo {
         self.completed.set_neq(completed);
     }
 
-    fn remove(&self, app: &App<Arc<State>>) {
-        app.state().remove_todo(&self);
-        app.state().as_ref().serialize();
+    fn remove(&self, app: &App<State>) {
+        app.state().remove_todo(self);
+        app.state().serialize();
     }
 
-    fn is_visible(&self, app: &App<Arc<State>>) -> impl Signal<Item = bool> {
+    fn is_visible(&self, app: &App<State>) -> impl Signal<Item = bool> {
         (map_ref! {
             let route = app.router().signal(),
             let completed = self.completed.signal() =>
@@ -63,7 +63,7 @@ impl Todo {
         self.editing.set_neq(false);
     }
 
-    pub fn render(todo: Arc<Self>, app: &App<Arc<State>>) -> Dom {
+    pub fn render(todo: Arc<Self>, app: &App<State>) -> Dom {
         fn is_checked(event: &Event) -> bool {
             event
                 .target()
@@ -98,11 +98,11 @@ impl Todo {
                 if let Some(title) = trim(&input.value()) {
                     todo.title.set(title.to_owned());
                 } else {
-                    state.remove_todo(&todo);
+                    state.remove_todo(todo);
                 }
                 input.blur().unwrap();
                 todo.done_editing();
-                state.as_ref().serialize();
+                state.serialize();
             }
             if event.dyn_ref::<KeyboardEvent>().unwrap().key() == "Escape" {
                 event.prevent_default();

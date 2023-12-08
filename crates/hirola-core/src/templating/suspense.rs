@@ -73,7 +73,7 @@ impl<Res: Default + 'static, N: GenericNode> Render<N> for Suspense<Res, N> {
         }
 
         let state = State::new(parent.clone());
-        let binding = state.clone();
+        let binding = Rc::<_>::clone(&state);
         let mut binding = binding.borrow_mut();
         // Apply loading
         binding.apply(template(Res::default()))?;

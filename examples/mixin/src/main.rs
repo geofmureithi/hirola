@@ -5,11 +5,11 @@ use hirola::{
 use wasm_bindgen::JsCast;
 use web_sys::Element;
 
-fn x_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) -> () + 'a> {
+fn x_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |node: &Dom| {
         let dom = node.inner_element();
         let element = dom.dyn_ref::<Element>().unwrap();
-        element.set_inner_html(&format!("{text}")); // Remember to escape this.
+        element.set_inner_html(text); // Remember to escape this.
     };
     Box::new(cb)
 }

@@ -291,7 +291,7 @@ impl<S: Clone + 'static> Router<S> {
                 > 0
             {
                 log::debug!("hash detected");
-                return ;
+                return;
             }
             current.set(path_name.to_string());
             log::debug!("pop handle : {path_name}");
@@ -462,5 +462,11 @@ impl<S: Clone + 'static> Router<S> {
     /// ```
     pub fn handler(&self) -> matchit::Router<fn(&App<S>) -> Dom> {
         self.handler.clone()
+    }
+}
+
+impl<S: Clone + 'static> Default for Router<S> {
+    fn default() -> Self {
+        Self::new()
     }
 }

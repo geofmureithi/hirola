@@ -26,10 +26,8 @@ pub struct App<S: 'static> {
 ///     // ... fields and methods for your application state ...
 /// }
 ///
-/// fn main() {
-///     let initial_state = AppState { /* ... */ };
-///     let app = App::new(initial_state);
-/// }
+/// let initial_state = AppState { /* ... */ };
+/// let app = App::new(initial_state);
 /// ```
 impl<S: Clone + 'static> App<S> {
     /// Creates a new instance of the App with the given initial state.
@@ -78,7 +76,7 @@ impl<S: Clone + 'static> App<S> {
     /// use hirola::prelude::*;
     /// use hirola::dom::app::App;
     /// use hirola::dom::Dom;
-    /// 
+    ///
     /// #[derive(Clone)]
     /// struct AppState {
     ///     // ... fields and methods for your application state ...
@@ -97,7 +95,10 @@ impl<S: Clone + 'static> App<S> {
     /// app.route("/about", about_page);
     /// ```
     pub fn route(&mut self, path: impl AsRef<str>, page: fn(&Self) -> Dom) {
-        self.router.handler.insert(path.as_ref().to_string(), page).unwrap();
+        self.router
+            .handler
+            .insert(path.as_ref().to_string(), page)
+            .unwrap();
     }
 
     /// Set the not-found page for the application.
@@ -113,7 +114,7 @@ impl<S: Clone + 'static> App<S> {
     /// use hirola::prelude::*;
     /// use hirola::dom::app::App;
     /// use hirola::dom::Dom;
-    /// 
+    ///
     /// #[derive(Clone)]
     /// struct AppState {
     ///     // ... fields and methods for your application state ...
@@ -147,7 +148,7 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    /// // fn main() {
     ///     use hirola::prelude::*;
     ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
@@ -161,7 +162,7 @@ impl<S: Clone + 'static> App<S> {
     ///     
     ///     // Mount the app on the web page body and start rendering
     ///     app.mount();
-    /// }
+    /// //}
     /// ```
     pub fn mount(&self) {
         let window = web_sys::window().unwrap();
@@ -191,7 +192,7 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    ///// fn main() {
     ///     use hirola::prelude::*;
     ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
@@ -211,7 +212,7 @@ impl<S: Clone + 'static> App<S> {
     ///
     ///     // Mount the app on the specified parent node and start rendering
     ///     app.mount_to(&parent_node);
-    /// }
+    /// //}
     /// ```
     pub fn mount_to(&self, parent: &web_sys::Node) {
         let router = self.router.clone();
@@ -242,7 +243,7 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    ///// fn main() {
     ///     use hirola::prelude::*;
     ///     use hirola::dom::app::App;
     ///     use hirola::dom::Dom;
@@ -281,7 +282,7 @@ impl<S: Clone + 'static> App<S> {
     ///             </main>
     ///         }
     ///     });
-    /// }
+    /// //}
     /// ```
     pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) {
         let res = cb(self);

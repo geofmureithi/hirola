@@ -35,7 +35,7 @@ where
 ///  <ul>
 ///     {count
 ///         .signal_vec()
-///         .render_map(|item| {
+///         .map_render(|item| {
 ///             html! { <li>{item.to_string()}</li> }
 ///      })}
 ///  </ul>

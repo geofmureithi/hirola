@@ -1,6 +1,6 @@
 [package]
 name = "hirola-dom"
-version = "0.3.1"
+version = "0.4.0-beta.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 wasm-bindgen = { version = "0.2" }
 log = "0.4"
-hirola-core = { path = "../hirola-core", version = "0.3.1" }
+hirola-core = { path = "../hirola-core", version = "0.4.0-beta.0" }
 matchit = { version = "0.7" }
 wasm-bindgen-futures = { version = "0.4.39" }
 discard = "1"
@@ -30,5 +30,5 @@ features = [
 version = "0.3.66"
 
 [dev-dependencies]
-hirola = { path = "../../", version = "0.3.1" }
+hirola = { path = "../../", version = "0.4.0-beta.0" }
 wasm-bindgen-test = "0.3.39"

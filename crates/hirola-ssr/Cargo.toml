@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 hirola-core = { path = "../hirola-core", version = "0.3.1" }
-html-escape = { version = "0.2.7" }
+html-escape = { version = "0.2.13" }
 
 
 [dev-dependencies]

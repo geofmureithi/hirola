@@ -36,8 +36,8 @@ Create an `index.html` in the root of counter. Add the contents below
   <head>
     <meta charset="UTF-8" />
     <title>Hirola Counter</title>
-    <body></body>
   </head>
+  <body></body>
 </html>
 ```
 

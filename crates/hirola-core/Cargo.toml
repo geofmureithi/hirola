@@ -14,31 +14,9 @@ keywords = ["wasm", "html", "dom", "web"]
 
 
 [dependencies]
-html-escape = { version = "0.2.13", optional = true }
-hirola-macros = { path = "../hirola-macros", version = "0.3.1" }
-wasm-bindgen = { version = "0.2", optional = true }
-matchit = { version = "0.7", optional = true }
-wasm-bindgen-futures = { optional = true, version = "0.4.39" }
-futures-signals = "0.3.33"
+futures-signals = "0.3.32"
 futures-util = "0.3"
-discard = "1"
-log = "0.4.20"
-serde = { version = "1", optional = true, features = ["derive", "rc"] }
 
-[dependencies.web-sys]
-features = [
-  "Comment",
-  "Document",
-  "DocumentFragment",
-  "Element",
-  "Event",
-  "HtmlElement",
-  "Node",
-  "Text",
-  "Window",
-]
-optional = true
-version = "0.3.66"
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }
@@ -47,32 +25,18 @@ hirola = { path = "../../" }
 web-sys = { version = "0.3", features = ["DomTokenList", "Element", "Window"] }
 
 
-[features]
-default = []
-dom = ["web-sys", "wasm-bindgen", "wasm-bindgen-futures"]
-ssr = ["html-escape"]
-app = [
-  "matchit",
-  "web-sys/History",
-  "web-sys/Location",
-  "web-sys/HtmlLinkElement",
-]
-serde = ["dep:serde"]
 
+# [[bench]]
+# harness = false
+# name = "reactivity"
 
-[[bench]]
-harness = false
-name = "reactivity"
+# [[bench]]
+# harness = false
+# name = "ssr"
 
-[[bench]]
-harness = false
-name = "ssr"
-
-[[test]]
-name = "ssr"
-required-features = ["ssr"]
+# [[test]]
+# name = "ssr"
+# required-features = ["ssr"]
 
 [package.metadata.docs.rs]
-all-features = true
 default-target = "wasm32-unknown-unknown"
-features = ["dom", "app"]

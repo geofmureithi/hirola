@@ -1,9 +1,10 @@
 pub mod bind;
 
-use hirola_core::prelude::{
+use hirola_core::{prelude::{
     signal::{Mutable, MutableSignalRef, ReadOnlyMutable},
-    Dom, GenericNode, Mixin, NodeRef,
-};
+    GenericNode, Mixin
+}, generic_node::EventListener};
+use hirola_dom::{Dom, node_ref::NodeRef};
 use json_dotpath::DotPaths;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{collections::HashMap, marker::PhantomData};
@@ -29,6 +30,7 @@ pub struct Form;
 #[derive(Clone, Debug)]
 pub struct FormHandler<T: 'static> {
     node_ref: NodeRef,
+    // TODO: change to MutableBTreeMap
     value: Mutable<T>,
 }
 
@@ -43,7 +45,7 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
 
     /// Get the immutable handle for form value
     pub fn handle(&self) -> ReadOnlyMutable<T> {
-        (&self.value).read_only()
+        self.value.read_only()
     }
 
     /// Update a specific field using the dot notation.
@@ -51,7 +53,7 @@ impl<T: Serialize + DeserializeOwned + Clone> FormHandler<T> {
     pub fn update_field<S: Serialize>(&self, name: &str, value: S) -> Result<(), Error> {
         let current_value = self.value.clone();
         let mut json = serde_json::to_value(&current_value).map_err(Error::Json)?;
-        json.dot_set(&name, value).map_err(Error::InvalidSetter)?;
+        json.dot_set(name, value).map_err(Error::InvalidSetter)?;
         let ser: T = serde_json::from_value(json).map_err(Error::Json)?;
         current_value.set(ser);
         Ok(())
@@ -77,8 +79,8 @@ pub struct Register<T: 'static, E> {
     element_type: PhantomData<E>,
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlInputElement> {
-    fn mixin(&self, dom: &Dom) {
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlInputElement> {
+    fn mixin(self, dom: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -93,17 +95,17 @@ impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlIn
         });
         dom.event("input", handler);
         let input = {
-            let node = dom.node().clone();
+            let node = dom.clone();
             node.dyn_into::<HtmlInputElement>().unwrap()
         };
         let name = input.name();
         let value: String = self.form.get_value_by_field(&name).unwrap().unwrap();
-        dom.node().set_attribute("value", &value);
+        dom.set_attribute("value", &value);
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form> for Register<T, HtmlSelectElement> {
-    fn mixin(&self, node: &Dom) {
+impl<T: Serialize + DeserializeOwned + Clone> Mixin<Form, Dom> for Register<T, HtmlSelectElement> {
+    fn mixin(self, node: &Dom) {
         let form = self.form.clone();
         let handler = Box::new(move |e: Event| {
             let input = e
@@ -142,7 +144,7 @@ impl<B: Serialize + DeserializeOwned, F: Serialize + DeserializeOwned + Clone> B
             let json = serde_json::to_value(value).unwrap();
             json.dot_get(name).unwrap().unwrap()
         }
-        current_value.signal_ref(|value| read_inner_value::<F, B>(&value, name))
+        current_value.signal_ref(|value| read_inner_value::<F, B>(value, name))
     }
 }
 

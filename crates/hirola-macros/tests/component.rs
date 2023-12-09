@@ -1,8 +1,8 @@
-use hirola::prelude::*;
-use hirola_macros::html;
+use hirola_macros::{component, html};
+use hirola_ssr::{render_to_string, SsrNode};
 
 #[component]
-fn MyComponent() -> Dom {
+fn MyComponent() -> SsrNode {
     let world = "planet";
     html! {
         <p>{world}</p>
@@ -10,7 +10,7 @@ fn MyComponent() -> Dom {
 }
 
 #[component]
-fn MyComponentWithProps(world: &'static str) -> Dom {
+fn MyComponentWithProps(world: &'static str) -> SsrNode {
     html! {
         <p>{world}</p>
     }
@@ -24,7 +24,8 @@ fn it_renders_component() {
                 <MyComponent />
             </>
         }
-    });
+    })
+    .unwrap();
     assert_eq!("<p>planet</p>", result);
 }
 
@@ -36,6 +37,7 @@ fn it_renders_component_with_props() {
                 <MyComponentWithProps world="hirola" />
             </>
         }
-    });
+    })
+    .unwrap();
     assert_eq!("<p>hirola</p>", result);
 }

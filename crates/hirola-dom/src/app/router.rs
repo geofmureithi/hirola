@@ -1,11 +1,13 @@
-use crate::{dom::Dom, prelude::*};
-use futures_signals::signal::{Mutable, MutableSignalCloned, SignalExt};
+use hirola_core::prelude::signal::{Mutable, MutableSignalCloned, SignalExt};
+use hirola_core::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
-#[cfg(feature = "dom")]
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-#[cfg(feature = "dom")]
 use web_sys::{Element, Event};
+
+use crate::Dom;
+
+use super::App;
 
 /// Router struct for handling routing in the frontend application.
 ///
@@ -18,6 +20,8 @@ use web_sys::{Element, Event};
 ///
 /// ```no_run
 /// use hirola::prelude::*;
+/// use hirola::dom::Dom;
+/// use hirola_dom::app::App;
 /// #[derive(Clone)]
 /// struct AppState {
 ///     // ... fields and methods for your application state ...
@@ -71,20 +75,18 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// ```no_run
     /// use hirola::prelude::*;
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// ```
     pub fn new() -> Self {
-        #[allow(unused_mut)]
         let mut path = String::from("/");
-        #[cfg(feature = "dom")]
         if let Some(window) = web_sys::window() {
             path = window.location().pathname().unwrap_or("/".to_string());
         }
         Router {
             current: Mutable::new(path),
             handler: Default::default(),
-            not_found: Box::new(|_| Dom::text("Not Found")),
+            not_found: Box::new(|_| Dom::text_node("Not Found")),
         }
     }
 
@@ -101,7 +103,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let params = router.current_params();
     /// ```
@@ -133,17 +135,15 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// router.push("/about");
     pub fn push(&self, path: &str) {
-        #[cfg(feature = "dom")]
         let window = web_sys::window().unwrap();
-        #[cfg(feature = "dom")]
         window
             .history()
             .unwrap()
-            .push_state_with_url(&JsValue::default(), "", Some(&path))
+            .push_state_with_url(&JsValue::default(), "", Some(path))
             .unwrap();
         self.current.set(path.to_owned());
     }
@@ -162,27 +162,22 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let link_handler = router.link();
     ///
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
     /// ```
-    pub fn link(&self) -> Box<dyn Fn(&Dom) -> () + '_> {
-        #[cfg(feature = "dom")]
+    pub fn link(&self) -> Box<dyn Fn(&Dom) + '_> {
         let router = self.clone();
-        #[allow(unused_variables)]
         let cb = move |node: &Dom| {
-            #[cfg(feature = "dom")]
             let router = router.clone();
-            #[cfg(feature = "dom")]
             let handle_click = Box::new(move |e: Event| {
                 e.prevent_default();
                 let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
                 let href = element.get_attribute("href").unwrap();
                 router.push(&href);
             }) as Box<dyn Fn(Event)>;
-            #[cfg(feature = "dom")]
             node.event("click", handle_click);
         };
         Box::new(cb)
@@ -201,7 +196,7 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// let router = Router::<()>::new();
     /// let signal = router.signal();
     ///
@@ -230,7 +225,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
     /// use hirola::prelude::*;
     /// #[derive(Clone)]
     /// struct AppState {
@@ -250,13 +247,11 @@ impl<S: Clone + 'static> Router<S> {
     /// app.route("/about", about_page);
     /// let router = app.router().clone();
     /// let doc = web_sys::window().unwrap().document().unwrap();
-    /// router.render(&app, &DomType::fragment());
+    /// router.render(&app, &Dom::fragment());
     /// ```
-    pub fn render(self, app: &App<S>, parent: &DomType) -> Dom {
+    pub fn render(&self, app: &App<S>, parent: &Dom) -> Dom {
         let router = &self.handler;
-        #[cfg(feature = "dom")]
         let current = self.current.clone();
-        #[cfg(feature = "dom")]
         //Hash routing forward in history and URL rewrite
         let handle_hash = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let l: String = web_sys::window()
@@ -276,17 +271,13 @@ impl<S: Clone + 'static> Router<S> {
 
             current.set(l.to_string());
         }) as Box<dyn Fn(_)>);
-        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onhashchange(Some(handle_hash.as_ref().unchecked_ref()));
-        #[cfg(feature = "dom")]
         handle_hash.forget();
 
-        #[cfg(feature = "dom")]
         let current = self.current.clone();
         //Routing for navigating in history and escaping hash routes
-        #[cfg(feature = "dom")]
         let handle_pop = Closure::wrap(Box::new(move |_evt: web_sys::Event| {
             let path_name = web_sys::window().unwrap().location().pathname().unwrap();
 
@@ -300,18 +291,16 @@ impl<S: Clone + 'static> Router<S> {
                 > 0
             {
                 log::debug!("hash detected");
-                return ();
+                return;
             }
             current.set(path_name.to_string());
             log::debug!("pop handle : {path_name}");
         }) as Box<dyn Fn(_)>);
 
-        #[cfg(feature = "dom")]
         web_sys::window()
             .unwrap()
             .set_onpopstate(Some(handle_pop.as_ref().unchecked_ref()));
 
-        #[cfg(feature = "dom")]
         handle_pop.forget();
         let route = &self.current.clone();
 
@@ -322,8 +311,8 @@ impl<S: Clone + 'static> Router<S> {
             Err(_) => &self.not_found,
         };
 
-        let builder = page_fn(&app);
-        let dom = builder.mount(&parent).unwrap();
+        let builder = page_fn(app);
+        let _ = &parent.append_child(&builder);
 
         let router = router.clone();
         let app = app.clone();
@@ -339,11 +328,10 @@ impl<S: Clone + 'static> Router<S> {
                 };
 
                 let builder = page_fn(&app);
-                let dom = builder.mount(&DomType::fragment()).unwrap();
-                node.replace_children_with(&dom.node());
-                #[cfg(feature = "dom")]
+                let dom = Dom::fragment();
+                dom.append_child(&builder);
+                node.replace_children_with(&dom);
                 let window = web_sys::window().unwrap();
-                #[cfg(feature = "dom")]
                 window
                     .history()
                     .unwrap()
@@ -352,8 +340,8 @@ impl<S: Clone + 'static> Router<S> {
                 log::debug!("Router received new path: {route_match}");
             })
             .to_future();
-        dom.effect(wait_for_next_route);
-        dom
+        parent.effect(wait_for_next_route);
+        parent.clone()
     }
 
     /// Inserts a new route and its corresponding page rendering function into the router.
@@ -379,8 +367,10 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
     /// use hirola::prelude::*;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     ///
     /// // Define a custom function to render the home page
     /// fn home_page(_: &App<()>) -> Dom {
@@ -412,7 +402,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     /// use hirola::prelude::*;
     /// // Define a custom function to render the not-found page
     /// fn not_found_page(_: &App<()>) -> Dom {
@@ -442,7 +434,9 @@ impl<S: Clone + 'static> Router<S> {
     /// # Example
     ///
     /// ```no_run
-    /// use hirola::prelude::router::Router;
+    /// use hirola::dom::app::router::Router;
+    /// use hirola::dom::Dom;
+    /// use hirola_dom::app::App;
     /// use hirola::prelude::*;
     ///
     /// // Define custom functions to render the home and about pages
@@ -468,5 +462,11 @@ impl<S: Clone + 'static> Router<S> {
     /// ```
     pub fn handler(&self) -> matchit::Router<fn(&App<S>) -> Dom> {
         self.handler.clone()
+    }
+}
+
+impl<S: Clone + 'static> Default for Router<S> {
+    fn default() -> Self {
+        Self::new()
     }
 }

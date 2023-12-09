@@ -1,9 +1,10 @@
 use hirola::prelude::*;
+use hirola::dom::{node_ref::NodeRef, Dom};
 use tool::SignTool;
 
 mod tool;
 
-fn signature_pad(_app: &App<S, G>) -> Dom {
+fn signature_pad() -> Dom {
     let canvas = NodeRef::new();
     let tool = SignTool::new(canvas.clone());
 
@@ -50,5 +51,6 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    hirola::prelude::render_to(signature_pad, &body);
+    let root = hirola::dom::render_to(signature_pad(), &body).unwrap();
+    std::mem::forget(root)
 }

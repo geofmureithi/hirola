@@ -11,9 +11,9 @@ jobs:
       - name: Install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - run: wasm-pack test --headless --chrome --features dom,app
-        working-directory: crates/hirola-core
-      - run: wasm-pack test --headless --firefox --features dom,app
-        working-directory: crates/hirola-core
-      - run: wasm-pack test --headless --chrome --features dom,app
-      - run: wasm-pack test --headless --firefox --features dom,app
+      - run: wasm-pack test --headless --chrome
+        working-directory: crates/hirola-dom
+      - run: wasm-pack test --headless --firefox
+        working-directory: crates/hirola-dom
+      - run: wasm-pack test --headless --chrome
+      - run: wasm-pack test --headless --firefox

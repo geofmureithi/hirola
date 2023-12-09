@@ -1,6 +1,8 @@
 use hirola::prelude::*;
-use hirola_core::dom_test_utils::next_tick;
-use hirola_core::prelude::router::Router;
+use hirola_dom::dom_test_utils::next_tick;
+use hirola_dom::Dom;
+use hirola_dom::app::App;
+use hirola_dom::app::router::Router;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -11,23 +13,23 @@ struct AppState {
 }
 
 fn home_page(_: &App<AppState>) -> Dom {
-    Dom::text("Home")
+    Dom::text_node("Home")
 }
 
 fn about_page(_: &App<AppState>) -> Dom {
-    Dom::text("About")
+    Dom::text_node("About")
 }
 
 fn not_found_page(_: &App<AppState>) -> Dom {
-    Dom::text("NotFound")
+    Dom::text_node("NotFound")
 }
 
 fn user(_: &App<AppState>) -> Dom {
-    Dom::text("User")
+    Dom::text_node("User")
 }
 
-fn body() -> DomType {
-    DomType::fragment()
+fn body() -> Dom {
+    Dom::fragment()
 }
 
 // Helper function to set up a test instance of Router
@@ -53,7 +55,7 @@ fn test_router_insert_and_render() {
     let app = App::new(AppState {});
     let body = &body();
     let home_dom = (router.handler().at("/").unwrap().value)(&app);
-    let rendered = router.clone().render(&app, &body);
+    let rendered = router.clone().render(&app, body);
     assert_eq!(rendered.inner_html(), home_dom.inner_html());
     router.push("/about");
 

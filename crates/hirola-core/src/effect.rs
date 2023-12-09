@@ -57,10 +57,7 @@ pub trait SideEffect {
     fn effect(self) -> BoxedLocal<()>;
 }
 
-impl<F: 'static> SideEffect for F
-where
-    F: Future<Output = ()>,
-{
+impl<F: 'static + Future<Output = ()>> SideEffect for F {
     /// Converts the provided future into a boxed future of `()` as a side effect.
     ///
     /// This implementation allows any future that produces `()` as its output to be converted
@@ -75,10 +72,11 @@ where
     /// ```no_run
     /// use std::future::ready;
     /// use hirola::prelude::*;
+    /// use hirola::dom::Dom;
     /// // Create a future that produces `()` as its output
     /// let my_future = ready(());
     ///
-    /// let render = html! {
+    /// let render: Dom = html! {
     ///    <div use:my_future />
     /// };
     /// ```

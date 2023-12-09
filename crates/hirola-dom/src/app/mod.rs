@@ -2,7 +2,7 @@ pub mod router;
 use router::Router;
 use std::fmt::Debug;
 
-use crate::{dom::Dom};
+use crate::Dom;
 
 #[derive(Debug, Clone)]
 pub struct App<S: 'static> {
@@ -20,15 +20,14 @@ pub struct App<S: 'static> {
 /// # Example
 /// ```no_run
 /// use hirola::prelude::*;
+/// use hirola_dom::app::App;
 /// #[derive(Clone)]
 /// struct AppState {
 ///     // ... fields and methods for your application state ...
 /// }
 ///
-/// fn main() {
-///     let initial_state = AppState { /* ... */ };
-///     let app = App::new(initial_state);
-/// }
+/// let initial_state = AppState { /* ... */ };
+/// let app = App::new(initial_state);
 /// ```
 impl<S: Clone + 'static> App<S> {
     /// Creates a new instance of the App with the given initial state.
@@ -75,6 +74,9 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     /// ```no_run
     /// use hirola::prelude::*;
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
+    ///
     /// #[derive(Clone)]
     /// struct AppState {
     ///     // ... fields and methods for your application state ...
@@ -92,8 +94,11 @@ impl<S: Clone + 'static> App<S> {
     /// app.route("/", home_page);
     /// app.route("/about", about_page);
     /// ```
-    pub fn route(&mut self, path: &str, page: fn(&Self) -> Dom) {
-        self.router.handler.insert(path.to_string(), page).unwrap();
+    pub fn route(&mut self, path: impl AsRef<str>, page: fn(&Self) -> Dom) {
+        self.router
+            .handler
+            .insert(path.as_ref().to_string(), page)
+            .unwrap();
     }
 
     /// Set the not-found page for the application.
@@ -107,6 +112,8 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     /// ```no_run
     /// use hirola::prelude::*;
+    /// use hirola::dom::app::App;
+    /// use hirola::dom::Dom;
     ///
     /// #[derive(Clone)]
     /// struct AppState {
@@ -125,7 +132,6 @@ impl<S: Clone + 'static> App<S> {
     }
 }
 
-#[cfg(feature = "dom")]
 impl<S: Clone + 'static> App<S> {
     /// Mounts the application on the web page body and starts the rendering process.
     ///
@@ -142,9 +148,9 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    /// // fn main() {
     ///     use hirola::prelude::*;
-    ///
+    ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -156,16 +162,17 @@ impl<S: Clone + 'static> App<S> {
     ///     
     ///     // Mount the app on the web page body and start rendering
     ///     app.mount();
-    /// }
+    /// //}
     /// ```
     pub fn mount(&self) {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
         let router = self.router.clone();
         let dom = router.render(
-            &self,
-            &crate::generic_node::DomNode {
+            self,
+            &crate::Dom {
                 node: document.body().unwrap().into(),
+                ..Default::default()
             },
         );
         // We leak the root node to avoid callbacks and futures being dropped
@@ -185,8 +192,9 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    ///// fn main() {
     ///     use hirola::prelude::*;
+    ///     use hirola::dom::app::App;
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -204,14 +212,15 @@ impl<S: Clone + 'static> App<S> {
     ///
     ///     // Mount the app on the specified parent node and start rendering
     ///     app.mount_to(&parent_node);
-    /// }
+    /// //}
     /// ```
     pub fn mount_to(&self, parent: &web_sys::Node) {
         let router = self.router.clone();
         let dom = router.render(
-            &self,
-            &crate::generic_node::DomNode {
+            self,
+            &crate::Dom {
                 node: parent.clone(),
+                ..Default::default()
             },
         );
         // We leak the root node to avoid callbacks and futures being dropped
@@ -234,8 +243,11 @@ impl<S: Clone + 'static> App<S> {
     /// # Example
     ///
     /// ```no_run
-    /// fn main() {
+    ///// fn main() {
     ///     use hirola::prelude::*;
+    ///     use hirola::dom::app::App;
+    ///     use hirola::dom::Dom;
+    ///
     ///     #[derive(Clone)]
     ///     struct AppState {
     ///         // ... fields and methods for your application state ...
@@ -255,9 +267,7 @@ impl<S: Clone + 'static> App<S> {
     ///     // In this example, we wrap the rendered content with a layout component
     ///     app.mount_with(&parent_node, |app| {
     ///         let router = app.router().clone();
-    ///         let inner = router.render(app, &DomType {
-    ///             node: parent_node.clone().into()
-    ///         });
+    ///         let inner = router.render(app, &Dom::new_from_node(&parent_node));
     ///         html! {
     ///             <main>
     ///                <nav>
@@ -272,59 +282,12 @@ impl<S: Clone + 'static> App<S> {
     ///             </main>
     ///         }
     ///     });
-    /// }
+    /// //}
     /// ```
     pub fn mount_with(&self, parent: &web_sys::Node, cb: impl Fn(&Self) -> Dom) {
         let res = cb(self);
-        parent.append_child(&res.node().inner_element()).unwrap();
+        parent.append_child(&res.inner_element()).unwrap();
         // We leak the root node to avoid callbacks and futures being dropped
         std::mem::forget(res);
-    }
-}
-
-#[cfg(feature = "ssr")]
-impl<S: Clone + 'static> App<S> {
-    /// Renders the application to a string representation based on the specified route path.
-    ///
-    /// This method is useful for server-side rendering (SSR) scenarios where you want to generate
-    /// the initial HTML content on the server and send it to the client. It renders the application
-    /// for the provided route path and returns the result as a string.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The path for the route to render, a string representing the route pattern.
-    ///
-    /// # Returns
-    ///
-    /// A string containing the HTML representation of the rendered content.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// fn main() {
-    ///     use hirola::prelude::*;
-    ///
-    ///     #[derive(Clone)]
-    ///     struct AppState {
-    ///         // ... fields and methods for your application state ...
-    ///     }
-    ///
-    ///     // ... add routes and set up the app ...
-    ///
-    ///     // Render the application for the "/about" route and get the result as a string
-    ///     let rendered_html = app.render_to_string("/about");
-    ///
-    ///     // ... send `rendered_html` to the client for server-side rendering ...
-    /// }
-    /// ```
-    pub fn render_to_string(&self, path: &str) -> String {
-        use crate::generic_node::GenericNode;
-        let fragment = crate::generic_node::SsrNode::fragment();
-        let router = self.router().clone();
-        // Set the path
-        router.push(path);
-        // Render path to fragment
-        router.render(self, &fragment);
-        format!("{fragment}")
     }
 }

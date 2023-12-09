@@ -13,35 +13,24 @@ edition = "2021"
 [dependencies]
 hirola-core = { path = "crates/hirola-core", version = "0.3.1" }
 hirola-macros = { path = "crates/hirola-macros", version = "0.3.1" }
-hirola-form = { path = "crates/hirola-form", version = "0.3.1", optional = true }
-
+hirola-dom = { path = "crates/hirola-dom", version = "0.3.1", optional = true }
+hirola-ssr = { path = "crates/hirola-ssr", version = "0.3.1", optional = true }
 
 [features]
-default = ["hirola-core/default"]
+default = ["dom"]
+## Enables browser based rendering including websys and wasmbindgen
+dom = ["hirola-dom"]
 
-
-## Enables dom based rendering
-dom = ["hirola-core/dom"]
-
-# ## Enables serialization of state
-serde = ["hirola-core/serde"]
-
-## Enables server side reendering
-ssr = ["hirola-core/ssr"]
-
-## Enables app features like isomorphic routing
-app = ["hirola-core/app"]
+## Enables server side rendering
+ssr = ["hirola-ssr"]
 
 docsrs = ["document-features"]
-
-## Enables form mixins and utilities
-form = ["hirola-form"]
 
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.39"
 wasm-bindgen = { version = "0.2.89" }
-hirola = { path = ".", features = ["app", "dom"] }
+hirola = { path = "." }
 futures-util = "0.3"
 web-sys = { version = "0.3", features = ["Document", "Node", "Element"] }
 
@@ -51,8 +40,11 @@ members = [
     "crates/hirola-macros",
     "crates/hirola-form",
     "crates/hirola-kit",
+    "crates/hirola-ssr",
+    "crates/hirola-dom",
+    "examples/axum",
     "examples/counter",
-    "examples/todo",
+    "examples/todo-mvc",
     "examples/canvas",
     "examples/fake-api",
     "examples/chartjs",
@@ -71,7 +63,7 @@ optional = true
 # defines the configuration attribute `docsrs`
 rustdoc-args = ["--cfg", "docsrs"]
 default-target = "wasm32-unknown-unknown"
-features = ["app", "dom", "serde", "docsrs"]
+features = ["docsrs"]
 
 
 [profile.release]

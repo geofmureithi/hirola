@@ -1,5 +1,5 @@
-use futures_signals::{signal::Mutable, signal_vec::MutableVec};
-use hirola_core::dom_test_utils::{next_tick, next_tick_with};
+use hirola_core::prelude::{signal::Mutable, signal_vec::MutableVec};
+use hirola_dom::dom_test_utils::{next_tick, next_tick_with};
 
 use super::*;
 
@@ -10,7 +10,7 @@ fn append() {
     let node = html! {
         <ul>
             {
-                count.signal_vec().render_map(|item| {
+                count.signal_vec().map_render(|item| {
                     html! {
                         <li>{ item.to_string() }</li>
 
@@ -46,7 +46,7 @@ fn swap_rows() {
     let node = html! {
         <ul>
         {
-            count.signal_vec().render_map(|item| {
+            count.signal_vec().map_render(|item| {
                 html! {
                     <li>{ item.to_string() }</li>
 
@@ -81,7 +81,7 @@ fn delete_row() {
     let node = html! {
         <ul>
         {
-            count.signal_vec().render_map(|item| {
+            count.signal_vec().map_render(|item| {
                 html! {
                     <li>{ item.to_string() }</li>
 
@@ -111,7 +111,7 @@ fn clear() {
     let node = html! {
         <ul>
         {
-            count.signal_vec().render_map(|item: i32| {
+            count.signal_vec().map_render(|item: i32| {
                 html! {
                     <li>{ item.to_string() }</li>
                 }
@@ -143,7 +143,7 @@ fn insert_front() {
     let node = html! {
         <ul>
         {
-            count.signal_vec().render_map(|item| {
+            count.signal_vec().map_render(|item| {
                 html! {
                     <li>{ item.to_string() }</li>
                 }
@@ -172,7 +172,7 @@ fn nested_reactivity() {
     let node = html! {
         <ul>
         {
-            count.signal_vec_cloned().render_map(|item| {
+            count.signal_vec_cloned().map_render(|item| {
                 html! {
                     <li>{ item }</li>
 

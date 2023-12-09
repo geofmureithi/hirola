@@ -1,5 +1,6 @@
 mod model;
 use hirola::prelude::*;
+use hirola::dom::Dom;
 use model::Users;
 use reqwasm::http::Request;
 use anyhow::bail;
@@ -8,7 +9,7 @@ async fn user_fetcher() -> anyhow::Result<Users> {
     let request = Request::get("https://jsonplaceholder.typicode.com/users");
     let response = request.send().await?;
     if response.status() == 200 {
-        return Ok(response.json().await?);
+        Ok(response.json().await?)
     } else {
         bail!(
             "Failed with status {}, {}",
@@ -48,7 +49,7 @@ fn main() {
     let document = window.document().unwrap();
     let body = document.body().unwrap();
 
-    let dom = render_to(fetch_users(), &body).unwrap();
+    let dom = hirola::dom::render_to(fetch_users(), &body).unwrap();
 
     std::mem::forget(dom);
 }

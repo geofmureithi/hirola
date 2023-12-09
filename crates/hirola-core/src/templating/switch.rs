@@ -3,36 +3,35 @@ use std::{cell::RefCell, rc::Rc};
 use futures_signals::signal::{Signal, SignalExt};
 
 use crate::{
-    dom::Dom,
-    generic_node::{DomType, GenericNode},
+    generic_node::GenericNode,
     render::{Error, Render},
 };
 
-pub struct Switch<S: Signal<Item = bool>, F>
+pub struct Switch<S: Signal<Item = bool>, F, G>
 where
-    F: Fn(bool) -> Dom,
+    F: Fn(bool) -> G,
 {
     pub signal: S,
     pub renderer: F,
 }
 
-impl<S, F> Render for Switch<S, F>
+impl<S, F, N: GenericNode> Render<N> for Switch<S, F, N>
 where
-    F: Fn(bool) -> Dom + 'static,
+    F: Fn(bool) -> N + 'static,
     S: Signal<Item = bool> + 'static,
 {
-    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
-        let marker = DomType::marker();
-        parent.node().append_child(&marker);
-        let state = State::new(parent.node().clone(), marker);
+    fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
+        let marker = N::marker();
+        parent.append_child(&marker);
+        let state = State::new(parent.clone(), marker);
         let renderer = self.renderer;
-        struct State<DomType> {
+        struct State<DomType: GenericNode> {
             holder: DomType,
             marker: DomType,
-            current: Option<Dom>,
+            current: Option<DomType>,
         }
 
-        impl State<DomType> {
+        impl<DomType: GenericNode> State<DomType> {
             fn new(element: DomType, marker: DomType) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
                     holder: element,
@@ -42,20 +41,21 @@ where
             }
 
             fn clear(&mut self) {
-                let node = &mut self.holder;
-                if let Some(frag) = &self.current {
-                    for child in &frag.children().take() {
-                        log::debug!("Result for remove {:?}", node.remove_child(&child.node()));
-                    }
-                };
+                {
+                    let node = &mut self.holder;
+                    if let Some(frag) = &self.current {
+                        for child in &frag.children().take() {
+                            node.remove_child(child)
+                        }
+                    };
+                }
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: Dom) {
+            fn apply(&mut self, dom: DomType) {
                 self.clear();
                 let node = &self.holder;
-                let dom = dom.mount(&DomType::fragment()).unwrap();
-                node.insert_child_before(&dom.node(), Some(&self.marker));
+                node.insert_child_before(&dom, Some(&self.marker));
                 self.current = Some(dom);
             }
         }

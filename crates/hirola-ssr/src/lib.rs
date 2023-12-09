@@ -3,13 +3,12 @@ use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::{fmt, mem};
 
-use crate::generic_node::GenericNode;
+use hirola_core::generic_node::GenericNode;
+use hirola_core::render::{Error, Render};
 
 /// Rendering backend for Server Side Rendering, aka. SSR.
-///
-/// _This API requires the following crate features to be activated: `ssr`_
+/// Offers interior mutability and is not thread safe.
 #[derive(Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 enum SsrNodeType {
     Element(RefCell<Element>),
     Comment(RefCell<Comment>),
@@ -18,8 +17,6 @@ enum SsrNodeType {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
-
 struct SsrNodeInner {
     ty: Rc<SsrNodeType>,
     /// No parent if `Weak::upgrade` returns `None`.
@@ -27,7 +24,6 @@ struct SsrNodeInner {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct SsrNode(Rc<SsrNodeInner>);
 
 impl PartialEq for SsrNode {
@@ -81,7 +77,7 @@ impl SsrNode {
         if let Some(index) = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == child).then(|| i))
+            .find_map(|(i, c)| (c == child).then_some(i))
         {
             children.remove(index);
         } else {
@@ -89,7 +85,7 @@ impl SsrNode {
             for c in &children {
                 if let SsrNodeType::Fragment(fragment) = c.0.ty.as_ref() {
                     for c in &fragment.borrow().0 {
-                        c.try_remove_child(&child);
+                        c.try_remove_child(child);
                     }
                 }
             }
@@ -165,7 +161,7 @@ impl GenericNode for SsrNode {
                     children
                         .iter()
                         .enumerate()
-                        .find_map(|(i, child)| (child == reference).then(|| i))
+                        .find_map(|(i, child)| (child == reference).then_some(i))
                         .expect("couldn't find reference node"),
                     new_node.clone(),
                 );
@@ -189,7 +185,7 @@ impl GenericNode for SsrNode {
         let index = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == child).then(|| i))
+            .find_map(|(i, c)| (c == child).then_some(i))
             .expect("couldn't find child");
         children.remove(index);
 
@@ -208,7 +204,7 @@ impl GenericNode for SsrNode {
         let index = children
             .iter()
             .enumerate()
-            .find_map(|(i, c)| (c == old).then(|| i))
+            .find_map(|(i, c)| (c == old).then_some(i))
             .expect("Couldn't find child");
         children[index] = new.clone();
     }
@@ -235,9 +231,9 @@ impl GenericNode for SsrNode {
         unimplemented!()
     }
 
-    // fn event(&self, _name: &str, _handler: Box<EventListener>) {
-    //     // Don't do anything. Events are attached on client side.
-    // }
+    fn children(&self) -> RefCell<Vec<SsrNode>> {
+        unimplemented!()
+    }
 
     fn update_inner_text(&self, text: &str) {
         self.unwrap_text().borrow_mut().0 = text.to_string();
@@ -245,6 +241,9 @@ impl GenericNode for SsrNode {
 
     fn replace_children_with(&self, _node: &Self) {
         unimplemented!()
+    }
+    fn effect(&self, _future: impl std::future::Future<Output = ()> + 'static) {
+        // panic!("SsrNode does not support effects, please use SsrNodeAsync!")
     }
 }
 
@@ -259,8 +258,14 @@ impl fmt::Display for SsrNode {
     }
 }
 
+impl Render<SsrNode> for SsrNode {
+    fn render_into(self: Box<Self>, parent: &SsrNode) -> Result<(), Error> {
+        parent.append_child(&self);
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Element {
     name: String,
     attributes: HashMap<String, String>,
@@ -284,7 +289,6 @@ impl fmt::Display for Element {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Comment(String);
 
 impl fmt::Display for Comment {
@@ -294,7 +298,6 @@ impl fmt::Display for Comment {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Text(String);
 
 impl fmt::Display for Text {
@@ -304,7 +307,6 @@ impl fmt::Display for Text {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))] 
 pub struct Fragment(Vec<SsrNode>);
 
 impl fmt::Display for Fragment {
@@ -313,5 +315,69 @@ impl fmt::Display for Fragment {
             write!(f, "{}", child)?;
         }
         Ok(())
+    }
+}
+
+/// Render a [`SsrNode`] into a static [`String`]. Useful for rendering to a string on the server side.
+pub fn render_to_string(dom: SsrNode) -> Result<String, Error> {
+    let root = SsrNode::fragment();
+    Render::render_into(Box::new(dom), &root)?;
+    Ok(format!("{}", root))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hirola::prelude::*;
+
+    #[test]
+    fn hello_world() {
+        let node = html! {
+            <p>"Hello World!"</p>
+        };
+
+        assert_eq!(render_to_string(node).unwrap(), "<p>Hello World!</p>");
+    }
+
+    #[test]
+    fn reactive_text() {
+        let count = Mutable::new(0);
+
+        assert_eq!(
+            render_to_string(html! {
+                <p>{count.clone()}</p>
+            })
+            .unwrap(),
+            "<p>0</p>"
+        );
+
+        count.set(1);
+        assert_eq!(
+            render_to_string(html! {
+                <p>{count}</p>
+            }).unwrap(),
+            "<p>1</p>"
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn check_reject_effects() {
+        let count = MutableVec::new_with_values(vec![1, 2, 3]);
+
+        let node = html! {
+            <ul>
+            {
+                count.signal_vec().map_render(move |item| {
+                    html! {
+                        <li>{item.to_string()}</li>
+                    }
+                } )
+            }
+            </ul>
+        };
+
+        let dom = render_to_string(node).unwrap();
+        assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", dom);
     }
 }

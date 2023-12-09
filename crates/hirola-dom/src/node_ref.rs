@@ -1,13 +1,16 @@
 //! References to nodes in templates.
-use crate::generic_node::DomType;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
 
+use hirola_core::generic_node::NodeReference;
+
+use crate::Dom;
+
 /// A reference to a [`GenericNode`].
 #[derive(Clone, PartialEq, Eq)]
-pub struct NodeRef(Rc<RefCell<Option<DomType>>>);
+pub struct NodeRef(Rc<RefCell<Option<Dom>>>);
 
 impl NodeRef {
     /// Creates an empty [`NodeRef`].
@@ -21,7 +24,7 @@ impl NodeRef {
     /// Panics if the [`NodeRef`] is not set yet or is the wrong type.
     ///
     /// For a non panicking version, see [`NodeRef::try_get`].
-    pub fn get(&self) -> DomType {
+    pub fn get(&self) -> Dom {
         self.try_get().expect("NodeRef is not set")
     }
 
@@ -29,31 +32,31 @@ impl NodeRef {
     /// the wrong type.
     ///
     /// For a panicking version, see [`NodeRef::get`].
-    pub fn try_get(&self) -> Option<DomType> {
+    fn inner_try_get(&self) -> Option<Dom> {
         let obj = self.0.borrow();
         (obj.as_ref()? as &dyn Any).downcast_ref().cloned()
     }
 
-    /// Gets the raw [`DomType`] stored inside the [`NodeRef`].
+    /// Gets the raw [`DomNode`] stored inside the [`NodeRef`].
     ///
     /// # Panics
     /// Panics if the [`NodeRef`] is not set yet.
     ///
     /// For a non panicking version, see [`NodeRef::try_get_raw`].
-    pub fn get_raw(&self) -> DomType {
+    pub fn get_raw(&self) -> Dom {
         self.try_get().expect("NodeRef is not set")
     }
 
-    /// Tries to get the raw [`DomType`] stored inside the [`NodeRef`] or `None` if it is
+    /// Tries to get the raw [`DomNode`] stored inside the [`NodeRef`] or `None` if it is
     /// not yet set.
     ///
     /// For a panicking version, see [`NodeRef::get`].
-    pub fn try_get_raw(&self) -> Option<DomType> {
+    pub fn try_get_raw(&self) -> Option<Dom> {
         self.0.borrow().clone()
     }
 
-    /// Sets the [`NodeRef`] with the specified [`DomType`].
-    pub fn set(&self, node: DomType) {
+    /// Sets the [`NodeRef`] with the specified [`DomNode`].
+    fn inner_set(&self, node: Dom) {
         *self.0.borrow_mut() = Some(node);
     }
 }
@@ -67,5 +70,15 @@ impl Default for NodeRef {
 impl fmt::Debug for NodeRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("NodeRef").field(&self.0.borrow()).finish()
+    }
+}
+
+impl NodeReference for NodeRef {
+    type Target = Dom;
+    fn set(&self, node: Self::Target) {
+        self.inner_set(node)
+    }
+    fn try_get(&self) -> Option<Self::Target> {
+        self.inner_try_get()
     }
 }

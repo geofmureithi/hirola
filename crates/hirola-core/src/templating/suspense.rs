@@ -1,6 +1,5 @@
 use crate::{
-    dom::Dom,
-    generic_node::{DomType, GenericNode},
+    generic_node::GenericNode,
     render::{Error, Render},
     BoxedLocal,
 };
@@ -29,21 +28,21 @@ where
     }
 }
 
-pub struct Suspense<Res> {
-    pub template: Box<dyn Fn(Res) -> Dom>,
+pub struct Suspense<Res, G> {
+    pub template: Box<dyn Fn(Res) -> G>,
     pub future: Pin<Box<dyn Future<Output = Res>>>,
 }
 
-impl<Res: Default + 'static> Render for Suspense<Res> {
-    fn render_into(self: Box<Self>, parent: &Dom) -> Result<(), Error> {
+impl<Res: Default + 'static, N: GenericNode> Render<N> for Suspense<Res, N> {
+    fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let template = self.template;
-        struct State {
-            holder: DomType,
-            current: Option<Dom>,
+        struct State<N> {
+            holder: N,
+            current: Option<N>,
         }
 
-        impl State {
-            fn new(parent: DomType) -> Rc<RefCell<Self>> {
+        impl<N: GenericNode> State<N> {
+            fn new(parent: N) -> Rc<RefCell<Self>> {
                 Rc::new(RefCell::new(State {
                     holder: parent,
                     current: None,
@@ -51,34 +50,37 @@ impl<Res: Default + 'static> Render for Suspense<Res> {
             }
 
             fn clear(&mut self) {
-                let node = &mut self.holder;
-                if let Some(frag) = &self.current {
-                    for child in &frag.children().take() {
-                        node.remove_child(&child.node());
-                    }
-                };
+                {
+                    let node = &mut self.holder;
+                    if let Some(frag) = &self.current {
+                        for child in &frag.children().take() {
+                            node.remove_child(child);
+                        }
+                    };
+                }
                 self.current = None;
             }
 
-            fn apply(&mut self, dom: Dom) -> Result<(), Error> {
+            fn apply(&mut self, dom: N) -> Result<(), Error> {
                 self.clear();
                 let node = &mut self.holder;
-                let dom = dom.mount(&DomType::fragment())?;
-                node.append_child(&dom.node());
-                self.current = Some(dom);
+                let frag = N::fragment();
+                frag.append_child(&dom);
+                node.append_child(&frag);
+                self.current = Some(frag);
                 Ok(())
             }
         }
 
-        let state = State::new(parent.node().clone());
-        let binding = state.clone();
+        let state = State::new(parent.clone());
+        let binding = Rc::<_>::clone(&state);
         let mut binding = binding.borrow_mut();
         // Apply loading
         binding.apply(template(Res::default()))?;
         let future = self.future;
         let fut = async move {
-            let mut state = state.borrow_mut();
             let new_dom = template(future.await);
+            let mut state = state.borrow_mut();
             state.apply(new_dom).unwrap();
         };
         parent.effect(fut);

@@ -2,13 +2,11 @@
 extern crate validator_derive;
 
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationErrors};
+use validator::Validate;
 
-use hirola::{
-    form::{Bind, Form, FormHandler},
-    prelude::*,
-};
-use web_sys::{Event, HtmlInputElement};
+use hirola::{dom::*, prelude::*};
+use hirola_form::{Form, FormHandler};
+use web_sys::HtmlInputElement;
 
 #[derive(Validate, PartialEq, Clone, Serialize, Deserialize, Debug)]
 struct Login {
@@ -22,21 +20,21 @@ struct Login {
     remember: String,
 }
 
-impl hirola::form::Validate for Login {
-    type Error = ValidationErrors;
-    fn validate(&self) -> Result<(), Self::Error> {
-        Validate::validate(&self)
-    }
+// impl hirola::form::Validate for Login {
+//     type Error = ValidationErrors;
+//     fn validate(&self) -> Result<(), Self::Error> {
+//         Validate::validate(&self)
+//     }
 
-    fn errors(&self) -> std::collections::HashMap<&'static str, String> {
-        Validate::validate(&self)
-            .unwrap_err()
-            .errors()
-            .into_iter()
-            .map(|(key, value)| (*key, format!("{value:?}")))
-            .collect()
-    }
-}
+//     fn errors(&self) -> std::collections::HashMap<&'static str, String> {
+//         Validate::validate(&self)
+//             .unwrap_err()
+//             .errors()
+//             .into_iter()
+//             .map(|(key, value)| (*key, format!("{value:?}")))
+//             .collect()
+//     }
+// }
 
 // #[component]
 // fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
@@ -66,7 +64,7 @@ fn form_demo() -> Dom {
             class="h-screen flex flex-col items-center justify-center"
             method="post"
             ref=form.node_ref()
-            on:submit=|e| e.prevent_default()
+            on:submit=Box::new(|e: web_sys::Event| e.prevent_default())
         >
             <div class="mb-6">
                 <label
@@ -81,7 +79,7 @@ fn form_demo() -> Dom {
                     name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    mixin:form={&form.register::<HtmlInputElement>()}
+                    mixin:form={form.register::<HtmlInputElement>()}
                 />
             // <span class="text-red-700 text-sm"
             //     mixin:form=&text(&form.error_for("email"))
@@ -101,7 +99,7 @@ fn form_demo() -> Dom {
                     name="password"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     required=""
-                    mixin:form={&form.register::<HtmlInputElement>()}
+                    mixin:form={form.register::<HtmlInputElement>()}
                 />
             </div>
 
@@ -115,7 +113,7 @@ fn form_demo() -> Dom {
                         value=""
                         class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                         required=""
-                        mixin:form={&form.register::<HtmlInputElement>()}
+                        mixin:form={form.register::<HtmlInputElement>()}
                     />
                 </div>
                 <label

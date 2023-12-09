@@ -29,7 +29,6 @@ fn to_token_stream(input: proc_macro::TokenStream) -> TokenStream {
             #nodes_output
         }
     }
-    .into()
 }
 
 fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
@@ -37,7 +36,7 @@ fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
     let children_tokens = children_to_tokens(nodes);
     tokens.extend(quote! {
             {
-                let mut template =  ::hirola::prelude::Dom::new();
+                let mut template =  ::hirola::prelude::GenericNode::fragment();
                 #children_tokens
                 template
             }
@@ -57,13 +56,13 @@ fn node_to_tokens(node: Node) -> TokenStream {
                 let children_tokens = children_to_tokens(node.children.clone());
 
                 tokens.extend(quote! {
-                {
-                    let mut template: ::hirola::prelude::Dom = ::hirola::prelude::Dom::element(#name);
-                    #children_tokens
-                    #(#attributes)*
-                    template
-                 }
-            });
+                    {
+                        let template = ::hirola::prelude::GenericNode::element(#name);
+                        #children_tokens
+                        #(#attributes)*
+                        template
+                     }
+                });
             } else {
                 let fnname: Ident = syn::parse_str(&name).unwrap();
 
@@ -122,19 +121,14 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
     match attribute {
         NodeAttribute::Block(block) => quote! {
             #block
-        }
-        .into(),
+        },
         NodeAttribute::Attribute(attr) => {
             let name = attr.key.to_string();
             let value = attr.value();
             if name.starts_with("on:") {
                 let name = name.replace("on:", "");
                 quote! {
-                    ::hirola::prelude::Dom::event(
-                        &mut template,
-                        #name,
-                        ::std::boxed::Box::new(#value),
-                    );
+                    ::hirola::prelude::EventListener::event(&template, #name, #value);
                 }
             } else if name.starts_with("use:") {
                 let effect = if value.is_some() {
@@ -148,24 +142,25 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                     }
                 };
                 quote! {
-                    ::hirola::prelude::Dom::effect(
+                    ::hirola::prelude::GenericNode::effect(
                         &template,
+                        #[allow(unused_braces)]
                         #effect
                     );
 
                 }
-            } else if name.starts_with("mixin:") {
-                let name_space = name.replace("mixin:", "");
+            } else if name.starts_with("mixin:") || name.starts_with("x:") {
+                let name_space = name.replace("mixin:", "").replace("x:", "");
                 let ns_struct =
                     format_ident!("{}", &some_kind_of_uppercase_first_letter(&name_space));
                 quote! {
-                    hirola::prelude::Mixin::<#ns_struct>::mixin(#value, &template);
+                    hirola::prelude::Mixin::<#ns_struct, _>::mixin(#value, &template);
                 }
             } else if &name == "ref" {
                 quote! {
-                    let _ = ::hirola::prelude::NodeRef::set(
+                    let _ = ::hirola::prelude::NodeReference::set(
                         &#value,
-                        ::std::clone::Clone::clone(&template.node()),
+                        ::std::clone::Clone::clone(&template),
                     );
 
                 }
@@ -173,28 +168,29 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
                 let attribute_name = convert_name(&name).replace("bind:", "");
                 quote! {
                 {
-                        use hirola::signal::SignalExt;
-                        let t = template.clone();
-                        ::hirola::prelude::Dom::attribute(
-                            &template,
-                            #attribute_name,
-                            &::std::format!("{}", #value.get_cloned()),
-                        );
-                        template.effect(#value.signal_ref(move |value| {
-                            ::hirola::prelude::Dom::attribute(
-                                &t,
+                        use ::hirola::signal::SignalExt;
+                        let template_clone = ::std::clone::Clone::clone(&template);
+                        // ::hirola::prelude::GenericNode::set_attribute(
+                        //     &template,
+                        //     #attribute_name,
+                        //     &::std::format!("{}", #value),
+                        // );
+                        let future = SignalExt::dedupe_map(#value, move |value| {
+                            ::hirola::prelude::GenericNode::set_attribute(
+                                &template_clone,
                                 #attribute_name,
                                 &::std::format!("{}", value),
                             );
-                        }).to_future());
+                        }).to_future();
+                        ::hirola::prelude::GenericNode::effect(&template, future);
                 }
 
                 }
             } else {
                 let attribute_name = convert_name(&name);
                 quote! {
-                    ::hirola::prelude::Dom::attribute(
-                        &mut template,
+                    ::hirola::prelude::GenericNode::set_attribute(
+                        &template,
                         #attribute_name,
                         &::std::format!("{}", #value),
                     );
@@ -209,36 +205,50 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
     let mut tokens = TokenStream::new();
     if !children.is_empty() {
         for child in children {
-            match child {
-                Node::Element(_) => {
-                    let node = node_to_tokens(child);
-                    append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_render(&mut template, #node );
-                    });
+            match &child {
+                Node::Element(element) => {
+                    let node = node_to_tokens(child.clone());
+                    let name = element.name().to_string();
+
+                    match child {
+                        // Its a component
+                        Node::Element(_) if name[0..1].to_lowercase() != name[0..1] => {
+                            append_children.extend(quote! {
+                                #[allow(unused_braces)]
+                                ::hirola::prelude::GenericNode::append_render(&template, #node );
+                            });
+                        }
+                        _ => {
+                            append_children.extend(quote! {
+                                #[allow(unused_braces)]
+                                ::hirola::prelude::GenericNode::append_child(&template, &#node );
+                            });
+                        }
+                    }
                 }
                 Node::Text(text) => {
                     append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_render(
-                            &mut template,
+                        ::hirola::prelude::GenericNode::append_child(
+                            &template,
                             #[allow(unused_braces)]
-                            ::hirola::prelude::Dom::text(#text),
+                            &::hirola::prelude::GenericNode::text_node(#text),
                         );
                     });
                 }
                 Node::Comment(comment) => {
-                    let s = comment.value;
+                    let s = comment.value.clone();
                     append_children.extend(quote! {
-                        ::hirola::prelude::Dom::append_render(
-                            &mut template,
+                        ::hirola::prelude::GenericNode::append_child(
+                            &template,
                             #[allow(unused_braces)]
-                            ::hirola::prelude::Dom::new_from_node(::hirola::prelude::GenericNode::comment(#s)),
+                            &::hirola::prelude::GenericNode::comment(#s),
                         );
                     });
                 }
                 Node::Doctype(_) => {}
                 Node::Block(block) => match block {
-                    NodeBlock::ValidBlock(block) => match braced_for_control(&block) {
-                        Some(Control::ExprForLoop(ExprForLoop {
+                    NodeBlock::ValidBlock(block) => match braced_for_control(block) {
+                        Some(Control::ForLoop(ExprForLoop {
                             pat, expr, body, ..
                         })) => {
                             if let Expr::Cast(ExprCast { ty, expr, .. }) = expr.as_ref() {
@@ -259,7 +269,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                             };
                                         });
                                     }
-                                    &Type::Path(ref path) => {
+                                    Type::Path(path) => {
                                         let ident = Ident::new("SignalVec", Span::call_site());
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
@@ -296,15 +306,16 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             } else {
                                 append_children.extend(quote! {
                                     for #pat in #expr {
-                                        ::hirola::prelude::Dom::append_child(
-                                            &mut template,
-                                            #body,
-                                        ).unwrap();
+                                        ::hirola::prelude::GenericNode::append_child(
+                                            &template,
+                                            #[allow(unused_braces)]
+                                            &#body,
+                                        );
                                     }
                                 });
                             }
                         }
-                        Some(Control::ExprIf(ExprIf {
+                        Some(Control::If(ExprIf {
                             cond,
                             then_branch,
                             else_branch,
@@ -316,10 +327,11 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 match ty.as_ref() {
                                     &Type::Infer(_) => {
                                         append_children.extend(quote! {
-                                            let mut template = {
+                                            #[allow(unused_braces)]
+                                            let switch = {
                                                 let switch = ::hirola::prelude::Switch {
                                                     signal: #expr,
-                                                    renderer: |res| {
+                                                    renderer: move |res| {
                                                         if res {
                                                             #then_branch
                                                         } else {
@@ -327,18 +339,23 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                         }
                                                     }
                                                 };
-                                                Box::new(switch)
+                                                switch
                                             };
+                                            ::hirola::prelude::GenericNode::append_render(
+                                                &template,
+                                                switch
+                                            );
                                         });
                                     }
-                                    &Type::Path(ref path) => {
+                                    Type::Path(path) => {
                                         let ident = Ident::new("Signal", Span::call_site());
                                         if path.path.is_ident(&ident) {
                                             append_children.extend(quote! {
-                                                let mut template = {
+                                                let switch = {
+                                                    #[allow(unused_braces)]
                                                     let switch = ::hirola::prelude::Switch {
                                                         signal: #expr,
-                                                        renderer: |res| {
+                                                        renderer: move |res| {
                                                             if res {
                                                                 #then_branch
                                                             } else {
@@ -346,8 +363,12 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                                             }
                                                         }
                                                     };
-                                                    Box::new(switch)
+                                                    switch
                                                 };
+                                                ::hirola::prelude::GenericNode::append_render(
+                                                    &template,
+                                                    switch
+                                                );
                                             });
                                         } else {
                                             append_children.extend(
@@ -368,21 +389,21 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                 }
                             } else {
                                 append_children.extend(quote! {
-                                    ::hirola::prelude::Dom::append_render(
-                                        &mut template,
+                                    ::hirola::prelude::GenericNode::append_child(
+                                        &template,
                                         #[allow(unused_braces)]
-                                        #block,
+                                        &#block,
                                     );
                                 });
                             }
                         }
 
-                        Some(Control::ExprMatch(ExprMatch { expr, arms, .. })) => match *expr {
+                        Some(Control::Match(ExprMatch { expr, arms, .. })) => match *expr {
                             Expr::Await(fut) => {
                                 let fut = fut.base;
                                 append_children.extend(quote! {
                                     let suspense = {
-
+                                        #[allow(unused_braces)]
                                         let suspense = ::hirola::prelude::Suspense {
                                             future: Box::pin(#fut),
                                             template: Box::new(move |res| {
@@ -393,8 +414,8 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                                         };
                                         suspense
                                     };
-                                    ::hirola::prelude::Dom::append_render(
-                                        &mut template,
+                                    ::hirola::prelude::GenericNode::append_render(
+                                        &template,
                                         suspense
                                     );
 
@@ -402,20 +423,20 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             }
                             _ => {
                                 append_children.extend(quote! {
-                                    ::hirola::prelude::Dom::append_render(
-                                        &mut template,
+                                    ::hirola::prelude::GenericNode::append_child(
+                                        &template,
                                         #[allow(unused_braces)]
-                                        #block,
+                                        &#block,
                                     );
                                 });
                             }
                         },
                         _ => {
                             append_children.extend(quote! {
-                                ::hirola::prelude::Dom::append_render(
-                                    &mut template,
+                                let _ = ::hirola::prelude::Render::render_into(
                                     #[allow(unused_braces)]
-                                    #block,
+                                    Box::new(#block),
+                                    &template,
                                 );
                             });
                         }
@@ -442,9 +463,9 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
 }
 
 enum Control {
-    ExprForLoop(ExprForLoop),
-    ExprIf(ExprIf),
-    ExprMatch(ExprMatch),
+    ForLoop(ExprForLoop),
+    If(ExprIf),
+    Match(ExprMatch),
 }
 
 fn braced_for_control(block: &Block) -> Option<Control> {
@@ -454,9 +475,9 @@ fn braced_for_control(block: &Block) -> Option<Control> {
     } else {
         let stmt = &block.stmts[0];
         match stmt {
-            Stmt::Expr(Expr::ForLoop(expr), _) => Some(Control::ExprForLoop(expr.clone())),
-            Stmt::Expr(Expr::If(expr), _) => Some(Control::ExprIf(expr.clone())),
-            Stmt::Expr(Expr::Match(expr), _) => Some(Control::ExprMatch(expr.clone())),
+            Stmt::Expr(Expr::ForLoop(expr), _) => Some(Control::ForLoop(expr.clone())),
+            Stmt::Expr(Expr::If(expr), _) => Some(Control::If(expr.clone())),
+            Stmt::Expr(Expr::Match(expr), _) => Some(Control::Match(expr.clone())),
             _ => None,
         }
     }
@@ -480,7 +501,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = to_token_stream(input);
 
     let quoted = quote! {
-        ::hirola::prelude::Dom::from(#output)
+        #output
     };
     quoted.into()
 }

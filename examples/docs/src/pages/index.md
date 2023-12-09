@@ -20,9 +20,8 @@ draft: false
 ## Example
 
 ```rust
-use std::fmt::Display;
+use hirola::dom::Dom;
 use hirola::prelude::*;
-use hirola::signal::Mutable;
 
 fn counter() -> Dom {
     let count = Mutable::new(0i32);
@@ -38,7 +37,7 @@ fn counter() -> Dom {
 }
 
 fn main() {
-    let root = render(counter()).unwrap();
+    let root = hirola::dom::render(counter()).unwrap();
     // We prevent the root from being dropped
     std::mem::forget(root);
 }
@@ -46,7 +45,7 @@ fn main() {
 
 ## Features
 
-- **`serde`**— Enables serialization of state
-- **`ssr`**— Enables server side rendering 🚧
+- **`dom`**— Enables rendering on browsers
+- **`ssr`**— Enables server side rendering
 - **`router`**— Enables Isomorphic Routing
 - **`form`**— Enables form mixins and utilities 🚧

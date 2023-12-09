@@ -1,4 +1,5 @@
 use hirola::prelude::*;
+use hirola::dom::node_ref::NodeRef;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::Event;
@@ -12,11 +13,11 @@ pub struct SignTool {
     pub(crate) cur_x: Mutable<i32>,
     pub(crate) prev_y: Mutable<i32>,
     pub(crate) cur_y: Mutable<i32>,
-    pub(crate) canvas: NodeRef<DomNode>,
+    pub(crate) canvas: NodeRef,
 }
 
 impl SignTool {
-    pub fn new(canvas: NodeRef<DomNode>) -> Self {
+    pub fn new(canvas: NodeRef) -> Self {
         SignTool {
             is_mouse_clicked: Mutable::new(false),
             is_mouse_in_canvas: Mutable::new(false),
@@ -32,7 +33,7 @@ impl SignTool {
         let e: MouseEvent = event.dyn_into().unwrap();
         let canvas = self
             .canvas
-            .get::<DomNode>()
+            .get()
             .inner_element()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();
@@ -56,7 +57,7 @@ impl SignTool {
     pub fn draw(&self) {
         let canvas = self
             .canvas
-            .get::<DomNode>()
+            .get()
             .inner_element()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();

@@ -14,7 +14,7 @@ keywords = ["wasm", "html", "dom", "web"]
 
 
 [dependencies]
-futures-signals = "0.3.32"
+futures-signals = "0.3.33"
 futures-util = "0.3"
 
 

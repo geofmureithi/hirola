@@ -12,7 +12,7 @@ description = "A CLI for hirola"
 [dependencies]
 leptosfmt-pretty-printer = "0.1.7"
 rstml = "0.11.2"
-syn = { version = "2.0.41", features = [ "visit", "full", "extra-traits" ] }
+syn = { version = "2.0.43", features = [ "visit", "full", "extra-traits" ] }
 leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.15" }
 proc-macro2 = { version = "1.0.70", features = [ "span-locations" ] }
 thiserror = "1.0.51"

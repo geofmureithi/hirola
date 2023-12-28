@@ -1,6 +1,6 @@
 [package]
 name = "hirola-ssr"
-version = "0.4.0-beta.0"
+version = "v0.4.0"
 edition = "2021"
 description = "Hirola is an un-opinionated web framework that is focused on simplicity and predictability"
 repository = "https://github.com/geofmureithi/hirola"
@@ -12,7 +12,7 @@ keywords = ["wasm", "html", "ssr", "web"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hirola-core = { path = "../hirola-core", version = "0.4.0-beta.0" }
+hirola-core = { path = "../hirola-core", version = "v0.4.0" }
 html-escape = { version = "0.2.13" }
 
 

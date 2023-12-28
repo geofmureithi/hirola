@@ -14,22 +14,6 @@ use crate::prelude::GenericNode;
 /// When used in conjunction with the `Dom`, side effects can be attached to specific DOM nodes and
 /// executed during the rendering process, ensuring proper handling of asynchronous operations
 /// within the frontend application.
-///
-/// # Example
-///
-/// ```
-/// use std::future::ready;
-/// use hirola::prelude::*;
-/// // Define a custom side effect that executes asynchronously
-/// struct CustomSideEffect;
-///
-/// impl SideEffect for CustomSideEffect {
-///     fn effect(self) -> BoxedLocal<()> {
-///         // Perform some asynchronous task and return a future that represents its completion
-///         Box::pin(ready(()))
-///     }
-/// }
-/// ```
 pub trait SideEffect<Attr: EffectAttribute<Handler = Self>, Effect, Node> {
     fn effect(&self, node: &Node, attr: Attr, effect: Effect);
 }

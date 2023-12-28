@@ -4,7 +4,7 @@
 //! ```rust,no_run
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
-//! use hirola::dom::Dom;
+//! use hirola::dom::*;
 //!
 //! fn counter() -> Dom {
 //!     let count = Mutable::new(0i32);

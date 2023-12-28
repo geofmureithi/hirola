@@ -2,10 +2,12 @@ pub mod keyed;
 pub mod non_keyed;
 pub mod router;
 
+use hirola::dom::*;
 use hirola::prelude::signal::Mutable;
 use hirola::prelude::*;
+use hirola::signal::SignalExt;
 use hirola_dom::dom_test_utils::{next_tick, next_tick_with};
-use hirola_dom::{node_ref::NodeRef, render_to};
+use hirola_dom::node_ref::NodeRef;
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -63,7 +65,7 @@ fn hello_world() {
 fn hello_world_noderef() {
     let p_ref = NodeRef::new();
 
-    let node = html! { <p ref=p_ref>"Hello World!"</p> };
+    let node = html! { <p bind:ref=p_ref.clone()>"Hello World!"</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -111,9 +113,9 @@ fn reactive_text() {
 
 #[wasm_bindgen_test]
 fn reactive_attribute() {
-    let count = Mutable::new(0);
+    let count = Mutable::new(0i32);
 
-    let node = html! { <span bind:attribute=count.signal()></span> };
+    let node = html! { <span attribute=count.signal().dedupe()></span> };
 
     let _ = render_to(node, &test_div());
 
@@ -132,10 +134,10 @@ fn noderefs() {
     let noderef = NodeRef::new();
 
     let node = html! {
-            <div>
-                <input ref=noderef/>
-            </div>
-        };
+        <div>
+            <input bind:ref=noderef.clone()/>
+        </div>
+    };
 
     let _ = render_to(node, &test_div());
 

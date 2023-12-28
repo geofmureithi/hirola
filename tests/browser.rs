@@ -32,10 +32,10 @@ fn router_pushes() {
     let router = app.router().clone();
     let node = body();
     app.mount_to(&node);
-    assert_eq!("<main>Main</main>", inner_html(&node));
-    router.push("/page");
 
     next_tick(move || {
+        assert_eq!("<main>Main</main>", inner_html(&node));
+        router.push("/page");
         assert_eq!("<main>Page</main>", inner_html(&node));
     });
 }
@@ -46,10 +46,12 @@ fn app_renders() {
     fn test_app(app: &App<()>) -> Dom {
         html! { <span>"Test"</span> }
     }
-    let node = &body();
+    let node = body();
     app.route("/", test_app);
-    app.mount_to(node);
-    assert_eq!("<span>Test</span>", inner_html(node));
+    app.mount_to(&node);
+    next_tick(move || {
+        assert_eq!("<span>Test</span>", inner_html(&node));
+    });
 }
 
 #[wasm_bindgen_test]
@@ -58,7 +60,9 @@ fn router_renders() {
     app.route("/", |_| {
         html! { <main>"Main"</main> }
     });
-    let node = &body();
-    app.mount_to(node);
-    assert_eq!("<main>Main</main>", inner_html(node));
+    let node = body();
+    app.mount_to(&node);
+    next_tick(move || {
+        assert_eq!("<main>Main</main>", inner_html(&node));
+    })
 }

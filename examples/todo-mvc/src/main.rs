@@ -1,14 +1,14 @@
 mod todo;
 
 use hirola::dom::app::App;
-use hirola::dom::mixins::text;
+use hirola::dom::effects::prelude::*;
 use hirola::dom::Dom;
 use hirola::prelude::*;
-use hirola::dom::effects::prelude::*;
-use hirola::signal::{Mutable, Signal, SignalExt};
+use hirola::signal::{Dedupe, Mutable, Signal, SignalExt};
 use hirola::signal_vec::{MutableVec, SignalVec, SignalVecExt};
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::fmt::Display;
 use std::sync::Arc;
 use strum::{AsRefStr, EnumString};
 use wasm_bindgen::JsCast;
@@ -16,6 +16,7 @@ use web_sys::{Event, HtmlElement, HtmlInputElement, KeyboardEvent};
 
 use crate::todo::util::{local_storage, trim};
 use crate::todo::Todo;
+use hirola::dom::mixins::Text;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, AsRefStr, EnumString)]
 pub enum Route {
@@ -27,7 +28,16 @@ pub enum Route {
     All,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+impl EffectAttribute for Link {
+    type Handler = XEffect;
+    fn read_as_attr(&self) -> String {
+        "link".to_owned()
+    }
+}
+
+struct Link;
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 
 enum Mode {
     #[default]
@@ -145,7 +155,7 @@ fn Header(app: App<State>) -> Dom {
                 focus=true
                 class="new-todo"
                 placeholder="What needs to be done?"
-                // value=state.mode.signal_cloned().map(|_|"")
+                value=state.mode.signal_cloned().dedupe_map(|_|"")
                 on:key_down=create_new
             />
         </header>
@@ -154,14 +164,34 @@ fn Header(app: App<State>) -> Dom {
 
 #[component]
 fn Button<'a>(app: App<State>, text: &'a str, route: Route) -> Dom {
-    let router = app.router().signal();
+    let router = app.router();
+    let route_signal = router.signal();
     html! {
         <li>
             <a
-                // x:identity=app.router().link()
-                // bind:class=router.map(move |x| x == route.as_ref()).dedupe_map(|b| if *b {"selected"} else {""})
+                x:link=router.link()
+                class=route_signal.map(move |x| x == route.as_ref()).dedupe_map(|b| if *b {"selected"} else {""})
                 href=route.as_ref()>{text}</a>
         </li>
+    }
+}
+
+pub struct Visible;
+
+impl EffectAttribute for Visible {
+    type Handler = XEffect;
+    fn read_as_attr(&self) -> String {
+        "visible".to_owned()
+    }
+}
+
+impl<S: Signal<Item = bool> + 'static> SideEffect<Visible, Dedupe<S>, Dom> for XEffect
+where
+    <S as Signal>::Item: PartialEq + Display + Clone,
+{
+    fn effect(&self, node: &Dom, _attr: Visible, effect: Dedupe<S>) {
+        let dom = node.clone();
+        visible(effect)(&dom);
     }
 }
 
@@ -173,8 +203,8 @@ fn Footer(app: App<State>) -> Dom {
         e.prevent_default();
     });
     let count = app.state().not_completed_len().map(|len| len.to_string());
-    let left_text = app.state().not_completed_len().map(|len| {
-        if len == 1 {
+    let left_text = app.state().not_completed_len().dedupe_map(|len| {
+        if *len == 1 {
             " item left"
         } else {
             " items left"
@@ -189,12 +219,12 @@ fn Footer(app: App<State>) -> Dom {
 
     let has_todos = app.state().has_todos();
     html! { <footer
-                // bind:value=app.state().mode.signal_cloned().map(|_|"")
-                // mixin:identity=visible(has_todos)
+                // value=app.state().mode.signal_cloned().map(|_|"")
+                x:visible=has_todos.dedupe()
                 class="footer">
                 <span class="todo-count">
-                    <strong 
-                    // x:identity={text(todo_count)}
+                    <strong
+                    x:text=todo_count
                     ></strong>
                 </span>
                 <ul class="filters">
@@ -202,8 +232,8 @@ fn Footer(app: App<State>) -> Dom {
                     <Button app={app.clone()} text="Active" route={Route::Active} />
                     <Button app={app.clone()} text="Completed" route={Route::Completed} />
                 </ul>
-                <button on:click=clear_completed 
-                // mixin:identity=visible(app.state().completed_len().map(|len| len > 0).dedupe()) 
+                <button on:click=clear_completed
+                x:visible=app.state().completed_len().map(|len| len > 0).dedupe()
                 class="clear-completed">
                     "Clear completed"
                 </button>
@@ -221,14 +251,16 @@ fn Main(app: App<State>) -> Dom {
         state.set_all_todos_completed(input.checked())
     });
     html! {
-        <section 
-        // mixin:identity=visible(has_todos) 
+        <section
+            x:visible=has_todos.dedupe()
         class="main">
             <input
                 class="toggle-all"
                 id="toggle-all"
                 type="checkbox"
-                // bind:checked=app.state().not_completed_len().map(|len| len == 0)
+                checked=app.state().not_completed_len().dedupe_map(|len| {
+                    *len == 0
+                })
                 on:change=on_toggle
             />
             <label for="toggle-all">"Mark all as complete"</label>

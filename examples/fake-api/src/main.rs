@@ -1,6 +1,6 @@
 mod model;
 use hirola::prelude::*;
-use hirola::dom::Dom;
+use hirola::dom::*;
 use model::Users;
 use reqwasm::http::Request;
 use anyhow::bail;

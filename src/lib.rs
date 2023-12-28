@@ -15,7 +15,8 @@
 /// The defaults imports
 pub mod prelude {
     pub use hirola_core::prelude::*;
-    pub use hirola_macros::{component, html, mixin};
+    pub use hirola_macros::{component, html, mixin, FormEntity};
+    
 }
 
 /// Exposing single item signal
@@ -32,6 +33,7 @@ pub mod signal_vec {
 #[cfg(feature = "dom")]
 pub mod dom {
     pub use hirola_dom::*;
+    pub use hirola_dom::effects::prelude::*;
 }
 
 /// Expose the ssr feature

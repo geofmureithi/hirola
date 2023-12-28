@@ -168,7 +168,7 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
     /// ```
-    pub fn link(&self) -> Box<dyn Fn(&Dom) + '_> {
+    pub fn link(&self) -> Box<dyn FnOnce(&Dom) + 'static> {
         let router = self.clone();
         let cb = move |node: &Dom| {
             let router = router.clone();

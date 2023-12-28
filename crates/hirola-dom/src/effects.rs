@@ -5,6 +5,7 @@ pub mod prelude {
     pub use attr_on::*;
     pub use attr_use::*;
 }
+
 pub mod attr_use {
     use std::fmt::Display;
 
@@ -123,8 +124,7 @@ pub mod attr_bind {
 
     pub struct Ref;
 
-    impl SideEffect<Ref, NodeRef, Dom> for BindEffect
-    {
+    impl SideEffect<Ref, NodeRef, Dom> for BindEffect {
         fn effect(&self, node: &Dom, _attr: Ref, value: NodeRef) {
             NodeReference::set(&value, node.clone());
         }
@@ -165,38 +165,14 @@ pub mod attr_mixin {
     pub struct XEffect;
 
     use hirola_core::effect::{EffectAttribute, SideEffect};
-    use wasm_bindgen::JsCast;
-    use web_sys::Element;
     pub use XEffect as MixinEffect;
 
     use crate::Dom;
 
-    pub struct Html;
+    pub use crate::mixins::*;
 
-    fn html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
-        let cb = move |node: &Dom| {
-            let dom = node.inner_element();
-            let element = dom.dyn_ref::<Element>().unwrap();
-            element.set_inner_html(text); // Remember to escape this.
-        };
-        Box::new(cb)
-    }
-
-    impl EffectAttribute for Html {
-        type Handler = XEffect;
-        fn read_as_attr(&self) -> String {
-            "html".to_owned()
-        }
-    }
-
-    impl SideEffect<Html, &str, Dom> for XEffect {
-        fn effect(&self, node: &Dom, _: Html, text: &str) {
-            html(text)(node)
-        }
-    }
-
-    impl<A: EffectAttribute<Handler = XEffect>> SideEffect<A, Box<dyn Fn(&Dom)>, Dom> for XEffect {
-        fn effect(&self, node: &Dom, _: A, effect: Box<dyn Fn(&Dom)>) {
+    impl<A: EffectAttribute<Handler = XEffect>> SideEffect<A, Box<dyn FnOnce(&Dom)>, Dom> for XEffect {
+        fn effect(&self, node: &Dom, _: A, effect: Box<dyn FnOnce(&Dom)>) {
             effect(node);
         }
     }

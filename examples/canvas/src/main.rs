@@ -33,7 +33,7 @@ fn signature_pad() -> Dom {
     });
     html! {
         <canvas
-            bind:ref={canvas}
+            bind:ref=canvas
             width="500"
             height="300"
             style="position: absolute;border: 2px solid;"

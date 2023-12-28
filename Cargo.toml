@@ -49,7 +49,7 @@ members = [
     "examples/fake-api",
     "examples/chartjs",
     "examples/x-for",
-    "examples/mixin",
+    "examples/effects",
     "examples/form",
     "examples/docs",
 ]

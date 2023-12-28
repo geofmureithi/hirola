@@ -1,4 +1,4 @@
-use heck::ToPascalCase;
+use heck::{ToPascalCase, ToUpperCamelCase};
 use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_error::proc_macro_error;
 use quote::{format_ident, quote};
@@ -7,8 +7,8 @@ use rstml::{
     Parser, ParserConfig,
 };
 use syn::{
-    parse_macro_input, spanned::Spanned, Block, Expr, ExprCast, ExprForLoop, ExprIf, ExprMatch,
-    ItemFn, Stmt, Type,
+    parse_macro_input, spanned::Spanned, Block, Data, DeriveInput, Expr, ExprCast, ExprForLoop,
+    ExprIf, ExprMatch, Fields, ItemFn, Stmt, Type,
 };
 
 mod component;
@@ -130,84 +130,17 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
             if parts.len() == 2 {
                 let name_space =
                     format_ident!("{}Effect", &some_kind_of_uppercase_first_letter(&parts[0]));
-                    let attr = &parts[1].to_pascal_case();
-                let attr_space =
-                    format_ident!("{}", attr);
+                let attr = &parts[1].to_pascal_case();
+                let attr_space = format_ident!("{}", attr);
                 quote! {
                     ::hirola::prelude::SideEffect::effect(&#name_space, &template, #attr_space, #value);
                 }
-
-            // }
-
-            // if name.starts_with("on:") {
-            //     let name = name.replace("on:", "");
-            //     quote! {
-            //         ::hirola::prelude::EventListener::event(&template, #name, #value);
-            //     }
-            // } else if name.starts_with("use:") {
-            //     let effect = if value.is_some() {
-            //         quote! {
-            //             #value
-            //         }
-            //     } else {
-            //         let cleaned_name = Ident::new(&name.replace("use:", ""), Span::call_site());
-            //         quote! {
-            //             #cleaned_name
-            //         }
-            //     };
-            //     quote! {
-            //         ::hirola::prelude::GenericNode::effect(
-            //             &template,
-            //             #[allow(unused_braces)]
-            //             #effect
-            //         );
-
-            //     }
-            // } else if name.starts_with("mixin:") || name.starts_with("x:") {
-            //     let name_space = name.replace("mixin:", "").replace("x:", "");
-            //     let ns_struct =
-            //         format_ident!("{}", &some_kind_of_uppercase_first_letter(&name_space));
-            //     quote! {
-            //         hirola::prelude::Mixin::<#ns_struct, _>::mixin(#value, &template);
-            //     }
-            // } else if &name == "ref" {
-            //     quote! {
-            //         let _ = ::hirola::prelude::NodeReference::set(
-            //             &#value,
-            //             ::std::clone::Clone::clone(&template),
-            //         );
-
-            //     }
-            // } else if name.starts_with("bind:") {
-            //     let attribute_name = convert_name(&name).replace("bind:", "");
-            //     quote! {
-            //     {
-            //             use ::hirola::signal::SignalExt;
-            //             let template_clone = ::std::clone::Clone::clone(&template);
-            //             // ::hirola::prelude::GenericNode::set_attribute(
-            //             //     &template,
-            //             //     #attribute_name,
-            //             //     &::std::format!("{}", #value),
-            //             // );
-            //             let future = SignalExt::dedupe_map(#value, move |value| {
-            //                 ::hirola::prelude::GenericNode::set_attribute(
-            //                     &template_clone,
-            //                     #attribute_name,
-            //                     &::std::format!("{}", value),
-            //                 );
-            //             }).to_future();
-            //             ::hirola::prelude::GenericNode::effect(&template, future);
-            //     }
-
-            //     }
             } else {
                 let attribute_name = convert_name(&name);
+                let name_space = format_ident!("DefaultAttributeEffect");
                 quote! {
-                    ::hirola::prelude::GenericNode::set_attribute(
-                        &template,
-                        #attribute_name,
-                        &::std::format!("{}", #value),
-                    );
+
+                    ::hirola::prelude::SideEffect::effect(&#name_space, &template, DefaultAttrStr(#attribute_name), #value);
                 }
             }
         }
@@ -536,7 +469,10 @@ pub fn mixin(
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
-    let struct_name = format_ident!("{}", some_kind_of_uppercase_first_letter(&input_fn.sig.ident.to_string()));
+    let struct_name = format_ident!(
+        "{}",
+        some_kind_of_uppercase_first_letter(&input_fn.sig.ident.to_string())
+    );
     let raw_struct_name = struct_name.to_string();
     // Generate the additional struct and impl
     let expanded = quote! {
@@ -553,4 +489,118 @@ pub fn mixin(
     };
 
     expanded.into()
+}
+
+#[proc_macro_derive(FormEntity)]
+pub fn fields_enum(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let ast = parse_macro_input!(input as DeriveInput);
+    let name = &ast.ident;
+    let enum_name = syn::Ident::new(&format!("{}Form", name), name.span());
+
+    let fields = match &ast.data {
+        Data::Struct(data) => match &data.fields {
+            Fields::Named(fields) => fields
+                .named
+                .iter()
+                .map(|f| (&f.ident, &f.ty))
+                .collect::<Vec<_>>(),
+            _ => Vec::new(),
+        },
+        _ => Vec::new(),
+    };
+
+    let match_arms = fields.iter().map(|(f, _)| {
+        let variant_name = f.as_ref().unwrap().to_string().to_upper_camel_case();
+        let variant_name = format_ident!("{variant_name}");
+        let field_name_str = f.as_ref().unwrap().to_string();
+        quote! {
+            #enum_name::#variant_name => #field_name_str
+        }
+    });
+
+    // Implement Into<BTreeMap> for struct
+    let into_btreemap = fields.iter().map(|(ident, _)| {
+        let variant = syn::Ident::new(
+            &format!(
+                "{}",
+                ident.as_ref().unwrap().to_string().to_upper_camel_case()
+            ),
+            ident.span(),
+        );
+        quote! {
+            btreemap.insert(#enum_name::#variant, self.#ident.clone());
+        }
+    });
+
+    // Implement From<BTreeMap> for struct
+    let from_btreemap = fields.iter().map(|(ident, _)| {
+        let variant = syn::Ident::new(
+            &format!(
+                "{}",
+                ident.as_ref().unwrap().to_string().to_upper_camel_case()
+            ),
+            ident.span(),
+        );
+        quote! {
+            #ident: btreemap.get(&#enum_name::#variant).ok_or("Field not found").unwrap().clone()
+        }
+    });
+    let variants = fields.iter().map(|(f, _)| {
+        let variant_name = f.as_ref().unwrap().to_string();
+        let variant_name = variant_name.to_upper_camel_case();
+        let variant_name = format_ident!("{variant_name}");
+        quote! { #variant_name }
+    });
+
+    let from_str_match_arms = fields.iter().map(|(ident, _)| {
+        let variant_str = ident.as_ref().unwrap().to_string().to_string();
+        let variant_name = variant_str.to_upper_camel_case();
+        let variant_name = format_ident!("{variant_name}");
+        quote! { #variant_str => Ok(#enum_name::#variant_name) }
+    });
+
+    let gen = quote! {
+        impl hirola_form::FormEntity for #name {
+            type Columns = #enum_name;
+        }
+
+        #[derive(Debug, Copy, Clone, Ord, Eq, PartialEq, PartialOrd, Hash)]
+        pub enum #enum_name {
+            #(#variants),*
+        }
+        impl hirola_form::FormColumn for #enum_name {
+            fn name(&self) -> &str {
+                match self {
+                    #(#match_arms),*
+                }
+            }
+        }
+        impl From<std::collections::BTreeMap<#enum_name, String>> for #name {
+            fn from(mut btreemap: std::collections::BTreeMap<#enum_name, String>) -> Self {
+                #name {
+                    #(#from_btreemap),*
+                }
+            }
+        }
+
+        impl Into<std::collections::BTreeMap<#enum_name, String>> for #name {
+            fn into(self) -> std::collections::BTreeMap<#enum_name, String> {
+                let mut btreemap = std::collections::BTreeMap::new();
+                #(#into_btreemap)*
+                btreemap
+            }
+        }
+        impl std::str::FromStr for #enum_name {
+            type Err = String;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match s {
+                    #( #from_str_match_arms, )*
+                    _ => Err(format!("Invalid value for {}: {}", stringify!(#enum_name), s)),
+                }
+            }
+        }
+    };
+
+    gen.into()
 }

@@ -3,8 +3,8 @@
 lib.rs
 
 ```rust
-use std::fmt::Display;
 use hirola::prelude::*;
+use hirola::dom::*;
 use hirola::signal::Mutable;
 
 fn counter() -> Dom {
@@ -21,9 +21,7 @@ fn counter() -> Dom {
 }
 
 fn main() {
-    let root = render(counter()).unwrap();
-    // We prevent the root from being dropped
-    std::mem::forget(root);
+    mount(counter()).unwrap();
 }
 ```
 
@@ -51,10 +49,7 @@ version = "0.1.0"
 
 
 [dependencies]
-hirola = "0.3"
-console_error_panic_hook = "0.1"
-log = "0.4"
-console_log = "0.2"
+hirola = "0.4"
 ```
 
 Start using

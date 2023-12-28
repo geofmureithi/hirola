@@ -2,10 +2,12 @@ pub mod keyed;
 pub mod non_keyed;
 pub mod router;
 
+use hirola::dom::*;
 use hirola::prelude::signal::Mutable;
 use hirola::prelude::*;
+use hirola::signal::SignalExt;
 use hirola_dom::dom_test_utils::{next_tick, next_tick_with};
-use hirola_dom::{node_ref::NodeRef, render_to};
+use hirola_dom::node_ref::NodeRef;
 use wasm_bindgen_test::*;
 use web_sys::{Document, HtmlElement, Node, Window};
 
@@ -45,9 +47,7 @@ fn test_div() -> Node {
 
 #[wasm_bindgen_test]
 fn hello_world() {
-    let node = html! {
-        <p>"Hello World!"</p>
-    };
+    let node = html! { <p>"Hello World!"</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -65,9 +65,7 @@ fn hello_world() {
 fn hello_world_noderef() {
     let p_ref = NodeRef::new();
 
-    let node = html! {
-        <p ref=p_ref> "Hello World!"</p>
-    };
+    let node = html! { <p bind:ref=p_ref.clone()>"Hello World!"</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -80,9 +78,7 @@ fn hello_world_noderef() {
 #[wasm_bindgen_test]
 fn interpolation() {
     let text = "Hello Hirola!";
-    let node = html! {
-        <p>{text}</p>
-    };
+    let node = html! { <p>{text}</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -101,9 +97,7 @@ fn interpolation() {
 fn reactive_text() {
     let count = Mutable::new(0);
 
-    let node = html! {
-        <p> { count.clone() }</p>
-    };
+    let node = html! { <p>{count.clone()}</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -119,11 +113,9 @@ fn reactive_text() {
 
 #[wasm_bindgen_test]
 fn reactive_attribute() {
-    let count = Mutable::new(0);
+    let count = Mutable::new(0i32);
 
-    let node = html! {
-        <span bind:attribute=count.signal()/>
-    };
+    let node = html! { <span attribute=count.signal().dedupe()></span> };
 
     let _ = render_to(node, &test_div());
 
@@ -143,7 +135,7 @@ fn noderefs() {
 
     let node = html! {
         <div>
-            <input ref=noderef />
+            <input bind:ref=noderef.clone()/>
         </div>
     };
 
@@ -151,8 +143,5 @@ fn noderefs() {
 
     let input_ref = document().query_selector("input").unwrap().unwrap();
 
-    assert_eq!(
-        Node::from(input_ref),
-        noderef.get().unchecked_into()
-    );
+    assert_eq!(Node::from(input_ref), noderef.get().unchecked_into());
 }

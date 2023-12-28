@@ -8,17 +8,14 @@ fn append() {
     let count = MutableVec::new_with_values(vec![1, 2]);
 
     let node = html! {
-        <ul>
-            {
-                count.signal_vec().map_render(|item| {
-                    html! {
-                        <li>{ item.to_string() }</li>
-
-                    }
-                } )
-            }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec()
+                    .map_render(|item| {
+                        html! { <li>{item.to_string()}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div());
 
@@ -44,17 +41,14 @@ fn swap_rows() {
     let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
     let node = html! {
-        <ul>
-        {
-            count.signal_vec().map_render(|item| {
-                html! {
-                    <li>{ item.to_string() }</li>
-
-                }
-            } )
-        }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec()
+                    .map_render(|item| {
+                        html! { <li>{item.to_string()}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div());
 
@@ -79,17 +73,14 @@ fn delete_row() {
     let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
     let node = html! {
-        <ul>
-        {
-            count.signal_vec().map_render(|item| {
-                html! {
-                    <li>{ item.to_string() }</li>
-
-                }
-            } )
-        }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec()
+                    .map_render(|item| {
+                        html! { <li>{item.to_string()}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div());
 
@@ -109,16 +100,14 @@ fn clear() {
     let count = MutableVec::new();
 
     let node = html! {
-        <ul>
-        {
-            count.signal_vec().map_render(|item: i32| {
-                html! {
-                    <li>{ item.to_string() }</li>
-                }
-            } )
-        }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec()
+                    .map_render(|item: i32| {
+                        html! { <li>{item.to_string()}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div()).unwrap();
 
@@ -141,16 +130,14 @@ fn insert_front() {
     let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
     let node = html! {
-        <ul>
-        {
-            count.signal_vec().map_render(|item| {
-                html! {
-                    <li>{ item.to_string() }</li>
-                }
-            } )
-        }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec()
+                    .map_render(|item| {
+                        html! { <li>{item.to_string()}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div());
     next_tick(|| {
@@ -170,17 +157,14 @@ fn nested_reactivity() {
         MutableVec::new_with_values(vec![1u32, 2, 3].into_iter().map(Mutable::new).collect());
 
     let node = html! {
-        <ul>
-        {
-            count.signal_vec_cloned().map_render(|item| {
-                html! {
-                    <li>{ item }</li>
-
-                }
-            } )
-        }
-        </ul>
-    };
+            <ul>
+                {count
+                    .signal_vec_cloned()
+                    .map_render(|item| {
+                        html! { <li>{item}</li> }
+                    })}
+            </ul>
+        };
 
     let _ = render_to(node, &test_div());
 

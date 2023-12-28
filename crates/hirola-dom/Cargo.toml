@@ -15,9 +15,11 @@ keywords = ["wasm", "html", "dom", "web"]
 wasm-bindgen = { version = "0.2" }
 log = "0.4"
 hirola-core = { path = "../hirola-core", version = "0.4.0-beta.0" }
+hirola-macros = { path = "../hirola-macros", version = "0.4.0-beta.0" }
 matchit = { version = "0.7" }
 wasm-bindgen-futures = { version = "0.4.39" }
 discard = "1"
+strum = { version = "0.25.0", features = ["derive"] }
 
 [dependencies.web-sys]
 features = [
@@ -27,6 +29,7 @@ features = [
   "Element",
   "Event",
   "HtmlElement",
+  "HtmlInputElement",
   "Node",
   "Text",
   "Window",

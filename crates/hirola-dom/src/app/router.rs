@@ -168,16 +168,16 @@ impl<S: Clone + 'static> Router<S> {
     ///
     /// // ... attach `link_handler` as an event handler to an anchor or button element ...
     /// ```
-    pub fn link(&self) -> Box<dyn Fn(&Dom) + '_> {
+    pub fn link(&self) -> Box<dyn FnOnce(&Dom) + 'static> {
         let router = self.clone();
         let cb = move |node: &Dom| {
             let router = router.clone();
-            let handle_click = Box::new(move |e: Event| {
+            let handle_click = move |e: Event| {
                 e.prevent_default();
                 let element = e.current_target().unwrap().dyn_into::<Element>().unwrap();
                 let href = element.get_attribute("href").unwrap();
                 router.push(&href);
-            }) as Box<dyn Fn(Event)>;
+            };
             node.event("click", handle_click);
         };
         Box::new(cb)
@@ -303,17 +303,6 @@ impl<S: Clone + 'static> Router<S> {
 
         handle_pop.forget();
         let route = &self.current.clone();
-
-        let path = route.get_cloned();
-        let match_result = router.at(&path);
-        let page_fn = match match_result {
-            Ok(v) => v.value,
-            Err(_) => &self.not_found,
-        };
-
-        let builder = page_fn(app);
-        let _ = &parent.append_child(&builder);
-
         let router = router.clone();
         let app = app.clone();
         let node = parent.clone();

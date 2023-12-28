@@ -170,10 +170,7 @@ impl<S: Clone + 'static> App<S> {
         let router = self.router.clone();
         let dom = router.render(
             self,
-            &crate::Dom {
-                node: document.body().unwrap().into(),
-                ..Default::default()
-            },
+            &crate::Dom::new_from_node(&document.body().unwrap().into()),
         );
         // We leak the root node to avoid callbacks and futures being dropped
         std::mem::forget(dom);
@@ -216,13 +213,7 @@ impl<S: Clone + 'static> App<S> {
     /// ```
     pub fn mount_to(&self, parent: &web_sys::Node) {
         let router = self.router.clone();
-        let dom = router.render(
-            self,
-            &crate::Dom {
-                node: parent.clone(),
-                ..Default::default()
-            },
-        );
+        let dom = router.render(self, &crate::Dom::new_from_node(parent));
         // We leak the root node to avoid callbacks and futures being dropped
         std::mem::forget(dom);
     }

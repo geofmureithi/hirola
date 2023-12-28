@@ -1,9 +1,10 @@
 mod model;
+use anyhow::bail;
+use hirola::dom::*;
 use hirola::prelude::*;
-use hirola::dom::Dom;
+use hirola::prelude::Suspend;
 use model::Users;
 use reqwasm::http::Request;
-use anyhow::bail;
 
 async fn user_fetcher() -> anyhow::Result<Users> {
     let request = Request::get("https://jsonplaceholder.typicode.com/users");

@@ -208,12 +208,16 @@ impl<T: 'static + Clone, N: GenericNode> Render<N> for MappedVec<T, N> {
     fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let template = {
             #[allow(clippy::type_complexity)]
-            let props: IndexedProps<T, Pin<Box<dyn SignalVec<Item = T>>>, Box<dyn Fn(T) -> N>, N> =
-                IndexedProps {
-                    iterable: self.iter,
-                    template: self.callback,
-                };
-            
+            let props: IndexedProps<
+                T,
+                Pin<Box<dyn SignalVec<Item = T>>>,
+                Box<dyn Fn(T) -> N>,
+                N,
+            > = IndexedProps {
+                iterable: self.iter,
+                template: self.callback,
+            };
+
             Indexed { props }
         };
         Box::new(template).render_into(parent)?;

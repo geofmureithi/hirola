@@ -3,7 +3,10 @@ use std::{fs::File, path::PathBuf};
 
 use components::logo::HirolaLogo;
 use comrak::{markdown_to_html_with_plugins, ComrakPlugins};
-use hirola::{prelude::*, ssr::{SsrNode, render_to_string}};
+use hirola::{
+    prelude::*,
+    ssr::{render_to_string, SsrNode},
+};
 
 use crate::components::side_bar::SideBar;
 use serde::Deserialize;
@@ -225,8 +228,7 @@ fn markdown_page(path: &PathBuf) -> (String, Seo) {
 
     options.extension.front_matter_delimiter = Some("---".to_owned());
     plugins.render.codefence_syntax_highlighter = Some(&adapter);
-    let data = fronma::parser::parse::<Seo>(&markdown)
-        .unwrap();
+    let data = fronma::parser::parse::<Seo>(&markdown).unwrap();
     let res = markdown_to_html_with_plugins(data.body, &options, &plugins);
     (res, data.headers)
 }

@@ -129,11 +129,8 @@ where
 
 use futures_signals::signal::Dedupe;
 
-impl<
-        Node: GenericNode,
-        S: Signal<Item = A> + 'static,
-        A: Display + 'static + Copy + PartialEq,
-    > SideEffect<DefaultAttrStr, Dedupe<S>, Node> for DefaultAttributeEffect
+impl<Node: GenericNode, S: Signal<Item = A> + 'static, A: Display + 'static + Copy + PartialEq>
+    SideEffect<DefaultAttrStr, Dedupe<S>, Node> for DefaultAttributeEffect
 where
     <S as Signal>::Item: PartialEq,
 {
@@ -166,7 +163,6 @@ where
         node.effect(future);
     }
 }
-
 
 use futures_signals::signal::Map;
 

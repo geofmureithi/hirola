@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
-use hirola::prelude::*;
-use hirola::dom::dom_test_utils::next_tick;
 use hirola::dom::app::App;
+use hirola::dom::dom_test_utils::next_tick;
 use hirola::dom::Dom;
+use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::{Element, Node};
@@ -11,7 +11,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 fn body() -> Node {
     let doc = web_sys::window().unwrap().document().unwrap();
-    
+
     doc.create_element("div").unwrap().into()
 }
 

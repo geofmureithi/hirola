@@ -1,6 +1,7 @@
+use crate::Visible;
 use crate::{todo::util::trim, Route, State};
 use hirola::{
-    dom::{app::App, Dom, effects::prelude::*},
+    dom::{app::App, effects::prelude::*, Dom},
     prelude::*,
     signal::{Mutable, Signal, SignalExt},
 };
@@ -8,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use std::{str::FromStr, sync::Arc};
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement, KeyboardEvent};
-use crate::Visible;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Todo {
@@ -113,7 +113,7 @@ impl Todo {
         let todo_clone = todo.clone();
 
         html! {
-            <li 
+            <li
                 x:visible=is_visible.dedupe()
                 class=todo_class.dedupe_cloned()
             >

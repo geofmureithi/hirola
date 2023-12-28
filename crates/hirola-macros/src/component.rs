@@ -1,4 +1,3 @@
-
 use proc_macro::TokenStream;
 use proc_macro_error::emit_error;
 use quote::quote;
@@ -16,9 +15,8 @@ pub fn create_function_component(f: syn::ItemFn) -> TokenStream {
         syn::ReturnType::Default => {
             emit_error!(output.span(), "A valid return is expected");
             panic!("invalid component provided")
-        },
+        }
         syn::ReturnType::Type(_, ty) => ty,
-        
     };
 
     let inputs_block = if !inputs.is_empty() {

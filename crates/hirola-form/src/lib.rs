@@ -50,7 +50,6 @@ impl<T: FormEntity + Clone> FormHandler<T> {
     }
 }
 
-
 pub trait FormColumn {
     fn name(&self) -> &str;
 }

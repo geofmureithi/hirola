@@ -355,7 +355,8 @@ mod tests {
         assert_eq!(
             render_to_string(html! {
                 <p>{count}</p>
-            }).unwrap(),
+            })
+            .unwrap(),
             "<p>1</p>"
         );
     }

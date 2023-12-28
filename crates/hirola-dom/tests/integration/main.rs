@@ -151,8 +151,5 @@ fn noderefs() {
 
     let input_ref = document().query_selector("input").unwrap().unwrap();
 
-    assert_eq!(
-        Node::from(input_ref),
-        noderef.get().unchecked_into()
-    );
+    assert_eq!(Node::from(input_ref), noderef.get().unchecked_into());
 }

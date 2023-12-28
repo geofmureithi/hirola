@@ -1,5 +1,5 @@
-use hirola::prelude::*;
 use hirola::dom::node_ref::NodeRef;
+use hirola::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::Event;

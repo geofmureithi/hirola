@@ -5,7 +5,7 @@
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
 //! use hirola::dom::Dom;
-//! 
+//!
 //! fn counter() -> Dom {
 //!     let count = Mutable::new(0i32);
 //!     let decrement = count.callback(|s| *s.lock_mut() -= 1);
@@ -46,8 +46,8 @@ pub mod prelude {
     pub use crate::templating::suspense::{Suspend, Suspense, SuspenseResult::*};
     pub use crate::templating::switch::Switch;
     pub use crate::BoxedLocal;
-    pub use futures_signals::*;
     pub use futures_signals::signal::Mutable;
     pub use futures_signals::signal_map::MutableBTreeMap;
     pub use futures_signals::signal_vec::MutableVec;
+    pub use futures_signals::*;
 }

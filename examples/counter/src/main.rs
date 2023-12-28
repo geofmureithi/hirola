@@ -1,7 +1,7 @@
 use gloo_timers::future::TimeoutFuture;
+use hirola::dom::effects::prelude::*;
 use hirola::dom::Dom;
 use hirola::prelude::*;
-use hirola::dom::effects::prelude::*;
 
 fn counter() -> Dom {
     let count = Mutable::new(0i32);

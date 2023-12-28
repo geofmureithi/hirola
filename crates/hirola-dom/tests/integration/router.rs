@@ -1,8 +1,8 @@
 use hirola::prelude::*;
+use hirola_dom::app::router::Router;
+use hirola_dom::app::App;
 use hirola_dom::dom_test_utils::next_tick;
 use hirola_dom::Dom;
-use hirola_dom::app::App;
-use hirola_dom::app::router::Router;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);

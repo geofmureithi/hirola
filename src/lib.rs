@@ -16,7 +16,6 @@
 pub mod prelude {
     pub use hirola_core::prelude::*;
     pub use hirola_macros::{component, html, mixin, FormEntity};
-    
 }
 
 /// Exposing single item signal
@@ -32,8 +31,8 @@ pub mod signal_vec {
 /// Expose the dom feature
 #[cfg(feature = "dom")]
 pub mod dom {
-    pub use hirola_dom::*;
     pub use hirola_dom::effects::prelude::*;
+    pub use hirola_dom::*;
 }
 
 /// Expose the ssr feature

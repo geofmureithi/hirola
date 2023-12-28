@@ -1161,15 +1161,15 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0475000ed93fad1551072993d00c776266397188a0319abf2bdfad1734cd647"
+checksum = "be74cfbc480df242650d6e77427752f2148dcfa69798605c81b33adaecfe11ab"
 
 [[package]]
 name = "leptosfmt-prettyplease"
-version = "0.2.15"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db565cf80f894a9435f045fe1c1211051f97d3e9f074635538a2cf689b29191f"
+checksum = "5d77ca25d6a5f5cacd7e79efa3c6cae2b950d1b45dcc4e46179fbc1762ad1b5d"
 dependencies = [
  "leptosfmt-pretty-printer",
  "proc-macro2",

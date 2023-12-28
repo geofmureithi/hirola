@@ -1,9 +1,11 @@
 pub mod app;
+pub mod effects;
 pub mod mixins;
 pub mod node_ref;
+pub mod types;
 
 use core::fmt;
-use discard::{DiscardOnDrop, Discard};
+use discard::{Discard, DiscardOnDrop};
 use hirola_core::prelude::cancelable_future;
 use hirola_core::render::Render;
 use hirola_core::{
@@ -52,6 +54,12 @@ impl fmt::Debug for Dom {
     }
 }
 
+impl Drop for Dom {
+    fn drop(&mut self) {
+        // self.discard()
+    }
+}
+
 impl PartialEq for Dom {
     fn eq(&self, other: &Self) -> bool {
         self.node == other.node
@@ -85,7 +93,9 @@ impl Dom {
     pub fn new_from_node(node: &Node) -> Self {
         Dom {
             node: node.clone(),
-            ..Default::default()
+            side_effects: Rc::new(RefCell::new(vec![])),
+            event_handlers: Rc::new(RefCell::new(vec![])),
+            children: RefCell::new(vec![]),
         }
     }
 
@@ -134,7 +144,7 @@ impl Dom {
     ///
     /// The converted `DomNode` as the target type `T`.
     pub fn unchecked_into<T: JsCast>(self) -> T {
-        self.node.unchecked_into()
+        self.node.clone().unchecked_into()
     }
     /// Attempts to dynamically cast the `DomNode` into a specified type.
     ///
@@ -153,7 +163,7 @@ impl Dom {
     /// - `Err(Node)` if the `DomNode` could not be cast into the target type `T`.
 
     pub fn dyn_into<T: JsCast>(self) -> Result<T, Node> {
-        self.node.dyn_into()
+        self.node.clone().dyn_into()
     }
 }
 
@@ -165,7 +175,7 @@ impl AsRef<JsValue> for Dom {
 
 impl From<Dom> for JsValue {
     fn from(node: Dom) -> Self {
-        node.node.into()
+        node.node.clone().into()
     }
 }
 
@@ -175,31 +185,19 @@ fn document() -> web_sys::Document {
 
 impl GenericNode for Dom {
     fn element(tag: &str) -> Self {
-        Dom {
-            node: document().create_element(tag).unwrap().dyn_into().unwrap(),
-            ..Default::default()
-        }
+        Dom::new_from_node(&document().create_element(tag).unwrap().dyn_into().unwrap())
     }
 
     fn text_node(text: &str) -> Self {
-        Dom {
-            node: document().create_text_node(text).into(),
-            ..Default::default()
-        }
+        Dom::new_from_node(&document().create_text_node(text).into())
     }
 
     fn fragment() -> Self {
-        Dom {
-            node: document().create_document_fragment().dyn_into().unwrap(),
-            ..Default::default()
-        }
+        Dom::new_from_node(&document().create_document_fragment().dyn_into().unwrap())
     }
 
     fn marker() -> Self {
-        Dom {
-            node: document().create_comment("").into(),
-            ..Default::default()
-        }
+        Dom::new_from_node(&document().create_comment("").into())
     }
 
     fn set_attribute(&self, name: &str, value: &str) {
@@ -250,18 +248,14 @@ impl GenericNode for Dom {
     }
 
     fn parent_node(&self) -> Option<Self> {
-        let n =self.node.parent_node().unwrap();
-        Some(Self {
-            node: n,
-            ..Default::default()
-        })
+        let n = self.node.parent_node().unwrap();
+        Some(Dom::new_from_node(&n))
     }
 
     fn next_sibling(&self) -> Option<Self> {
-        self.node.next_sibling().map(|node| Self {
-            node,
-            ..Default::default()
-        })
+        self.node
+            .next_sibling()
+            .map(|node| Dom::new_from_node(&node))
     }
 
     fn remove_self(&self) {
@@ -290,6 +284,34 @@ impl GenericNode for Dom {
     }
 }
 
+/// Mounts a [`Dom`] and runs it forever
+/// See also [`render`] with `parent` being the `<body>` tag.
+pub fn mount(dom: Dom) -> Result<(), Error> {
+    let window = web_sys::window().ok_or(Error::DomError(Box::new("could not acquire window")))?;
+    let document = window
+        .document()
+        .ok_or(Error::DomError(Box::new("could not acquire document")))?;
+
+    mount_to(
+        dom,
+        &document
+            .body()
+            .ok_or(Error::DomError(Box::new("could not acquire body")))?
+            .into(),
+    )?;
+    Ok(())
+}
+
+/// Mount a [`Dom`] to a `parent` node.
+/// For rendering under the `<body>` tag, use [`render()`] instead.
+
+pub fn mount_to(dom: Dom, parent: &web_sys::Node) -> Result<(), Error> {
+    let parent = Dom::new_from_node(parent);
+    parent.append_child(&dom);
+    std::mem::forget(parent);
+    Ok(())
+}
+
 /// Render a [`Dom`] into the DOM.
 /// Alias for [`render_to`] with `parent` being the `<body>` tag.
 pub fn render(dom: Dom) -> Result<Dom, Error> {
@@ -303,18 +325,14 @@ pub fn render(dom: Dom) -> Result<Dom, Error> {
 /// For rendering under the `<body>` tag, use [`render()`] instead.
 
 pub fn render_to(dom: Dom, parent: &web_sys::Node) -> Result<Dom, Error> {
-    let parent = Dom {
-        node: parent.clone(),
-        ..Default::default()
-    };
+    let parent = Dom::new_from_node(parent);
     parent.append_child(&dom);
     Ok(parent)
 }
 
-impl EventListener for Dom {
-    type Handler = Box<dyn Fn(web_sys::Event)>;
-    fn event(&self, name: &str, handler: Self::Handler) {
-        let closure = Closure::wrap(handler);
+impl<F: Fn(web_sys::Event) + 'static> EventListener<F> for Dom {
+    fn event(&self, name: &str, handler: F) {
+        let closure: Closure<dyn Fn(web_sys::Event)> = Closure::wrap(Box::new(handler));
         self.node
             .add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())
             .unwrap();
@@ -340,7 +358,6 @@ impl Render<Dom> for Dom {
         Ok(())
     }
 }
-
 
 pub mod dom_test_utils {
     use wasm_bindgen::{prelude::Closure, JsCast};

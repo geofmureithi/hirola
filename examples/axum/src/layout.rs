@@ -40,7 +40,7 @@ where
     Footer: Render<SsrNode>,
 {
     html! {
-        <!DOCTYPE html>
+        <!DOCTYPE html> 
         <html lang="en" dir="ltr">
             <head>
                 <title>{&seo.title}</title>
@@ -105,8 +105,7 @@ pub fn Nav<'a, T: Display>(items: &'a [T]) -> SsrNode {
                             <a href="#">{item.to_string()}</a>
                         </li>
                     }
-                }}
-                <li class="crumb">{last.unwrap().to_string()}</li>
+                }} <li class="crumb">{last.unwrap().to_string()}</li>
             </ol>
         </nav>
     }

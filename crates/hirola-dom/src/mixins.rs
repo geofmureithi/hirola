@@ -1,29 +1,21 @@
 use std::fmt::Display;
 
+use crate::effects::attr_mixin::XEffect;
+use crate::Dom;
+use hirola_core::effect::SideEffect;
+use hirola_core::prelude::signal::{DedupeCloned, DedupeMap};
+use hirola_core::prelude::EffectAttribute;
 use hirola_core::{
     generic_node::GenericNode,
     prelude::signal::{Signal, SignalExt},
 };
+use hirola_macros::mixin;
 use wasm_bindgen::JsCast;
 use web_sys::Element;
 
-use crate::Dom;
-
-/// A mixin that allows adding raw html
-/// Note: This is a security risk if the string to be inserted might contain potentially malicious content.
-/// sanitize the content before it is inserted.
-/// See more: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-#[allow(unused_variables)]
-pub fn raw_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
-    let cb = move |node: &Dom| {
-        let element = node.as_ref().clone().unchecked_into::<Element>();
-        element.set_inner_html(text);
-    };
-    Box::new(cb)
-}
-
 /// A mixin that allows adding non-signal text
 #[allow(unused_variables)]
+#[mixin]
 pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     let cb = move |dom: &Dom| {
         dom.node.set_text_content(Some(text));
@@ -31,21 +23,69 @@ pub fn raw_text<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
     Box::new(cb)
 }
 
-/// Mixin that adds text to a dom node
-#[allow(unused_variables)]
-pub fn text<T, S>(signal: S) -> Box<dyn FnOnce(&Dom)>
-where
-    T: Display + 'static,
-    S: Signal<Item = T> + SignalExt + 'static,
-{
-    let cb = move |_node: &Dom| {
-        use std::future::ready;
-        let element = _node.as_ref().clone().unchecked_into::<Element>();
-        let future = signal.for_each(move |value| {
-            element.set_text_content(Some(&format!("{}", value)));
-            ready(())
-        });
-        _node.effect(future);
+pub struct Html;
+
+fn html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
+    let cb = move |node: &Dom| {
+        let dom = node.inner_element();
+        let element = dom.dyn_ref::<Element>().unwrap();
+        element.set_inner_html(text); // Remember to escape this.
     };
     Box::new(cb)
+}
+
+impl EffectAttribute for Html {
+    type Handler = XEffect;
+    fn read_as_attr(&self) -> String {
+        "html".to_owned()
+    }
+}
+
+impl SideEffect<Html, &str, Dom> for XEffect {
+    fn effect(&self, node: &Dom, _: Html, text: &str) {
+        html(text)(node)
+    }
+}
+
+pub struct Text;
+
+impl EffectAttribute for Text {
+    type Handler = XEffect;
+    fn read_as_attr(&self) -> String {
+        "text".to_owned()
+    }
+}
+
+impl<
+        F: FnMut(&mut <S as Signal>::Item) -> A + 'static,
+        S: Signal + 'static,
+        A: Display + 'static + Clone + PartialEq,
+    > SideEffect<Text, DedupeMap<S, F>, Dom> for XEffect
+where
+    <S as Signal>::Item: PartialEq,
+{
+    fn effect(&self, node: &Dom, _attr: Text, effect: DedupeMap<S, F>) {
+        let dom = node.clone();
+        let element = dom.dyn_into::<Element>().unwrap();
+        let future = SignalExt::dedupe_map(effect, move |value| {
+            element.set_text_content(Some(&format!("{}", value)));
+        })
+        .to_future();
+        node.effect(future);
+    }
+}
+
+impl<S: Signal + 'static> SideEffect<Text, DedupeCloned<S>, Dom> for XEffect
+where
+    <S as Signal>::Item: PartialEq + Display + Clone,
+{
+    fn effect(&self, node: &Dom, _attr: Text, effect: DedupeCloned<S>) {
+        let dom = node.clone();
+        let element = dom.dyn_into::<Element>().unwrap();
+        let future = SignalExt::dedupe_map(effect, move |value| {
+            element.set_text_content(Some(&format!("{}", value)));
+        })
+        .to_future();
+        node.effect(future);
+    }
 }

@@ -21,7 +21,9 @@ impl MacroFormatter for HtmlMacroFormatter<'_> {
             return false;
         }
 
-        let Some(m) = HtmlMacro::try_parse(None, mac) else { return false; };
+        let Some(m) = HtmlMacro::try_parse(None, mac) else {
+            return false;
+        };
 
         let mut formatter = Formatter::new(self.settings, printer, self.comments.clone());
         formatter.html_macro(&m);

@@ -4,8 +4,8 @@
 //! ```rust,no_run
 //! use hirola::prelude::*;
 //! use hirola::signal::Mutable;
-//! use hirola::dom::Dom;
-//! 
+//! use hirola::dom::*;
+//!
 //! fn counter() -> Dom {
 //!     let count = Mutable::new(0i32);
 //!     let decrement = count.callback(|s| *s.lock_mut() -= 1);
@@ -32,24 +32,22 @@ pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
 pub mod callback;
 pub mod effect;
 pub mod generic_node;
-pub mod mixin;
 pub mod render;
 pub mod templating;
 
 pub mod prelude {
     pub use crate::callback::Callback;
-    pub use crate::effect::SideEffect;
+    pub use crate::effect::*;
     pub use crate::generic_node::EventListener;
     pub use crate::generic_node::GenericNode;
     pub use crate::generic_node::*;
-    pub use crate::mixin::*;
     pub use crate::render::*;
     pub use crate::templating::flow::{Indexed, IndexedProps};
     pub use crate::templating::suspense::{Suspend, Suspense, SuspenseResult::*};
     pub use crate::templating::switch::Switch;
     pub use crate::BoxedLocal;
-    pub use futures_signals::*;
     pub use futures_signals::signal::Mutable;
     pub use futures_signals::signal_map::MutableBTreeMap;
     pub use futures_signals::signal_vec::MutableVec;
+    pub use futures_signals::*;
 }

@@ -45,23 +45,22 @@ Lets add some code to `src/main.rs`
 
 ```rust,no_run
 use hirola::prelude::*;
-use hirola::dom::Dom;
+use hirola::dom::*;
 
 fn counter() -> Dom {
     let count = Mutable::new(0i32);
     let decrement = count.callback(|s| *s.lock_mut() -= 1);
     let increment = count.callback(|s| *s.lock_mut() += 1);
     html! {
-         <>
+        <>
             <button on:click=decrement>"-"</button>
             <span>{count}</span>
             <button on:click=increment>"+"</button>
-         </>
+        </>
     }
 }
 fn main() {
-    let root = hirola::dom::render(counter()).unwrap();
-    std::mem::forget(root);
+    hirola::dom::mount(counter()).unwrap();
 }
 ```
 

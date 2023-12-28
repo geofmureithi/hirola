@@ -1,5 +1,5 @@
 [package]
-name = "mixin"
+name = "effects"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 hirola = { path = "../../" }
 wasm-bindgen = { version = "0.2" }
+console_error_panic_hook = "0.1.7"
 
 [dependencies.web-sys]
-features = ["DomTokenList", "Navigator"]
+features = ["DomTokenList", "Navigator", "HtmlInputElement"]
 
 version = "0.3"

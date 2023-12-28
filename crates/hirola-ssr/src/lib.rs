@@ -332,9 +332,7 @@ mod tests {
 
     #[test]
     fn hello_world() {
-        let node = html! {
-            <p>"Hello World!"</p>
-        };
+        let node = html! { <p>"Hello World!"</p> };
 
         assert_eq!(render_to_string(node).unwrap(), "<p>Hello World!</p>");
     }
@@ -355,7 +353,8 @@ mod tests {
         assert_eq!(
             render_to_string(html! {
                 <p>{count}</p>
-            }).unwrap(),
+            })
+            .unwrap(),
             "<p>1</p>"
         );
     }
@@ -366,16 +365,14 @@ mod tests {
         let count = MutableVec::new_with_values(vec![1, 2, 3]);
 
         let node = html! {
-            <ul>
-            {
-                count.signal_vec().map_render(move |item| {
-                    html! {
-                        <li>{item.to_string()}</li>
-                    }
-                } )
-            }
-            </ul>
-        };
+                <ul>
+                    {count
+                        .signal_vec()
+                        .map_render(move |item| {
+                            html! { <li>{item.to_string()}</li> }
+                        })}
+                </ul>
+            };
 
         let dom = render_to_string(node).unwrap();
         assert_eq!("<ul><li>1</li><li>2</li><li>3</li><!----></ul>", dom);

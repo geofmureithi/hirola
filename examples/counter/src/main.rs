@@ -1,4 +1,5 @@
 use gloo_timers::future::TimeoutFuture;
+use hirola::dom::effects::prelude::*;
 use hirola::dom::Dom;
 use hirola::prelude::*;
 
@@ -17,13 +18,12 @@ fn counter() -> Dom {
     html! {
         <>
             <button on:click=decrement>"-"</button>
-            <span use:second_counter>{count}</span>
+            <span use:future=second_counter>{count}</span>
             <button on:click=increment>"+"</button>
         </>
     }
 }
 
 fn main() {
-    let root = hirola::dom::render(counter()).unwrap();
-    std::mem::forget(root);
+    hirola::dom::mount(counter()).unwrap();
 }

@@ -1,61 +1,56 @@
 #[macro_use]
 extern crate validator_derive;
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
-use hirola::{dom::*, prelude::*};
+use hirola::{
+    dom::*,
+    prelude::*,
+    signal::{Signal, SignalExt},
+    signal_vec::SignalVecExt,
+};
 use hirola_form::{Form, FormHandler};
-use web_sys::HtmlInputElement;
+use web_sys::window;
 
-#[derive(Validate, PartialEq, Clone, Serialize, Deserialize, Debug)]
+#[derive(Validate, PartialEq, Clone, Serialize, Deserialize, Debug, FormEntity)]
 struct Login {
     #[validate(length(min = 1, message = "Email is required"))]
     email: String,
     #[validate(length(min = 1, message = "Password is required"))]
     password: String,
-
-    count: u32,
-
     remember: String,
 }
-
-// impl hirola::form::Validate for Login {
-//     type Error = ValidationErrors;
-//     fn validate(&self) -> Result<(), Self::Error> {
-//         Validate::validate(&self)
-//     }
-
-//     fn errors(&self) -> std::collections::HashMap<&'static str, String> {
-//         Validate::validate(&self)
-//             .unwrap_err()
-//             .errors()
-//             .into_iter()
-//             .map(|(key, value)| (*key, format!("{value:?}")))
-//             .collect()
-//     }
-// }
-
-// #[component]
-// fn InnerComponent(bind: Bind<u32, Login>) -> Dom {
-//     let increment = bind.callback(move |bind, _e: Event| {
-//         let value = bind.get_value();
-//         bind.set_value(value.get() + 1)
-//     });
-//     html! {
-//         <>
-//             <span>"Counter"</span>
-//             <button type="button" on:click=increment>"+"</button>
-//             <span mixin:identity={&text(&bind.get_value())}></span>
-//         </>
-//     }
-// }
+impl Login {
+    fn errors(&self) -> Option<BTreeMap<LoginForm, ValidationError>> {
+        let res = Validate::validate(&self).err()?;
+        Some(
+            res.errors()
+                .into_iter()
+                .map(|(key, value)| {
+                    (
+                        (*key).parse::<LoginForm>().unwrap(),
+                        match value {
+                            validator::ValidationErrorsKind::Struct(_fields) => todo!(),
+                            validator::ValidationErrorsKind::List(_) => todo!(),
+                            validator::ValidationErrorsKind::Field(f) => {
+                                f.clone().get(0).cloned().unwrap()
+                            }
+                        },
+                    )
+                })
+                .collect(),
+        )
+    }
+}
 
 fn form_demo() -> Dom {
     let form = FormHandler::new(Login {
         email: "example@gmail.com".to_string(),
         password: String::new(),
-        count: 100,
+        // count: 100,
         remember: "true".to_string(),
     });
 
@@ -63,8 +58,16 @@ fn form_demo() -> Dom {
         <form
             class="h-screen flex flex-col items-center justify-center"
             method="post"
-            ref=form.node_ref()
-            on:submit=Box::new(|e: web_sys::Event| e.prevent_default())
+            bind:ref=form.node_ref()
+            novalidate=""
+            on:submit=move |e: web_sys::Event| {
+                e.prevent_default();
+                let value = form.current();
+                window()
+                    .unwrap()
+                    .alert_with_message(&serde_json::to_string(&value).unwrap())
+                    .unwrap();
+            }
         >
             <div class="mb-6">
                 <label
@@ -74,16 +77,14 @@ fn form_demo() -> Dom {
                     "Your email"
                 </label>
                 <input
-                    type="email"
-                    id="email"
-                    name="email"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@example.com"
-                    mixin:form={form.register::<HtmlInputElement>()}
+                    x:form=form.bind(LoginForm::Email)
                 />
-            // <span class="text-red-700 text-sm"
-            //     mixin:form=&text(&form.error_for("email"))
-            // ></span>
+                <span
+                    class="text-red-700 text-sm"
+                    x:text=error_for(&form, LoginForm::Email).dedupe_cloned()
+                ></span>
 
             </div>
             <div class="mb-6">
@@ -99,9 +100,14 @@ fn form_demo() -> Dom {
                     name="password"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     required=""
-                    mixin:form={form.register::<HtmlInputElement>()}
+                    x:form=form.bind(LoginForm::Password)
                 />
             </div>
+
+            <span
+                class="text-red-700 text-sm"
+                x:text=error_for(&form, LoginForm::Password).dedupe_cloned()
+            ></span>
 
             <div class="flex items-start mb-6">
 
@@ -113,7 +119,7 @@ fn form_demo() -> Dom {
                         value=""
                         class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                         required=""
-                        mixin:form={form.register::<HtmlInputElement>()}
+                        x:form=form.bind(LoginForm::Remember)
                     />
                 </div>
                 <label
@@ -123,6 +129,10 @@ fn form_demo() -> Dom {
                     "Remember me"
                 </label>
             </div>
+            <span
+                class="text-red-700 text-sm"
+                x:text=error_for(&form, LoginForm::Remember).dedupe_cloned()
+            ></span>
             <button
                 type="submit"
                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -133,9 +143,28 @@ fn form_demo() -> Dom {
     }
 }
 
+fn errors_for(
+    form: &FormHandler<Login>,
+    column: LoginForm,
+) -> impl Signal<Item = Vec<ValidationError>> {
+    let f = form.clone();
+    let errors = form
+        .value
+        .entries_cloned()
+        .filter(move |e| &e.0 == &column)
+        .filter_map(move |_e| {
+            let current = f.current();
+            current.errors()?.get(&column).cloned()
+        })
+        .to_signal_cloned();
+    errors
+}
+
+fn error_for(form: &FormHandler<Login>, column: LoginForm) -> impl Signal<Item = String> {
+    errors_for(&form, column).map(|items| items.get(0).map(|v| v.to_string()).unwrap_or_default())
+}
+
 fn main() {
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
-    std::mem::forget(render_to(form_demo(), &body));
+    console_error_panic_hook::set_once();
+    mount(form_demo()).unwrap();
 }

@@ -49,9 +49,10 @@ impl From<&FormatterSettings> for PrinterSettings {
     fn from(value: &FormatterSettings) -> Self {
         Self {
             margin: value.max_width as isize,
-            indent: value.tab_spaces as isize,
+            tab_spaces: value.tab_spaces as isize,
             min_space: 60,
             crlf_line_endings: true,
+            hard_tabs: false
         }
     }
 }

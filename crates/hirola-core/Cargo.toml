@@ -1,6 +1,6 @@
 [package]
 name = "hirola-core"
-version = "v0.4.0"
+version = "0.4.0"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 edition = "2021"
 description = "An html library for building client side webapps"

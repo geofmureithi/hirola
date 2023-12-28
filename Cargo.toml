@@ -1,6 +1,6 @@
 [package]
 name = "hirola"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 authors = ["Geoffrey Mureithi <mureithinjuguna@gmail.com>"]
 description = "Hirola is an un-opinionated web framework that is focused on simplicity and predictability"
 repository = "https://github.com/geofmureithi/hirola"
@@ -11,10 +11,10 @@ keywords = ["wasm", "html", "dom", "web"]
 edition = "2021"
 
 [dependencies]
-hirola-core = { path = "crates/hirola-core", version = "0.4.0-beta.0" }
-hirola-macros = { path = "crates/hirola-macros", version = "0.4.0-beta.0" }
-hirola-dom = { path = "crates/hirola-dom", version = "0.4.0-beta.0", optional = true }
-hirola-ssr = { path = "crates/hirola-ssr", version = "0.4.0-beta.0", optional = true }
+hirola-core = { path = "crates/hirola-core", version = "0.4.0" }
+hirola-macros = { path = "crates/hirola-macros", version = "0.4.0" }
+hirola-dom = { path = "crates/hirola-dom", version = "0.4.0", optional = true }
+hirola-ssr = { path = "crates/hirola-ssr", version = "0.4.0", optional = true }
 
 [features]
 default = ["dom"]

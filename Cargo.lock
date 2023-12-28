@@ -866,7 +866,7 @@ checksum = "d77f7ec81a6d05a3abb01ab6eb7590f6083d08449fe5a1c8b1e620283546ccb7"
 
 [[package]]
 name = "hirola"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "document-features",
  "futures-util",
@@ -882,7 +882,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-core"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "criterion",
  "futures-signals",
@@ -894,7 +894,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-dom"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "discard",
  "hirola",
@@ -911,7 +911,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-form"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "hirola-core",
  "hirola-dom",
@@ -945,7 +945,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-macros"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "heck",
  "hirola",
@@ -962,7 +962,7 @@ dependencies = [
 
 [[package]]
 name = "hirola-ssr"
-version = "0.4.0-beta.0"
+version = "0.4.0"
 dependencies = [
  "hirola",
  "hirola-core",

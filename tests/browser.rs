@@ -24,14 +24,10 @@ fn inner_html(element: &Node) -> String {
 fn router_pushes() {
     let mut app: App<()> = App::new(());
     app.route("/", |_| {
-        html! {
-            <main>"Main"</main>
-        }
+        html! { <main>"Main"</main> }
     });
     app.route("/page", |_| {
-        html! {
-            <main>"Page"</main>
-        }
+        html! { <main>"Page"</main> }
     });
     let router = app.router().clone();
     let node = body();
@@ -48,9 +44,7 @@ fn router_pushes() {
 fn app_renders() {
     let mut app: App<()> = App::new(());
     fn test_app(app: &App<()>) -> Dom {
-        html! {
-            <span>"Test"</span>
-        }
+        html! { <span>"Test"</span> }
     }
     let node = &body();
     app.route("/", test_app);
@@ -62,9 +56,7 @@ fn app_renders() {
 fn router_renders() {
     let mut app: App<()> = App::new(());
     app.route("/", |_| {
-        html! {
-            <main>"Main"</main>
-        }
+        html! { <main>"Main"</main> }
     });
     let node = &body();
     app.mount_to(node);

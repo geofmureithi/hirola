@@ -8,16 +8,18 @@ fn effects_demo() -> Dom {
     let duration = Mutable::new(800u64);
     html! {
         <form
-            use:future=async {
-                // similar to on mount
-            }
+            use:future=async {}
             class="h-screen flex flex-col items-center justify-center transition-all ease-in-out delay-1000"
         >
-            <span x:html="<strong>calebporzio</strong>" /> // Raw html mixin
+            // Raw html mixin
+            <span x:html="<strong>calebporzio</strong>"></span>
+
             <input
                 type="range"
-                bind:value=&duration // Two way binding
-                use:signal=attr_signal("data-value", duration.signal()) // Generic signal binding
+                // Two way binding
+                bind:value=&duration
+                // Generic signal binding
+                use:signal=attr_signal("data-value", duration.signal())
                 max=1000
                 step=100
             />
@@ -25,7 +27,7 @@ fn effects_demo() -> Dom {
                 // Directly include a reactive
                 <h1>{duration}</h1>
 
-                <p>"Shown: "{is_shown.clone()}</p>
+                <p>"Shown: " {is_shown.clone()}</p>
 
                 <button
                     class="bg-gray-200 mt-4 font-bold py-2 px-4 rounded"

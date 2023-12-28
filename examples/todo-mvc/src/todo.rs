@@ -113,40 +113,42 @@ impl Todo {
         let todo_clone = todo.clone();
 
         html! {
-            <li
-                x:visible=is_visible.dedupe()
-                class=todo_class.dedupe_cloned()
-            >
-                <div class="view">
-                    {if todo.completed.signal() as Signal {
-                        html!{
-                            <input
-                                class="toggle"
-                                type="checkbox"
-                                checked=""
-                                on:change={todo_clone.callback_with(move |todo, event| {
+        <li x:visible=is_visible.dedupe() class=todo_class.dedupe_cloned()>
+            <div class="view">
+                {if todo.completed.signal() as Signal {
+                    html! {
+                        <input
+                            class="toggle"
+                            type="checkbox"
+                            checked=""
+                            on:change=todo_clone
+                                .callback_with(move |todo, event| {
                                     todo.set_completed(is_checked(&event));
-                                })}
-                            />
-                        }
-                    } else {
-                        html!{
-                            <input
-                                class="toggle"
-                                type="checkbox"
-                                on:change={todo_clone.callback_with(move |todo, event| {
+                                })
+                        />
+                    }
+                } else {
+                    html! {
+                        <input
+                            class="toggle"
+                            type="checkbox"
+                            on:change=todo_clone
+                                .callback_with(move |todo, event| {
                                     todo.set_completed(is_checked(&event));
-                                })}
-                            />
-                        }
-                    }}
+                                })
+                        />
+                    }
+                }}
+                <label on:dbl_click=toggle_edit>{title}</label>
+                <button
+                    class="destroy"
+                    on:click=todo.callback_with(move |todo, _| todo.remove(&app))
+                ></button>
 
-                    <label on:dbl_click=toggle_edit>{title}</label>
-                    <button class="destroy" on:click=todo.callback_with(move|todo, _| todo.remove(&app))/>
-                </div>
-                <input class="edit" on:key_down=handle_edit bind:value=&todo.title />
-            </li>
-        }
+            </div>
+            <input class="edit" on:key_down=handle_edit bind:value=&todo.title/>
+        </li>
+    }
     }
 }
 

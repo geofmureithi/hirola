@@ -42,7 +42,7 @@ fn signature_pad() -> Dom {
             on:mouse_down=mouse_down
             on:mouse_up=mouse_up
             on:mouse_move=mouse_move
-        />
+        ></canvas>
     }
 }
 

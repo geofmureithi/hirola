@@ -55,7 +55,7 @@ fn colors() -> Dom {
                     })}
             </ul>
             <form on:submit=add_new>
-                <input id="new_color" type="text" required="" />
+                <input id="new_color" type="text" required=""/>
                 <button type="submit">"Add New Color"</button>
             </form>
         </>

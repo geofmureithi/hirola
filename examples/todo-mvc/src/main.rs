@@ -155,7 +155,7 @@ fn Header(app: App<State>) -> Dom {
                 focus=true
                 class="new-todo"
                 placeholder="What needs to be done?"
-                value=state.mode.signal_cloned().dedupe_map(|_|"")
+                value=state.mode.signal_cloned().dedupe_map(|_| "")
                 on:key_down=create_new
             />
         </header>
@@ -170,8 +170,13 @@ fn Button<'a>(app: App<State>, text: &'a str, route: Route) -> Dom {
         <li>
             <a
                 x:link=router.link()
-                class=route_signal.map(move |x| x == route.as_ref()).dedupe_map(|b| if *b {"selected"} else {""})
-                href=route.as_ref()>{text}</a>
+                class=route_signal
+                    .map(move |x| x == route.as_ref())
+                    .dedupe_map(|b| if *b { "selected" } else { "" })
+                href=route.as_ref()
+            >
+                {text}
+            </a>
         </li>
     }
 }
@@ -218,25 +223,27 @@ fn Footer(app: App<State>) -> Dom {
     .dedupe_cloned();
 
     let has_todos = app.state().has_todos();
-    html! { <footer
-                // value=app.state().mode.signal_cloned().map(|_|"")
-                x:visible=has_todos.dedupe()
-                class="footer">
-                <span class="todo-count">
-                    <strong
-                    x:text=todo_count
-                    ></strong>
-                </span>
-                <ul class="filters">
-                    <Button app={app.clone()} text="All" route={Route::All} />
-                    <Button app={app.clone()} text="Active" route={Route::Active} />
-                    <Button app={app.clone()} text="Completed" route={Route::Completed} />
-                </ul>
-                <button on:click=clear_completed
+    html! {
+        <footer
+            // value=app.state().mode.signal_cloned().map(|_|"")
+            x:visible=has_todos.dedupe()
+            class="footer"
+        >
+            <span class="todo-count">
+                <strong x:text=todo_count></strong>
+            </span>
+            <ul class="filters">
+                <Button app=app.clone() text="All" route=Route::All/>
+                <Button app=app.clone() text="Active" route=Route::Active/>
+                <Button app=app.clone() text="Completed" route=Route::Completed/>
+            </ul>
+            <button
+                on:click=clear_completed
                 x:visible=app.state().completed_len().map(|len| len > 0).dedupe()
-                class="clear-completed">
-                    "Clear completed"
-                </button>
+                class="clear-completed"
+            >
+                "Clear completed"
+            </button>
         </footer>
     }
 }
@@ -251,21 +258,21 @@ fn Main(app: App<State>) -> Dom {
         state.set_all_todos_completed(input.checked())
     });
     html! {
-        <section
-            x:visible=has_todos.dedupe()
-        class="main">
+        <section x:visible=has_todos.dedupe() class="main">
             <input
                 class="toggle-all"
                 id="toggle-all"
                 type="checkbox"
-                checked=app.state().not_completed_len().dedupe_map(|len| {
-                    *len == 0
-                })
+                checked=app.state().not_completed_len().dedupe_map(|len| { *len == 0 })
                 on:change=on_toggle
             />
             <label for="toggle-all">"Mark all as complete"</label>
             <ul class="todo-list">
-                {app.state().todo_list.signal_vec_cloned().map_render(move |todo| Todo::render(todo, &app))}
+                {app
+                    .state()
+                    .todo_list
+                    .signal_vec_cloned()
+                    .map_render(move |todo| Todo::render(todo, &app))}
             </ul>
         </section>
     }

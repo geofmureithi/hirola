@@ -45,9 +45,7 @@ fn test_div() -> Node {
 
 #[wasm_bindgen_test]
 fn hello_world() {
-    let node = html! {
-        <p>"Hello World!"</p>
-    };
+    let node = html! { <p>"Hello World!"</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -65,9 +63,7 @@ fn hello_world() {
 fn hello_world_noderef() {
     let p_ref = NodeRef::new();
 
-    let node = html! {
-        <p ref=p_ref> "Hello World!"</p>
-    };
+    let node = html! { <p ref=p_ref>"Hello World!"</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -80,9 +76,7 @@ fn hello_world_noderef() {
 #[wasm_bindgen_test]
 fn interpolation() {
     let text = "Hello Hirola!";
-    let node = html! {
-        <p>{text}</p>
-    };
+    let node = html! { <p>{text}</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -101,9 +95,7 @@ fn interpolation() {
 fn reactive_text() {
     let count = Mutable::new(0);
 
-    let node = html! {
-        <p> { count.clone() }</p>
-    };
+    let node = html! { <p>{count.clone()}</p> };
 
     let _ = render_to(node, &test_div());
 
@@ -121,9 +113,7 @@ fn reactive_text() {
 fn reactive_attribute() {
     let count = Mutable::new(0);
 
-    let node = html! {
-        <span bind:attribute=count.signal()/>
-    };
+    let node = html! { <span bind:attribute=count.signal()></span> };
 
     let _ = render_to(node, &test_div());
 
@@ -142,10 +132,10 @@ fn noderefs() {
     let noderef = NodeRef::new();
 
     let node = html! {
-        <div>
-            <input ref=noderef />
-        </div>
-    };
+            <div>
+                <input ref=noderef/>
+            </div>
+        };
 
     let _ = render_to(node, &test_div());
 

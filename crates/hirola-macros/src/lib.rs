@@ -110,13 +110,6 @@ fn node_to_tokens(node: Node) -> TokenStream {
     tokens
 }
 
-fn some_kind_of_uppercase_first_letter(s: &str) -> String {
-    let mut c = s.chars();
-    match c.next() {
-        None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-    }
-}
 
 fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
     match attribute {
@@ -126,10 +119,10 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
         NodeAttribute::Attribute(attr) => {
             let name = attr.key.to_string();
             let value = attr.value();
-            let parts: Vec<&str> = name.split(":").collect();
+            let parts: Vec<&str> = name.split(':').collect();
             if parts.len() == 2 {
                 let name_space =
-                    format_ident!("{}Effect", &some_kind_of_uppercase_first_letter(&parts[0]));
+                    format_ident!("{}Effect", &parts[0].to_pascal_case());
                 let attr = &parts[1].to_pascal_case();
                 let attr_space = format_ident!("{}", attr);
                 quote! {
@@ -471,7 +464,7 @@ pub fn mixin(
     let input_fn = parse_macro_input!(item as ItemFn);
     let struct_name = format_ident!(
         "{}",
-        some_kind_of_uppercase_first_letter(&input_fn.sig.ident.to_string())
+        &input_fn.sig.ident.to_string().to_pascal_case()
     );
     let raw_struct_name = struct_name.to_string();
     // Generate the additional struct and impl
@@ -521,10 +514,7 @@ pub fn fields_enum(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Implement Into<BTreeMap> for struct
     let into_btreemap = fields.iter().map(|(ident, _)| {
         let variant = syn::Ident::new(
-            &format!(
-                "{}",
-                ident.as_ref().unwrap().to_string().to_upper_camel_case()
-            ),
+            &ident.as_ref().unwrap().to_string().to_upper_camel_case(),
             ident.span(),
         );
         quote! {
@@ -535,10 +525,7 @@ pub fn fields_enum(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Implement From<BTreeMap> for struct
     let from_btreemap = fields.iter().map(|(ident, _)| {
         let variant = syn::Ident::new(
-            &format!(
-                "{}",
-                ident.as_ref().unwrap().to_string().to_upper_camel_case()
-            ),
+            &ident.as_ref().unwrap().to_string().to_upper_camel_case(),
             ident.span(),
         );
         quote! {

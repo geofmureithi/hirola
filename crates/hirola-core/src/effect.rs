@@ -101,7 +101,7 @@ impl<Node: GenericNode, A: Display + 'static + Clone + PartialEq>
     fn effect(&self, node: &Node, attr: DefaultAttrStr, effect: Mutable<A>) {
         let dom = node.clone();
         let future = SignalExt::dedupe_map(effect.signal_cloned(), move |value| {
-            GenericNode::set_attribute(&dom, &attr.0, &value.to_string());
+            GenericNode::set_attribute(&dom, attr.0, &value.to_string());
         })
         .to_future();
         node.effect(future);
@@ -120,7 +120,7 @@ where
     fn effect(&self, node: &Node, attr: DefaultAttrStr, effect: DedupeMap<S, F>) {
         let dom = node.clone();
         let future = SignalExt::dedupe_map(effect, move |value| {
-            GenericNode::set_attribute(&dom, &attr.0, &value.to_string());
+            GenericNode::set_attribute(&dom, attr.0, &value.to_string());
         })
         .to_future();
         node.effect(future);
@@ -137,7 +137,7 @@ where
     fn effect(&self, node: &Node, attr: DefaultAttrStr, effect: Dedupe<S>) {
         let dom = node.clone();
         let future = SignalExt::dedupe_map(effect, move |value| {
-            GenericNode::set_attribute(&dom, &attr.0, &value.to_string());
+            GenericNode::set_attribute(&dom, attr.0, &value.to_string());
         })
         .to_future();
         node.effect(future);
@@ -157,7 +157,7 @@ where
     fn effect(&self, node: &Node, attr: DefaultAttrStr, effect: DedupeCloned<S>) {
         let dom = node.clone();
         let future = SignalExt::dedupe_map(effect, move |value| {
-            GenericNode::set_attribute(&dom, &attr.0, &value.to_string());
+            GenericNode::set_attribute(&dom, attr.0, &value.to_string());
         })
         .to_future();
         node.effect(future);
@@ -178,7 +178,7 @@ where
     fn effect(&self, node: &Node, attr: DefaultAttrStr, effect: Map<S, F>) {
         let dom = node.clone();
         let future = SignalExt::map(effect, move |value| {
-            GenericNode::set_attribute(&dom, &attr.0, &value.to_string());
+            GenericNode::set_attribute(&dom, attr.0, &value.to_string());
         })
         .to_future();
         node.effect(future);

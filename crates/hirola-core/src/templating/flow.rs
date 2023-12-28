@@ -59,7 +59,7 @@ where
         let props = self.props;
         let template = props.template;
 
-        let iterable = SignalVecExt::map(props.iterable, move |item| template(item));
+        let iterable = SignalVecExt::map(props.iterable, template);
 
         let marker = N::marker();
 

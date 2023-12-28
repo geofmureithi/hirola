@@ -2,6 +2,7 @@ mod model;
 use anyhow::bail;
 use hirola::dom::*;
 use hirola::prelude::*;
+use hirola::prelude::Suspend;
 use model::Users;
 use reqwasm::http::Request;
 

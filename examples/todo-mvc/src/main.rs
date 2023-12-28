@@ -4,6 +4,7 @@ use hirola::dom::app::App;
 use hirola::dom::mixins::text;
 use hirola::dom::Dom;
 use hirola::prelude::*;
+use hirola::dom::effects::prelude::*;
 use hirola::signal::{Mutable, Signal, SignalExt};
 use hirola::signal_vec::{MutableVec, SignalVec, SignalVecExt};
 use serde::{Deserialize, Serialize};
@@ -144,8 +145,8 @@ fn Header(app: App<State>) -> Dom {
                 focus=true
                 class="new-todo"
                 placeholder="What needs to be done?"
-                bind:value=state.mode.signal_cloned().map(|_|"")
-                on:keydown=create_new
+                // value=state.mode.signal_cloned().map(|_|"")
+                on:key_down=create_new
             />
         </header>
     }
@@ -157,8 +158,8 @@ fn Button<'a>(app: App<State>, text: &'a str, route: Route) -> Dom {
     html! {
         <li>
             <a
-                x:identity=app.router().link()
-                bind:class=router.map(move |x| x == route.as_ref()).dedupe_map(|b| if *b {"selected"} else {""})
+                // x:identity=app.router().link()
+                // bind:class=router.map(move |x| x == route.as_ref()).dedupe_map(|b| if *b {"selected"} else {""})
                 href=route.as_ref()>{text}</a>
         </li>
     }
@@ -188,18 +189,22 @@ fn Footer(app: App<State>) -> Dom {
 
     let has_todos = app.state().has_todos();
     html! { <footer
-                bind:value=app.state().mode.signal_cloned().map(|_|"")
-                mixin:identity=visible(has_todos)
+                // bind:value=app.state().mode.signal_cloned().map(|_|"")
+                // mixin:identity=visible(has_todos)
                 class="footer">
                 <span class="todo-count">
-                    <strong x:identity={text(todo_count)}></strong>
+                    <strong 
+                    // x:identity={text(todo_count)}
+                    ></strong>
                 </span>
                 <ul class="filters">
                     <Button app={app.clone()} text="All" route={Route::All} />
                     <Button app={app.clone()} text="Active" route={Route::Active} />
                     <Button app={app.clone()} text="Completed" route={Route::Completed} />
                 </ul>
-                <button on:click=clear_completed mixin:identity=visible(app.state().completed_len().map(|len| len > 0).dedupe()) class="clear-completed">
+                <button on:click=clear_completed 
+                // mixin:identity=visible(app.state().completed_len().map(|len| len > 0).dedupe()) 
+                class="clear-completed">
                     "Clear completed"
                 </button>
         </footer>
@@ -216,12 +221,14 @@ fn Main(app: App<State>) -> Dom {
         state.set_all_todos_completed(input.checked())
     });
     html! {
-        <section mixin:identity=visible(has_todos) class="main">
+        <section 
+        // mixin:identity=visible(has_todos) 
+        class="main">
             <input
                 class="toggle-all"
                 id="toggle-all"
                 type="checkbox"
-                bind:checked=app.state().not_completed_len().map(|len| len == 0)
+                // bind:checked=app.state().not_completed_len().map(|len| len == 0)
                 on:change=on_toggle
             />
             <label for="toggle-all">"Mark all as complete"</label>

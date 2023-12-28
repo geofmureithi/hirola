@@ -1,7 +1,7 @@
 use hirola::prelude::*;
 use hirola::dom::{node_ref::NodeRef, Dom};
 use tool::SignTool;
-
+use hirola::dom::effects::prelude::*;
 mod tool;
 
 fn signature_pad() -> Dom {
@@ -33,15 +33,15 @@ fn signature_pad() -> Dom {
     });
     html! {
         <canvas
-            ref={canvas}
+            bind:ref={canvas}
             width="500"
             height="300"
             style="position: absolute;border: 2px solid;"
-            on:mouseenter=mouse_enter
-            on:mouseout=mouse_leave
-            on:mousedown=mouse_down
-            on:mouseup=mouse_up
-            on:mousemove=mouse_move
+            on:mouse_enter=mouse_enter
+            on:mouse_out=mouse_leave
+            on:mouse_down=mouse_down
+            on:mouse_up=mouse_up
+            on:mouse_move=mouse_move
         />
     }
 }

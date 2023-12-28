@@ -15,7 +15,7 @@
 /// The defaults imports
 pub mod prelude {
     pub use hirola_core::prelude::*;
-    pub use hirola_macros::{component, html};
+    pub use hirola_macros::{component, html, mixin};
 }
 
 /// Exposing single item signal

@@ -1,45 +1,52 @@
 use hirola::{
-    dom::{render_to, Dom},
+    dom::{
+        effects::{attr_use::attr_signal, prelude::*},
+        mount, Dom,
+    },
     prelude::*,
 };
+
 use wasm_bindgen::JsCast;
 use web_sys::Element;
 
-fn x_html<'a>(text: &'a str) -> Box<dyn Fn(&Dom) + 'a> {
-    let cb = move |node: &Dom| {
-        let dom = node.inner_element();
-        let element = dom.dyn_ref::<Element>().unwrap();
-        element.set_inner_html(text); // Remember to escape this.
-    };
-    Box::new(cb)
-}
-
 fn mixin_demo() -> Dom {
-    let raw = "<strong>calebporzio</strong>";
     let is_shown = Mutable::new(true);
-    let toggle = is_shown.callback_with(|show, _e| *show.lock_mut() = !show.get());
-
+    let duration = Mutable::new(800u64);
     html! {
-        <div
-            class="h-screen flex flex-col items-center justify-center transition-all ease-in-out delay-1000">
+        <form
+            use:future=async {
+                // similar to on mount
+            }
+            class="h-screen flex flex-col items-center justify-center transition-all ease-in-out delay-1000"
+        >
+            <span x:html="<strong>calebporzio</strong>" />
+            <input
+                type="range"
+                bind:value=&duration
+                use:signal=attr_signal("data-value", duration.signal())
+                max=1000
+                step=100
+            />
             <div class="base">
-                <h1>"Styled"</h1>
-                <p mixin:identity=&x_html(raw) />
+                <h1>{duration}</h1>
+
+                <p>"Shown: "{is_shown.clone()}</p>
+
                 <button
                     class="bg-gray-200 mt-4 font-bold py-2 px-4 rounded"
-                    on:click=toggle>
+                    on:click=move |e| {
+                        e.prevent_default();
+                        *is_shown.lock_mut() = !is_shown.get();
+                    }
+                >
                     "Click Me"
                 </button>
             </div>
-
-
-        </div>
+        </form>
     }
 }
 
 fn main() {
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
-    let _res = render_to(mixin_demo(), &body).unwrap();
+    console_error_panic_hook::set_once();
+    mount(mixin_demo()).unwrap();
 }

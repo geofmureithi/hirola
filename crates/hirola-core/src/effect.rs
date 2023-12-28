@@ -1,8 +1,4 @@
-use std::future::Future;
-
-use crate::BoxedLocal;
-
-/// Trait for defining side effects that execute asynchronously as futures.
+/// Trait for defining side effects.
 ///
 /// The `SideEffect` trait allows defining asynchronous side effects that are executed as futures.
 /// Implementations of this trait should represent tasks that need to be performed concurrently
@@ -28,59 +24,11 @@ use crate::BoxedLocal;
 ///     }
 /// }
 /// ```
-pub trait SideEffect {
-    /// Executes the side effect and returns a boxed future representing its completion.
-    ///
-    /// This method executes the side effect asynchronously and returns a boxed future that
-    /// represents the completion of the task. Implementations should ensure that the future's
-    /// output is `()`, indicating the task's successful completion.
-    ///
-    /// # Returns
-    ///
-    /// A boxed future that represents the completion of the side effect task.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use std::future::ready;
-    /// use hirola::prelude::*;
-    /// // Define a custom side effect that executes asynchronously
-    /// struct CustomSideEffect;
-    ///
-    /// impl SideEffect for CustomSideEffect {
-    ///     fn effect(self) -> BoxedLocal<()> {
-    ///         // Perform some asynchronous task and return a future that represents its completion
-    ///         Box::pin(ready(()))
-    ///     }
-    /// }
-    /// ```
-    fn effect(self) -> BoxedLocal<()>;
+pub trait SideEffect<Attr: EffectAttribute<Handler = Self>, Effect, Node> {
+    fn effect(&self, node: &Node, attr: Attr, effect: Effect);
 }
 
-impl<F: 'static + Future<Output = ()>> SideEffect for F {
-    /// Converts the provided future into a boxed future of `()` as a side effect.
-    ///
-    /// This implementation allows any future that produces `()` as its output to be converted
-    /// into a `BoxedLocal<()>` to fulfill the requirements of the `SideEffect` trait.
-    ///
-    /// # Returns
-    ///
-    /// A boxed future that represents the completion of the provided future task.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use std::future::ready;
-    /// use hirola::prelude::*;
-    /// use hirola::dom::Dom;
-    /// // Create a future that produces `()` as its output
-    /// let my_future = ready(());
-    ///
-    /// let render: Dom = html! {
-    ///    <div use:my_future />
-    /// };
-    /// ```
-    fn effect(self) -> BoxedLocal<()> {
-        Box::pin(self)
-    }
+pub trait EffectAttribute {
+    type Handler;
+    fn read_as_attr(&self) -> String;
 }

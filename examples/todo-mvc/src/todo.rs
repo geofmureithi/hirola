@@ -1,6 +1,6 @@
 use crate::{todo::util::trim, visible, Route, State};
 use hirola::{
-    dom::{app::App, Dom},
+    dom::{app::App, Dom, effects::prelude::*},
     prelude::*,
     signal::{Mutable, Signal, SignalExt},
 };
@@ -112,7 +112,9 @@ impl Todo {
         let todo_clone = todo.clone();
 
         html! {
-            <li mixin:identity=visible(is_visible) bind:class=todo_class>
+            <li 
+            // mixin:identity=visible(is_visible) bind:class=todo_class
+            >
                 <div class="view">
                     {if todo.completed.signal() as Signal {
                         html!{
@@ -137,10 +139,10 @@ impl Todo {
                         }
                     }}
 
-                    <label on:dblclick=toggle_edit>{title}</label>
+                    <label on:dbl_click=toggle_edit>{title}</label>
                     <button class="destroy" on:click=todo.callback_with(move|todo, _| todo.remove(&app))/>
                 </div>
-                <input class="edit" on:keydown=handle_edit bind:value=todo.title.signal_cloned() />
+                <input class="edit" on:key_down=handle_edit bind:value=&todo.title />
             </li>
         }
     }

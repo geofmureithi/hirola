@@ -1,3 +1,4 @@
+use heck::ToPascalCase;
 use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_error::proc_macro_error;
 use quote::{format_ident, quote};
@@ -7,7 +8,7 @@ use rstml::{
 };
 use syn::{
     parse_macro_input, spanned::Spanned, Block, Expr, ExprCast, ExprForLoop, ExprIf, ExprMatch,
-    Stmt, Type,
+    ItemFn, Stmt, Type,
 };
 
 mod component;
@@ -125,67 +126,80 @@ fn attribute_to_tokens(attribute: &NodeAttribute) -> TokenStream {
         NodeAttribute::Attribute(attr) => {
             let name = attr.key.to_string();
             let value = attr.value();
-            if name.starts_with("on:") {
-                let name = name.replace("on:", "");
+            let parts: Vec<&str> = name.split(":").collect();
+            if parts.len() == 2 {
+                let name_space =
+                    format_ident!("{}Effect", &some_kind_of_uppercase_first_letter(&parts[0]));
+                    let attr = &parts[1].to_pascal_case();
+                let attr_space =
+                    format_ident!("{}", attr);
                 quote! {
-                    ::hirola::prelude::EventListener::event(&template, #name, #value);
-                }
-            } else if name.starts_with("use:") {
-                let effect = if value.is_some() {
-                    quote! {
-                        #value
-                    }
-                } else {
-                    let cleaned_name = Ident::new(&name.replace("use:", ""), Span::call_site());
-                    quote! {
-                        #cleaned_name
-                    }
-                };
-                quote! {
-                    ::hirola::prelude::GenericNode::effect(
-                        &template,
-                        #[allow(unused_braces)]
-                        #effect
-                    );
-
-                }
-            } else if name.starts_with("mixin:") || name.starts_with("x:") {
-                let name_space = name.replace("mixin:", "").replace("x:", "");
-                let ns_struct =
-                    format_ident!("{}", &some_kind_of_uppercase_first_letter(&name_space));
-                quote! {
-                    hirola::prelude::Mixin::<#ns_struct, _>::mixin(#value, &template);
-                }
-            } else if &name == "ref" {
-                quote! {
-                    let _ = ::hirola::prelude::NodeReference::set(
-                        &#value,
-                        ::std::clone::Clone::clone(&template),
-                    );
-
-                }
-            } else if name.starts_with("bind:") {
-                let attribute_name = convert_name(&name).replace("bind:", "");
-                quote! {
-                {
-                        use ::hirola::signal::SignalExt;
-                        let template_clone = ::std::clone::Clone::clone(&template);
-                        // ::hirola::prelude::GenericNode::set_attribute(
-                        //     &template,
-                        //     #attribute_name,
-                        //     &::std::format!("{}", #value),
-                        // );
-                        let future = SignalExt::dedupe_map(#value, move |value| {
-                            ::hirola::prelude::GenericNode::set_attribute(
-                                &template_clone,
-                                #attribute_name,
-                                &::std::format!("{}", value),
-                            );
-                        }).to_future();
-                        ::hirola::prelude::GenericNode::effect(&template, future);
+                    ::hirola::prelude::SideEffect::effect(&#name_space, &template, #attr_space, #value);
                 }
 
-                }
+            // }
+
+            // if name.starts_with("on:") {
+            //     let name = name.replace("on:", "");
+            //     quote! {
+            //         ::hirola::prelude::EventListener::event(&template, #name, #value);
+            //     }
+            // } else if name.starts_with("use:") {
+            //     let effect = if value.is_some() {
+            //         quote! {
+            //             #value
+            //         }
+            //     } else {
+            //         let cleaned_name = Ident::new(&name.replace("use:", ""), Span::call_site());
+            //         quote! {
+            //             #cleaned_name
+            //         }
+            //     };
+            //     quote! {
+            //         ::hirola::prelude::GenericNode::effect(
+            //             &template,
+            //             #[allow(unused_braces)]
+            //             #effect
+            //         );
+
+            //     }
+            // } else if name.starts_with("mixin:") || name.starts_with("x:") {
+            //     let name_space = name.replace("mixin:", "").replace("x:", "");
+            //     let ns_struct =
+            //         format_ident!("{}", &some_kind_of_uppercase_first_letter(&name_space));
+            //     quote! {
+            //         hirola::prelude::Mixin::<#ns_struct, _>::mixin(#value, &template);
+            //     }
+            // } else if &name == "ref" {
+            //     quote! {
+            //         let _ = ::hirola::prelude::NodeReference::set(
+            //             &#value,
+            //             ::std::clone::Clone::clone(&template),
+            //         );
+
+            //     }
+            // } else if name.starts_with("bind:") {
+            //     let attribute_name = convert_name(&name).replace("bind:", "");
+            //     quote! {
+            //     {
+            //             use ::hirola::signal::SignalExt;
+            //             let template_clone = ::std::clone::Clone::clone(&template);
+            //             // ::hirola::prelude::GenericNode::set_attribute(
+            //             //     &template,
+            //             //     #attribute_name,
+            //             //     &::std::format!("{}", #value),
+            //             // );
+            //             let future = SignalExt::dedupe_map(#value, move |value| {
+            //                 ::hirola::prelude::GenericNode::set_attribute(
+            //                     &template_clone,
+            //                     #attribute_name,
+            //                     &::std::format!("{}", value),
+            //                 );
+            //             }).to_future();
+            //             ::hirola::prelude::GenericNode::effect(&template, future);
+            //     }
+
+            //     }
             } else {
                 let attribute_name = convert_name(&name);
                 quote! {
@@ -514,4 +528,29 @@ pub fn component(
 ) -> proc_macro::TokenStream {
     let f = parse_macro_input!(item as syn::ItemFn);
     component::create_function_component(f)
+}
+
+#[proc_macro_attribute]
+pub fn mixin(
+    _attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let input_fn = parse_macro_input!(item as ItemFn);
+    let struct_name = format_ident!("{}", some_kind_of_uppercase_first_letter(&input_fn.sig.ident.to_string()));
+    let raw_struct_name = struct_name.to_string();
+    // Generate the additional struct and impl
+    let expanded = quote! {
+        #input_fn
+
+        pub struct #struct_name;
+
+        impl EffectAttribute for #struct_name {
+            type Handler = XEffect; //TODO: Make this input
+            fn read_as_attr(&self) -> String {
+                #raw_struct_name.to_string()
+            }
+        }
+    };
+
+    expanded.into()
 }

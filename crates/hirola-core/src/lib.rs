@@ -32,17 +32,15 @@ pub type BoxedLocal<T> = Pin<Box<dyn Future<Output = T> + 'static>>;
 pub mod callback;
 pub mod effect;
 pub mod generic_node;
-pub mod mixin;
 pub mod render;
 pub mod templating;
 
 pub mod prelude {
     pub use crate::callback::Callback;
-    pub use crate::effect::SideEffect;
+    pub use crate::effect::*;
     pub use crate::generic_node::EventListener;
     pub use crate::generic_node::GenericNode;
     pub use crate::generic_node::*;
-    pub use crate::mixin::*;
     pub use crate::render::*;
     pub use crate::templating::flow::{Indexed, IndexedProps};
     pub use crate::templating::suspense::{Suspend, Suspense, SuspenseResult::*};

@@ -17,7 +17,7 @@ log = "0.4"
 hirola-core = { path = "../hirola-core", version = "0.4.0" }
 hirola-macros = { path = "../hirola-macros", version = "0.4.0" }
 matchit = { version = "0.7" }
-wasm-bindgen-futures = { version = "0.4.39" }
+wasm-bindgen-futures = { version = "0.4.41" }
 discard = "1"
 strum = { version = "0.25.0", features = ["derive"] }
 
@@ -36,8 +36,8 @@ features = [
   "History",
   "Location"
 ]
-version = "0.3.66"
+version = "0.3.68"
 
 [dev-dependencies]
 hirola = { path = "../../" }
-wasm-bindgen-test = "0.3.39"
+wasm-bindgen-test = "0.3.41"

@@ -18,4 +18,4 @@ html-escape = { version = "0.2.13" }
 
 [dev-dependencies]
 hirola = { path = "../../" }
-wasm-bindgen-test = "0.3.39"
+wasm-bindgen-test = "0.3.41"

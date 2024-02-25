@@ -17,7 +17,7 @@ leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.16" }
 proc-macro2 = { version = "1.0.71", features = [ "span-locations" ] }
 thiserror = "1.0.57"
 crop = "0.4.1"
-serde = { version = "1.0.193", features = [ "derive" ] }
+serde = { version = "1.0.197", features = [ "derive" ] }
 
 
 # Deps for cli

@@ -17,7 +17,7 @@ proc-macro = true
 
 
 [dependencies]
-proc-macro2 = "1.0.71"
+proc-macro2 = "1.0.78"
 quote = "1.0.33"
 syn = "2.0.43"
 rstml = "0.11"

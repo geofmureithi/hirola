@@ -25,7 +25,7 @@ clap = { version = "4.5.1", features = ["derive"] }
 rayon = "1.8.1"
 glob = "0.3.1"
 anyhow = "1.0.80"
-toml = "0.8.8"
+toml = "0.8.10"
 
 [dev-dependencies]
 indoc = "2.0.4"

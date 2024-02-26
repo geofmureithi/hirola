@@ -16,7 +16,7 @@ hirola-core = { path = "../hirola-core", version = "0.4.0" }
 hirola-macros = { path = "../hirola-macros", version = "0.4.0" }
 hirola-dom = { path = "../hirola-dom", version = "0.4.0", default-features = false }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
-serde = { version = "1.0.193", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 
 [dependencies.web-sys]
 features = [

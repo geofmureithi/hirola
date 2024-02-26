@@ -441,9 +441,9 @@ dependencies = [
 
 [[package]]
 name = "crop"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f7cba78cdac608a5e2e645de47e566c0f63e1b6110318736581ec97d5669767"
+checksum = "c0c36a21e864b7accff2cf3bef09af553704556ff2fb704ebee242bfc5c89f10"
 dependencies = [
  "str_indices",
 ]

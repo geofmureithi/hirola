@@ -24,7 +24,7 @@ rstml = "0.11"
 proc-macro-error = "1.0"
 proc-macro-hack = "0.5"
 paste = { version = "1" }
-heck = "0.4.1"
+heck = "0.5.0"
 
 [dev-dependencies]
 hirola = { path = "../../" }

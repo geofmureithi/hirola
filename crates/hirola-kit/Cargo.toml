@@ -22,7 +22,7 @@ serde = { version = "1.0.197", features = [ "derive" ] }
 
 # Deps for cli
 clap = { version = "4.5.2", features = ["derive"] }
-rayon = "1.9.0"
+rayon = "1.10.0"
 glob = "0.3.1"
 anyhow = "1.0.81"
 toml = "0.8.11"

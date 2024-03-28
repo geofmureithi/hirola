@@ -29,5 +29,5 @@ toml = "0.8.11"
 
 [dev-dependencies]
 indoc = "2.0.4"
-insta = "1.36.1"
+insta = "1.38.0"
 quote = "1.0.35"

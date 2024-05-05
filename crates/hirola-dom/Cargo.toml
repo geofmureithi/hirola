@@ -19,7 +19,7 @@ hirola-macros = { path = "../hirola-macros", version = "0.4.0" }
 matchit = { version = "0.7" }
 wasm-bindgen-futures = { version = "0.4.42" }
 discard = "1"
-strum = { version = "0.25.0", features = ["derive"] }
+strum = { version = "0.26.0", features = ["derive"] }
 
 [dependencies.web-sys]
 features = [

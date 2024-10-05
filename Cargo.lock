@@ -1157,9 +1157,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.8"
+version = "0.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be74cfbc480df242650d6e77427752f2148dcfa69798605c81b33adaecfe11ab"
+checksum = "d6d5c7792c1541c511ab38a0e81012cc80e069194dafeaef373176aae042fc3d"
 
 [[package]]
 name = "leptosfmt-prettyplease"

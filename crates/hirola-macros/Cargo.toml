@@ -20,7 +20,7 @@ proc-macro = true
 proc-macro2 = "1.0.79"
 quote = "1.0.35"
 syn = "2.0.52"
-rstml = "0.11"
+rstml = "0.12"
 proc-macro-error = "1.0"
 proc-macro-hack = "0.5"
 paste = { version = "1" }

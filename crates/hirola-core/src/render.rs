@@ -98,7 +98,7 @@ impl<T: Render<N>, N: GenericNode> Render<N> for Box<T> {
     }
 }
 
-impl<T: Display + Clone + 'static, N: GenericNode> Render<N> for Mutable<T> {
+impl<T: Display + Clone + 'static, N: GenericNode + 'static> Render<N> for Mutable<T> {
     fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let child = N::text_node(&self.get_cloned().to_string());
         parent.append_child(&child);
@@ -204,7 +204,7 @@ impl<T: Clone + 'static, G: GenericNode> MapRender<G> for Vec<T> {
     }
 }
 
-impl<T: 'static + Clone, N: GenericNode> Render<N> for MappedVec<T, N> {
+impl<T: 'static + Clone, N: GenericNode + 'static> Render<N> for MappedVec<T, N> {
     fn render_into(self: Box<Self>, parent: &N) -> Result<(), Error> {
         let template = {
             #[allow(clippy::type_complexity)]

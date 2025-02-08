@@ -2,7 +2,7 @@ use std::{cell::RefCell, future::Future};
 
 use crate::prelude::Render;
 
-pub trait GenericNode: std::fmt::Debug + Clone + PartialEq + std::cmp::Eq + 'static {
+pub trait GenericNode: Clone + 'static {
     /// Create a new element node.
     fn element(tag: &str) -> Self;
 

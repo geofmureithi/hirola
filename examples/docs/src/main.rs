@@ -74,28 +74,28 @@ fn with_layout(seo: Seo) -> SsrNode {
                         </a>
                     </div>
                     <div class="flex items-center pr-6 md:hidden">
-                        <button class="text-gray-600 focus:outline-none">
+                        <input type="checkbox" id="mobile-nav-toggle" class="hidden peer" />
+                        <label for="mobile-nav-toggle" class="text-gray-600 cursor-pointer focus:outline-none">
                             <span class="sr-only">"Show navigation"</span>
                             <svg
                                 class="h-6 w-6 fill-current"
                                 xmlns="http://www.w3.org/2000/svg"
-                                domBox="0 0 20 20"
+                                viewBox="0 0 20 20"
                             >
                                 <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
                             </svg>
-                        </button>
+                        </label>
                         <div
-                            class="fixed top-0 bottom-0 right-0 z-[199] w-1/2 overflow-y-auto bg-gray-100 p-6 shadow-xl md:top-[4rem]"
-                            x-show="show"
+                            class="fixed top-0 bottom-0 right-0 z-[199] hidden w-1/2 overflow-y-auto bg-gray-100 p-6 shadow-xl peer-checked:block md:top-[4rem]"
                         >
                             <div class="flex justify-end">
-                                <button class="text-gray-600 focus:outline-none">
+                                <label for="mobile-nav-toggle" class="text-gray-600 cursor-pointer focus:outline-none">
                                     <span class="sr-only">"Close navigation"</span>
                                     <svg
                                         class="h-6 w-6"
                                         stroke="currentColor"
                                         fill="none"
-                                        domBox="0 0 24 24"
+                                        viewBox="0 0 24 24"
                                     >
                                         <path
                                             stroke-linecap="round"
@@ -104,7 +104,7 @@ fn with_layout(seo: Seo) -> SsrNode {
                                             d="M6 18L18 6M6 6l12 12"
                                         ></path>
                                     </svg>
-                                </button>
+                                </label>
                             </div>
                             <SideBar/>
                         </div>

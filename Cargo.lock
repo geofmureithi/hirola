@@ -944,7 +944,7 @@ dependencies = [
 name = "hirola-macros"
 version = "0.4.0"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "hirola",
  "hirola-ssr",
  "paste",

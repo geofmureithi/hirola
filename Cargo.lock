@@ -766,7 +766,7 @@ dependencies = [
  "pin-project",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -936,7 +936,7 @@ dependencies = [
  "rstml",
  "serde",
  "syn 2.0.94",
- "thiserror",
+ "thiserror 2.0.20",
  "toml",
 ]
 
@@ -1656,7 +1656,7 @@ dependencies = [
  "quote",
  "syn 2.0.94",
  "syn_derive",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1945,6 +1945,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "syn"
+version = "3.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12df2e0110f65b775f769bb17ef989067a1d931b2eb822bd4346631eeada89f9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
 name = "syn_derive"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1979,7 +1990,7 @@ dependencies = [
  "regex-syntax 0.7.5",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "walkdir",
  "yaml-rust",
 ]
@@ -2024,7 +2035,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
+dependencies = [
+ "thiserror-impl 2.0.20",
 ]
 
 [[package]]
@@ -2036,6 +2056,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.94",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
 ]
 
 [[package]]
